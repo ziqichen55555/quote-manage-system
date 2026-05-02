@@ -1,8 +1,9 @@
 {
-  "name": "Odoo 17 Quote System",
-  "dockerComposeFile": "../docker-compose.yml",
-  "service": "web",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "name": "Odoo 17 Development",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
+  },
   "forwardPorts": [8069],
   "portsAttributes": {
     "8069": {
