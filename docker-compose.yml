@@ -24,6 +24,12 @@ services:
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
 
+  workspace:
+    image: mcr.microsoft.com/devcontainers/universal:2
+    volumes:
+      - ..:/workspaces:cached
+    command: sleep infinity
+
 volumes:
   odoo-web-data:
   odoo-db-data:
