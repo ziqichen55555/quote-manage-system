@@ -1,16 +1,17 @@
-version: '3.1'
+version: '3.8'
 services:
   web:
     image: odoo:17.0
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8069:8069"
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
-      - ./addons:/mnt/extra-addons
-      - ./custom_addons:/mnt/custom-addons
+      - ./quote-manage-system/addons:/mnt/extra-addons
+      - ./quote-manage-system/custom_addons:/mnt/custom-addons
     environment:
       - HOST=db
       - USER=odoo
@@ -23,12 +24,11 @@ services:
       - POSTGRES_USER=odoo
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
-
-  workspace:
-    image: mcr.microsoft.com/devcontainers/universal:2
-    volumes:
-      - ..:/workspaces:cached
-    command: sleep infinity
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   odoo-web-data:
