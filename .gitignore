@@ -5,6 +5,7 @@ _build/
 .*
 !.gitignore
 !.github
+!.devcontainer
 !.mailmap
 !.weblate.json
 # compiled python files

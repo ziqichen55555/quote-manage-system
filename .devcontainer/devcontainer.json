@@ -1,0 +1,23 @@
+{
+  "name": "Odoo 17 Quote System",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "forwardPorts": [8069],
+  "portsAttributes": {
+    "8069": {
+      "label": "Odoo Web",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  },
+  "postCreateCommand": "docker-compose up -d",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "odooide.odoo-snippets",
+        "ms-python.python"
+      ]
+    }
+  }
+}
