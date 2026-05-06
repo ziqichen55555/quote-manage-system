@@ -1,0 +1,113 @@
+// Navy Blue Theme for Backend Header with White Selection
+$o-navbar-background-color: #001f3f; // Navy Blue
+$o-navbar-color: #ffffff; // White text
+$o-navbar-hover-bg: #ffffff; // White background on hover/active
+$o-navbar-hover-color: #001f3f; // Navy Blue text on hover/active
+
+.o_main_navbar {
+    background-color: $o-navbar-background-color !important;
+    background: $o-navbar-background-color !important;
+    border-bottom: none !important;
+    color: $o-navbar-color !important;
+
+    // Target the container directly to ensure no background leaks
+    .o_menu_sections, .o_menu_systray {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    // Home Menu Toggle (Grid icon)
+    .o_menu_toggle {
+        color: $o-navbar-color !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        &:hover, &:focus, &.active, &.show {
+            color: $o-navbar-hover-color !important;
+            background-color: $o-navbar-hover-bg !important;
+            background: $o-navbar-hover-bg !important;
+        }
+    }
+
+    // Brand / App Name
+    .o_menu_brand {
+        color: $o-navbar-color !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        font-weight: bold !important;
+        &:hover, &:focus {
+            color: $o-navbar-hover-color !important;
+            background-color: $o-navbar-hover-bg !important;
+            background: $o-navbar-hover-bg !important;
+        }
+    }
+
+    // Menu Sections (Left side) and Systray (Right side)
+    // Using a very broad selector to catch all potential menu items
+    .o_menu_sections li > a, 
+    .o_menu_sections li > span,
+    .o_menu_systray li > a,
+    .o_menu_systray li > span,
+    .o_nav_entry,
+    .dropdown-toggle {
+        color: $o-navbar-color !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        
+        &:hover, &:focus, &.active, &.show {
+            color: $o-navbar-hover-color !important;
+            background-color: $o-navbar-hover-bg !important;
+            background: $o-navbar-hover-bg !important;
+        }
+    }
+
+    // Specific targeting for active list items and shown dropdowns
+    .o_menu_sections li.active > a,
+    .o_menu_sections li > a.active,
+    .o_menu_sections li.show > a,
+    .o_menu_systray li.active > a,
+    .o_menu_systray li > a.active,
+    .o_menu_systray li.show > a {
+        background-color: $o-navbar-hover-bg !important;
+        background: $o-navbar-hover-bg !important;
+        color: $o-navbar-hover-color !important;
+    }
+
+    // Ensure dropdown toggles don't have purple background
+    .dropdown-toggle[aria-expanded="true"] {
+        background-color: $o-navbar-hover-bg !important;
+        background: $o-navbar-hover-bg !important;
+        color: $o-navbar-hover-color !important;
+    }
+}
+
+// Background of the app switcher (Home Menu)
+.o_home_menu {
+    background-image: linear-gradient(135deg, #001f3f 0%, #003366 100%) !important;
+    
+    .o_caption {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+}
+
+// Buttons and other primary elements
+.btn-primary {
+    background-color: #001f3f !important;
+    border-color: #001f3f !important;
+    
+    &:hover, &:focus, &:active {
+        background-color: #003366 !important;
+        border-color: #003366 !important;
+    }
+}
+
+// Loading indicator
+.o_loading {
+    background-color: #001f3f !important;
+}
+
+// Progress bars
+.o_progressbar .o_progress .o_progressbar_complete {
+    background-color: #001f3f !important;
+}
