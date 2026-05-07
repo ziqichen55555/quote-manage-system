@@ -1,23 +1,40 @@
-// Global Color Overrides - Sky Blue Theme
-$sky-blue: #3498db; // A professional sky blue / dodger blue
+// Consolidated Backend Styles for Modern Quote System
+
+// 1. Variables
+$sky-blue: #3498db;
 $sky-blue-dark: #2980b9;
+$sky-blue-light: rgba($sky-blue, 0.1);
+$sky-blue-soft: rgba($sky-blue, 0.05);
+
+// Odoo Core Variable Overrides
+$o-brand-odoo: $sky-blue;
+$o-brand-primary: $sky-blue;
+$o-community-color: $sky-blue;
+$o-enterprise-color: $sky-blue;
+$o-action: $sky-blue;
+$o-link-color: $sky-blue;
+
+// Navbar Variables
 $o-navbar-background-color: #001f3f; // Navy Blue for header
 $o-navbar-color: #ffffff;
 $o-navbar-hover-bg: #ffffff;
 $o-navbar-hover-color: #001f3f;
 
-// Override Odoo CSS Variables globally
 :root {
-    --primary: #{$sky-blue} !important;
-    --o-brand-primary: #{$sky-blue} !important;
-    --o-brand-odoo: #{$sky-blue} !important;
-    --o-navbar-background-color: #{$o-navbar-background-color} !important;
-    --o-link-color: #{$sky-blue} !important;
-    --o-button-primary-bg: #{$sky-blue} !important;
-    --o-button-primary-border: #{$sky-blue} !important;
+    --primary: #{$sky-blue};
+    --o-brand-primary: #{$sky-blue};
+    --o-brand-odoo: #{$sky-blue};
+    --o-navbar-background-color: #{$o-navbar-background-color};
+    --o-link-color: #{$sky-blue};
+    --o-button-primary-bg: #{$sky-blue};
+    --o-button-primary-border: #{$sky-blue};
+    
+    // Custom utility variables
+    --o-card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --o-card-border-radius: 0.5rem;
 }
 
-// Backend Header Customization
+// 2. Navbar Customization
 .o_main_navbar {
     background-color: $o-navbar-background-color !important;
     background: $o-navbar-background-color !important;
@@ -74,140 +91,162 @@ $o-navbar-hover-color: #001f3f;
     }
 }
 
-// Global UI Overrides to replace Purple with Sky Blue
-// Buttons
+// 3. Components Overrides
 .btn-primary {
     background-color: $sky-blue !important;
     border-color: $sky-blue !important;
     color: #ffffff !important;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
     
     &:hover, &:focus, &:active {
         background-color: $sky-blue-dark !important;
         border-color: $sky-blue-dark !important;
+        box-shadow: 0 4px 6px rgba($sky-blue, 0.2);
     }
 }
 
-// Links
 a {
     color: $sky-blue;
+    text-decoration: none;
     &:hover {
         color: $sky-blue-dark;
+        text-decoration: underline;
     }
 }
 
-// Stat Buttons (the boxes at the top of forms)
 .oe_stat_button {
+    border-radius: 0.5rem !important;
+    border: 1px solid #dee2e6 !important;
+    margin-right: 8px !important;
+    
     .o_button_icon, .o_stat_value, .o_stat_text {
         color: $sky-blue !important;
     }
     &:hover {
-        background-color: rgba($sky-blue, 0.05) !important;
+        background-color: $sky-blue-soft !important;
+        border-color: $sky-blue !important;
     }
 }
 
-// Notebook / Tabs
 .o_notebook {
     .nav-tabs {
         border-bottom: 2px solid #dee2e6;
         .nav-link {
-            // Unselected tabs to be black as requested
             color: #000000 !important;
+            font-weight: 500;
+            border: none !important;
+            margin-right: 1rem;
+            padding: 0.75rem 1rem;
             
             &.active {
                 color: $sky-blue !important;
-                border-bottom: 2px solid $sky-blue !important;
-                border-top: none !important;
-                border-left: none !important;
-                border-right: none !important;
+                border-bottom: 3px solid $sky-blue !important;
                 background-color: transparent !important;
             }
             &:hover:not(.active) {
                 color: $sky-blue !important;
-                background-color: rgba($sky-blue, 0.05) !important;
+                background-color: $sky-blue-soft !important;
             }
         }
     }
 }
 
-// Checkboxes and Radios (Odoo 17 / Bootstrap 5)
 .form-check-input:checked {
     background-color: $sky-blue !important;
     border-color: $sky-blue !important;
 }
 
-// Icons (FontAwesome)
-.fa {
-    &.text-primary, &.o_button_icon {
-        color: $sky-blue !important;
-    }
-}
-
-// Badges and Tags
-.badge-primary, .o_tag_color_0, .o_tag {
-    &.o_tag_color_0, &.badge-primary {
+.badge, .o_tag {
+    border-radius: 50rem !important;
+    padding: 0.35em 0.65em !important;
+    
+    &.badge-primary, &.o_tag_color_0 {
         background-color: $sky-blue !important;
     }
 }
 
-// Progress bars
-.o_progressbar .o_progress .o_progressbar_complete {
-    background-color: $sky-blue !important;
-}
-
-// Loading indicator
-.o_loading {
-    background-color: $sky-blue !important;
-}
-
-// Kanban and List view headers/highlights
-.o_kanban_view .o_kanban_record .o_kanban_record_title {
-    color: $sky-blue;
-}
-
-.o_list_view .table thead {
-    border-top: 2px solid $sky-blue;
-}
-
-// Breadcrumbs
-.o_breadcrumb .active, .o_breadcrumb a {
-    color: $sky-blue !important;
-}
-
-// Form view specific labels and highlights
-.o_form_view {
-    .o_form_uri {
-        color: $sky-blue !important;
-        &:hover {
-            color: $sky-blue-dark !important;
+.o_list_view {
+    .table {
+        thead {
+            border-top: 2px solid $sky-blue;
+            tr th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+            }
+        }
+        tbody tr:hover {
+            background-color: $sky-blue-soft !important;
         }
     }
-    
-    // Target any remaining purple text in labels or headings
-    .o_label {
-        color: #495057 !important; // Standard dark grey
+}
+
+.o_form_view {
+    .o_form_sheet {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid #e9ecef !important;
     }
 }
 
-// App switcher icons caption
+// 4. Dashboard & Home Menu
 .o_home_menu {
     background-image: linear-gradient(135deg, #001f3f 0%, #003366 100%) !important;
+    
     .o_caption {
         color: #ffffff !important;
+        font-weight: 500 !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .o_apps {
+        .o_app {
+            transition: transform 0.2s ease;
+            &:hover {
+                transform: translateY(-5px);
+            }
+        }
     }
 }
 
-// Aggressive global override for any element still using Odoo's default purple
+.o_dashboard_action, .o_spreadsheet_dashboard_action {
+    background-color: #f4f7fa !important;
+    padding: 1.5rem !important;
+    
+    .o_box {
+        background: #ffffff;
+        border-radius: 0.75rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid #e9ecef;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        
+        h2, h3 {
+            color: $o-navbar-background-color;
+            font-weight: 600;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+    }
+}
+
+// 5. Global Overrides
 [style*="color: #714B67"], [style*="color:#714B67"],
 [style*="background-color: #714B67"], [style*="background-color:#714B67"] {
     color: inherit;
     background-color: transparent;
 }
 
-// Specifically target the "More" dropdown and other common purple spots
 .o_dropdown_more, .o_menu_sections .dropdown-menu {
+    border-radius: 0.5rem !important;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important;
+    
     .dropdown-item {
+        padding: 0.5rem 1.25rem !important;
         &:hover, &:focus {
-            background-color: rgba($sky-blue, 0.1) !important;
+            background-color: $sky-blue-light !important;
             color: $sky-blue !important;
         }
     }

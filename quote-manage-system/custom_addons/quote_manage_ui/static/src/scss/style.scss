@@ -1,0 +1,39 @@
+// Consolidated Frontend Styles for Modern Quote System
+
+// 1. Variables
+$sky-blue: #3498db;
+$sky-blue-dark: #2980b9;
+
+// 2. Layout Fixes
+header {
+    .navbar-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        
+        .nav-item {
+            margin-right: 1rem;
+        }
+    }
+}
+
+// 3. Theme Overrides
+:root {
+    --primary: #{$sky-blue};
+    --o-brand-primary: #{$sky-blue};
+}
+
+.btn-primary {
+    background-color: $sky-blue !important;
+    border-color: $sky-blue !important;
+    &:hover {
+        background-color: $sky-blue-dark !important;
+        border-color: $sky-blue-dark !important;
+    }
+}
+
+a {
+    color: $sky-blue;
+    &:hover {
+        color: $sky-blue-dark;
+    }
+}

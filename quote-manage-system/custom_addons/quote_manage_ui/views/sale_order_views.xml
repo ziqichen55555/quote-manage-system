@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_ui" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.ui</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add shadow and rounded corners to the main sheet -->
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class">o_form_sheet shadow-sm rounded-3</attribute>
+            </xpath>
+            
+            <!-- Enhance the title area -->
+            <xpath expr="//div[hasclass('oe_title')]" position="attributes">
+                <attribute name="class">oe_title mb-4</attribute>
+            </xpath>
+            
+            <!-- Add some spacing to groups -->
+            <xpath expr="//group[@name='sale_header']" position="attributes">
+                <attribute name="class">sale_header g-4</attribute>
+            </xpath>
+            
+            <!-- Improve the button box -->
+            <xpath expr="//div[@name='button_box']" position="attributes">
+                <attribute name="class">oe_button_box mb-3</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_quotation_tree_inherit_ui" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.ui</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="class">o_sale_order_tree table-hover</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
