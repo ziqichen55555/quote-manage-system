@@ -90,7 +90,7 @@
     <!-- 3. Enhanced Header with Search and Trade-in -->
     <template id="template_header_default_force" inherit_id="website.template_header_default" name="Reware Header" priority="99">
         <xpath expr="//t[@t-call='website.navbar']" position="replace">
-            <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg navbar-light o_colored_level o_cc shadow-sm" style="background-color: #ffffff !important; border-bottom: 1px solid #eee; padding: 0.5rem 0;">
+            <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg navbar-light o_colored_level o_cc shadow-sm" style="border-bottom: 1px solid #eee; padding: 0.5rem 0;">
                 <div id="o_main_nav" class="container">
                     <!-- Logo -->
                     <a href="/" class="navbar-brand logo me-4">
@@ -142,7 +142,7 @@
     </template>
 
     <!-- 4. Shop Page Customization (website_sale.products) -->
-    <template id="reware_products" inherit_id="website_sale.products" name="Reware Shop Layout" priority="99">
+    <template id="reware_products" inherit_id="website_sale.products" name="Reware Shop Layout" priority="10">
         <!-- Force Category Sidebar and Left Column -->
         <xpath expr="//t[@t-set='opt_wsale_categories']" position="replace">
             <t t-set="opt_wsale_categories" t-value="True"/>
@@ -202,7 +202,7 @@
     </template>
 
     <!-- 5. Product Item Customization (website_sale.products_item) -->
-    <template id="reware_products_item" inherit_id="website_sale.products_item" name="Reware Product Item" priority="99">
+    <template id="reware_products_item" inherit_id="website_sale.products_item" name="Reware Product Item" priority="10">
         <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
             <div class="position-absolute top-0 start-0 p-2 o_not_editable">
                 <span class="reware-badge shadow-sm">Certified</span>
@@ -223,7 +223,7 @@
     </template>
 
     <!-- 6. Product Detail Page Customization (website_sale.product) -->
-    <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="99">
+    <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="10">
         <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
             <div class="mt-4 p-3 bg-light rounded-3 border o_not_editable">
                 <h6 class="fw-bold mb-3 text-primary"><i class="fa fa-shield me-2"/>Reware Promise</h6>
@@ -246,7 +246,7 @@
         </xpath>
     </template>
 
-    <!-- 7. Trade-in Page -->
+    <!-- 7. Trade-in Page (Enhanced) -->
     <record id="trade_in_page" model="website.page" forcecreate="True">
         <field name="name">Trade-in</field>
         <field name="url">/trade-in</field>
@@ -257,6 +257,7 @@
             <t name="Trade-in" t-name="quote_manage_ui.trade_in_page">
                 <t t-call="website.layout">
                     <div id="wrap" class="oe_structure">
+                        <!-- Hero -->
                         <section class="s_text_block pt120 pb80 text-center bg-primary text-white">
                             <div class="container">
                                 <h1 class="display-2 fw-bold mb-4">Trade-in Your Old Tech</h1>
@@ -264,25 +265,51 @@
                             </div>
                         </section>
                         
+                        <!-- Mission Statement -->
+                        <section class="py-5 bg-white">
+                            <div class="container py-5">
+                                <div class="row align-items-center g-5">
+                                    <div class="col-lg-6">
+                                        <h2 class="display-5 fw-bold mb-4 text-primary">Fighting Digital Poverty</h2>
+                                        <p class="lead mb-4">The Re-ware Project plays a pivotal role in fighting digital poverty throughout Western Australia.</p>
+                                        <p class="text-muted">We provide an e-waste collection service and drop-off point for all obsolete and end-of-life devices. Help us in contributing to save our planet by saving landfill space, protecting and preserving our natural, raw materials and resources, and most importantly in creating a sustainable and environmentally aware community.</p>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="p-4 bg-light rounded-5 border shadow-sm">
+                                            <h4 class="fw-bold mb-4"><i class="fa fa-map-marker text-primary me-2"/>Drop-off Point</h4>
+                                            <p class="mb-1 fw-bold">Co-Creative IT</p>
+                                            <p class="text-muted mb-4">102 Edward Street, Perth, Western Australia 6000</p>
+                                            <a href="/contactus" class="btn btn-outline-primary rounded-pill px-4">Get Directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Steps -->
                         <section class="py-5 bg-light">
                             <div class="container">
+                                <div class="text-center mb-5">
+                                    <h2 class="display-4 fw-bold">How it Works</h2>
+                                    <p class="text-muted">Three simple steps to turn your tech into value.</p>
+                                </div>
                                 <div class="row g-4 text-center">
                                     <div class="col-md-4">
-                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100 hover-elevate border">
                                             <div class="step-number">1</div>
                                             <h4 class="fw-bold">Tell us about your device</h4>
                                             <p class="text-muted">Select your model and condition to get an instant estimate.</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100 hover-elevate border">
                                             <div class="step-number">2</div>
                                             <h4 class="fw-bold">Ship it for free</h4>
                                             <p class="text-muted">We'll provide a prepaid shipping label. Just pack it and send it.</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100 hover-elevate border">
                                             <div class="step-number">3</div>
                                             <h4 class="fw-bold">Get Paid</h4>
                                             <p class="text-muted">Once we verify your device, we'll send your payment within 48 hours.</p>
@@ -290,7 +317,7 @@
                                     </div>
                                 </div>
                                 <div class="text-center mt-5">
-                                    <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5">Start Your Trade-in</a>
+                                    <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5 shadow">Start Your Trade-in</a>
                                 </div>
                             </div>
                         </section>
@@ -300,8 +327,343 @@
         </field>
     </record>
 
+    <!-- 9. Services Page -->
+    <record id="services_page" model="website.page" forcecreate="True">
+        <field name="name">Our Services</field>
+        <field name="url">/services</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.services_page</field>
+        <field name="arch" type="xml">
+            <t name="Services" t-name="quote_manage_ui.services_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure">
+                        <section class="py-5 bg-primary text-white text-center">
+                            <div class="container py-5">
+                                <h1 class="display-3 fw-bold mb-4">Our Services</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">Collaboratively we create the solution with you and the vendor. Creativity, integrity, innovation and vision.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white">
+                            <div class="container py-5">
+                                <div class="row g-4">
+                                    <!-- Hardware -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-laptop"/></div>
+                                            <h4 class="fw-bold">Hardware</h4>
+                                            <p class="text-muted">Hardware that accommodates your current needs and expansion. We stand by the hardware we supply with full support.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Software -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-code"/></div>
+                                            <h4 class="fw-bold">Software</h4>
+                                            <p class="text-muted">Cost-effective software that can be expanded and evolve as your business improves and grows.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Careware -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-heartbeat"/></div>
+                                            <h4 class="fw-bold">Careware</h4>
+                                            <p class="text-muted">The unique ingredient that makes us different, and makes your business the difference too.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Re-ware -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-recycle"/></div>
+                                            <h4 class="fw-bold">Re-ware</h4>
+                                            <p class="text-muted">E-waste collection service and drop off point for all obsolete and end-of-life devices.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Network Security -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-shield"/></div>
+                                            <h4 class="fw-bold">Network Security</h4>
+                                            <p class="text-muted">Cybercrime protection is our highest priority in managing your IT infrastructure.</p>
+                                        </div>
+                                    </div>
+                                    <!-- IT Consulting -->
+                                    <div class="col-md-4">
+                                        <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
+                                            <div class="fs-1 text-primary mb-3"><i class="fa fa-comments-o"/></div>
+                                            <h4 class="fw-bold">IT Consulting</h4>
+                                            <p class="text-muted">We understand your business and its needs almost as intimately as you do.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 10. About Us Page -->
+    <record id="about_us_page" model="website.page" forcecreate="True">
+        <field name="name">About Us</field>
+        <field name="url">/aboutus</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.about_us_page</field>
+        <field name="arch" type="xml">
+            <t name="About Us" t-name="quote_manage_ui.about_us_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure">
+                        <section class="py-5 bg-primary text-white text-center">
+                            <div class="container py-5">
+                                <h1 class="display-3 fw-bold mb-4">About Co-Creative IT</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">We define co-creation as the collaborative development of new value together with experts, stakeholders and customers.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white">
+                            <div class="container py-5">
+                                <div class="row align-items-center g-5">
+                                    <div class="col-lg-6">
+                                        <h2 class="display-5 fw-bold mb-4">Our Vision</h2>
+                                        <p class="text-muted mb-4">Co-creation is a form of collaborative innovation: ideas are shared and improved together, rather than kept to oneself. We believe in long-term partnerships and our services are therefore designed around the specific needs of our clients.</p>
+                                        <p class="text-muted">We work hard so our clients can sleep at night, knowing that their IT operations are taken care of in the most professional way.</p>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800" class="img-fluid rounded-5 shadow-lg" alt="Team collaboration"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-light">
+                            <div class="container py-5 text-center">
+                                <h2 class="display-5 fw-bold mb-5">Our Partners</h2>
+                                <div class="row g-4 justify-content-center opacity-75">
+                                    <div class="col-4 col-md-2 fw-bold">Microsoft 365</div>
+                                    <div class="col-4 col-md-2 fw-bold">Surface Pro</div>
+                                    <div class="col-4 col-md-2 fw-bold">Lenovo</div>
+                                    <div class="col-4 col-md-2 fw-bold">Dell</div>
+                                    <div class="col-4 col-md-2 fw-bold">HP</div>
+                                    <div class="col-4 col-md-2 fw-bold">Apple</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 11. Update Menu to include Services and About Us -->
+    <record id="menu_services" model="website.menu">
+        <field name="name">Services</field>
+        <field name="url">/services</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">3</field>
+    </record>
+
+    <record id="menu_about_us" model="website.menu">
+        <field name="name">About Us</field>
+        <field name="url">/aboutus</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">4</field>
+    </record>
+
+    <record id="menu_partners" model="website.menu">
+        <field name="name">Partners</field>
+        <field name="url">/partners</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">5</field>
+    </record>
+
+    <!-- 12. Partners Page -->
+    <record id="partners_page" model="website.page" forcecreate="True">
+        <field name="name">Our Partners</field>
+        <field name="url">/partners</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.partners_page</field>
+        <field name="arch" type="xml">
+            <t name="Partners" t-name="quote_manage_ui.partners_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure">
+                        <section class="py-5 bg-primary text-white text-center">
+                            <div class="container py-5">
+                                <h1 class="display-3 fw-bold mb-4">Our Strategic Partners</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">We collaborate with world-class technology leaders to deliver the best solutions for our clients.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white">
+                            <div class="container py-5">
+                                <div class="row g-4">
+                                    <t t-set="partners" t-value="[
+                                        {'name': 'Microsoft', 'desc': 'Office 365 Partner &amp; Cloud Solution Provider (CSP)', 'icon': 'fa-windows'},
+                                        {'name': 'Apple', 'desc': 'Authorized Reseller for premium hardware and solutions', 'icon': 'fa-apple'},
+                                        {'name': 'Lenovo', 'desc': 'DCG Partner providing robust data center and laptop solutions', 'icon': 'fa-laptop'},
+                                        {'name': 'HP', 'desc': 'Enterprise Partner for high-performance computing and printing', 'icon': 'fa-hdd-o'},
+                                        {'name': 'Dell', 'desc': 'Strategic partner for infrastructure and client solutions', 'icon': 'fa-desktop'},
+                                        {'name': 'Cisco', 'desc': 'Networking and security solutions partner', 'icon': 'fa-signal'},
+                                        {'name': 'Veeam', 'desc': 'Data protection and backup solutions partner', 'icon': 'fa-database'},
+                                        {'name': 'Fortinet', 'desc': 'Advanced network security and firewall solutions', 'icon': 'fa-shield'},
+                                        {'name': 'Eset', 'desc': 'Cybersecurity and antivirus protection partner', 'icon': 'fa-lock'}
+                                    ]"/>
+                                    <t t-foreach="partners" t-as="partner">
+                                        <div class="col-md-4">
+                                            <div class="p-4 bg-light rounded-4 h-100 border hover-elevate text-center">
+                                                <div class="fs-1 text-primary mb-3"><i t-attf-class="fa #{partner['icon']}"/></div>
+                                                <h4 class="fw-bold" t-esc="partner['name']"/>
+                                                <p class="text-muted mb-0" t-esc="partner['desc']"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Collaboration Gallery (Carousel) -->
+                        <section class="py-5 bg-white border-top">
+                            <div class="container py-5">
+                                <div class="text-center mb-5">
+                                    <h2 class="display-5 fw-bold">Collaboration Gallery</h2>
+                                    <p class="text-muted">Moments from our successful partnerships and joint ventures. (Editable in Odoo Editor)</p>
+                                </div>
+                                
+                                <div id="partner_collaboration_carousel" class="carousel slide s_carousel s_carousel_default" data-bs-ride="carousel" data-bs-interval="5000">
+                                    <div class="carousel-indicators">
+                                        <button type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                        <button type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                    </div>
+                                    <div class="carousel-inner">
+                                        <!-- Slide 1 -->
+                                        <div class="carousel-item active" data-name="Slide">
+                                            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200" class="d-block w-100 rounded-5 shadow" alt="Collaboration 1" style="height: 500px; object-fit: cover;"/>
+                                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-pill px-4 py-2 mb-4 mx-auto" style="max-width: fit-content;">
+                                                <h5 class="mb-0">Strategic Planning Session</h5>
+                                            </div>
+                                        </div>
+                                        <!-- Slide 2 -->
+                                        <div class="carousel-item" data-name="Slide">
+                                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200" class="d-block w-100 rounded-5 shadow" alt="Collaboration 2" style="height: 500px; object-fit: cover;"/>
+                                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-pill px-4 py-2 mb-4 mx-auto" style="max-width: fit-content;">
+                                                <h5 class="mb-0">Joint Technology Workshop</h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-light">
+                            <div class="container py-5 text-center">
+                                <h2 class="display-5 fw-bold mb-4">Ready to Partner with Us?</h2>
+                                <p class="lead mb-5">Join our ecosystem of innovation and sustainability.</p>
+                                <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5 shadow">Become a Partner</a>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 13. Contact Us Page Customization -->
+    <template id="reware_contactus" inherit_id="website.contactus" name="Reware Contact Us" priority="10">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="oe_structure">
+                <section class="py-5 bg-primary text-white text-center">
+                    <div class="container py-5">
+                        <h1 class="display-3 fw-bold mb-4">Contact Us</h1>
+                        <p class="lead fs-3 mx-auto" style="max-width: 800px;">Have questions about our services or the Re-ware Project? We're here to help.</p>
+                    </div>
+                </section>
+
+                <section class="py-5 bg-white">
+                    <div class="container py-5">
+                        <div class="row g-5">
+                            <div class="col-lg-6">
+                                <h2 class="display-5 fw-bold mb-4 text-primary">Get in Touch</h2>
+                                <p class="text-muted mb-5">Fill out the form and our team will get back to you within 24 hours.</p>
+                                
+                                <div class="d-flex mb-4">
+                                    <div class="me-4 text-primary fs-3"><i class="fa fa-envelope"/></div>
+                                    <div>
+                                        <h5 class="fw-bold">Email</h5>
+                                        <p class="text-muted">sales@cocreativeit.com</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-4">
+                                    <div class="me-4 text-primary fs-3"><i class="fa fa-map-marker"/></div>
+                                    <div>
+                                        <h5 class="fw-bold">Location</h5>
+                                        <p class="text-muted">102 Edward Street, Perth, Western Australia 6000</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5 bg-light rounded-5 shadow-sm">
+                                    <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                        <div class="container">
+                                            <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="mail.mail" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                                                <div class="s_website_form_rows row s_col_no_bgcolor">
+                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="char" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="contact1">
+                                                            <span class="s_website_form_label_content">Name</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact1" type="text" class="form-control s_website_form_input" name="name" required="" data-fill-with="name"/>
+                                                    </div>
+                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="contact3">
+                                                            <span class="s_website_form_label_content">Email</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact3" type="email" class="form-control s_website_form_input" name="email_from" required="" data-fill-with="email"/>
+                                                    </div>
+                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="char" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="contact5">
+                                                            <span class="s_website_form_label_content">Subject</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact5" type="text" class="form-control s_website_form_input" name="subject" required=""/>
+                                                    </div>
+                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="contact6">
+                                                            <span class="s_website_form_label_content">Question</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <textarea id="contact6" class="form-control s_website_form_input" name="description" required="" rows="4"/>
+                                                    </div>
+                                                    <div class="mb-0 py-2 col-12 s_website_form_submit" data-name="Submit Button">
+                                                        <a href="#" role="button" class="btn btn-primary btn-lg rounded-pill px-5 s_website_form_send">Send Message</a>
+                                                        <span id="s_website_form_result"/>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
     <!-- 8. Homepage (Reware Focused) -->
-    <template id="homepage_custom" inherit_id="website.homepage" name="Reware Homepage" priority="99">
+    <template id="homepage_custom" inherit_id="website.homepage" name="Reware Homepage" priority="10">
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="oe_structure">
                 <!-- Hero -->
@@ -376,7 +738,7 @@
                         </div>
                     </div>
                 </section>
-                <!-- ... why refurbished and environmental impact sections ... -->
+                <!-- Why choose Reware? -->
                 <section class="py-5 bg-white">
                     <div class="container">
                         <div class="row align-items-center g-5">
@@ -404,7 +766,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-6 bg-light p-5 rounded-5">
+                            <div class="col-lg-6 bg-light p-5 rounded-5 shadow-sm">
                                 <div class="text-center py-5">
                                     <h3 class="fw-bold mb-3">Ready to upgrade?</h3>
                                     <p class="mb-4">Join thousands of happy customers who chose a smarter way to buy tech.</p>
@@ -415,21 +777,104 @@
                     </div>
                 </section>
 
+                <!-- The Re-ware Project Section (New) -->
+                <section id="reware-project" class="py-5 bg-primary text-white overflow-hidden">
+                    <div class="container py-5">
+                        <div class="row align-items-center g-5">
+                            <div class="col-lg-5 order-lg-2">
+                                <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800" class="img-fluid rounded-5 shadow-lg" alt="E-waste recycling"/>
+                            </div>
+                            <div class="col-lg-7 order-lg-1">
+                                <h2 class="display-3 fw-bold mb-4">The Re-ware Project</h2>
+                                <p class="lead fs-3 mb-4">Sustainable and ethical e-waste collection, playing a pivotal role in fighting digital poverty throughout Western Australia.</p>
+                                <p class="mb-5 opacity-75">We provide an e-waste collection service and drop-off point for all obsolete and end-of-life devices. By repurposing and refurbishing, we contribute towards digital inclusion for all and improve on closing the gap on digital poverty whilst creating a positive effect on our environment.</p>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-recycle fs-2 me-3 text-info"/>
+                                            <div>
+                                                <h5 class="fw-bold">Save Landfill Space</h5>
+                                                <p class="small mb-0 opacity-75">Protecting and preserving our natural, raw materials and resources.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-users fs-2 me-3 text-info"/>
+                                            <div>
+                                                <h5 class="fw-bold">Digital Inclusion</h5>
+                                                <p class="small mb-0 opacity-75">Providing quality tech to those who need it most in our community.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-5">
+                                    <a href="/contactus" class="btn btn-info btn-lg rounded-pill px-5 text-white">Donate Your Old Tech</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- How it Works (New) -->
+                <section class="py-5 bg-light">
+                    <div class="container py-5">
+                        <div class="text-center mb-5">
+                            <h2 class="display-4 fw-bold">How Re-ware Works</h2>
+                            <p class="text-muted">A circular economy for a sustainable future.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-3 text-center">
+                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
+                                    <div class="step-number mb-3">1</div>
+                                    <h5 class="fw-bold">Collection</h5>
+                                    <p class="small text-muted">We collect obsolete and end-of-life devices from businesses and individuals.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
+                                    <div class="step-number mb-3">2</div>
+                                    <h5 class="fw-bold">Testing</h5>
+                                    <p class="small text-muted">Our experts perform a 100-point quality check to assess refurbishing potential.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
+                                    <div class="step-number mb-3">3</div>
+                                    <h5 class="fw-bold">Refurbishing</h5>
+                                    <p class="small text-muted">Devices are ethically restored, data is securely wiped, and parts are recycled.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
+                                    <div class="step-number mb-3">4</div>
+                                    <h5 class="fw-bold">Redistribution</h5>
+                                    <p class="small text-muted">Refurbished tech is sold at a discount or donated to fight digital poverty.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Your Impact with Reware -->
                 <section class="py-5 bg-dark text-white">
                     <div class="container text-center py-5">
                         <h2 class="display-4 fw-bold mb-5">Your Impact with Reware</h2>
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <div class="fs-1 text-success mb-2">1,200kg</div>
+                                <div class="fs-1 text-info mb-2 fw-bold">1,200kg</div>
                                 <p class="lead">CO2 Emissions Saved</p>
+                                <p class="small opacity-50">Equivalent to planting 50 trees</p>
                             </div>
                             <div class="col-md-4">
-                                <div class="fs-1 text-success mb-2">500kg</div>
+                                <div class="fs-1 text-info mb-2 fw-bold">500kg</div>
                                 <p class="lead">Raw Materials Preserved</p>
+                                <p class="small opacity-50">Saving precious metals and minerals</p>
                             </div>
                             <div class="col-md-4">
-                                <div class="fs-1 text-success mb-2">250kg</div>
+                                <div class="fs-1 text-info mb-2 fw-bold">250kg</div>
                                 <p class="lead">E-waste Prevented</p>
+                                <p class="small opacity-50">Kept out of Western Australian landfills</p>
                             </div>
                         </div>
                     </div>
