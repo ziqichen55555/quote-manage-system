@@ -437,20 +437,6 @@
                                 </div>
                             </div>
                         </section>
-
-                        <section class="py-5 bg-light">
-                            <div class="container py-5 text-center">
-                                <h2 class="display-5 fw-bold mb-5">Our Partners</h2>
-                                <div class="row g-4 justify-content-center opacity-75">
-                                    <div class="col-4 col-md-2 fw-bold">Microsoft 365</div>
-                                    <div class="col-4 col-md-2 fw-bold">Surface Pro</div>
-                                    <div class="col-4 col-md-2 fw-bold">Lenovo</div>
-                                    <div class="col-4 col-md-2 fw-bold">Dell</div>
-                                    <div class="col-4 col-md-2 fw-bold">HP</div>
-                                    <div class="col-4 col-md-2 fw-bold">Apple</div>
-                                </div>
-                            </div>
-                        </section>
                     </div>
                 </t>
             </t>
