@@ -232,11 +232,21 @@ a {
     }
 }
 
-// 5. Global Overrides
+// 5. Global Overrides to remove Odoo Purple
 [style*="color: #714B67"], [style*="color:#714B67"],
 [style*="background-color: #714B67"], [style*="background-color:#714B67"] {
-    color: inherit;
-    background-color: transparent;
+    color: inherit !important;
+    background-color: transparent !important;
+}
+
+// Target common Odoo purple classes
+.o_tag_color_0, .badge-primary, .btn-primary {
+    background-color: $sky-blue !important;
+    border-color: $sky-blue !important;
+}
+
+.text-primary {
+    color: $sky-blue !important;
 }
 
 .o_dropdown_more, .o_menu_sections .dropdown-menu {

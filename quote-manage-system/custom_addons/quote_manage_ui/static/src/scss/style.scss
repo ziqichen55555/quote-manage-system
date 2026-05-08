@@ -1,39 +1,222 @@
-// Consolidated Frontend Styles for Modern Quote System
-
+// Modern Frontend Styles inspired by Co-Creative IT
 // 1. Variables
-$sky-blue: #3498db;
-$sky-blue-dark: #2980b9;
+$primary-navy: #1a1f71;
+$accent-cyan: #00d4ff;
+$accent-cyan-dark: #00b8e6;
+$text-dark: #2c2c2c;
+$background-light: #fafafa;
+$white: #ffffff;
 
-// 2. Layout Fixes
-header {
-    .navbar-nav {
-        display: flex !important;
-        flex-direction: row !important;
-        
-        .nav-item {
-            margin-right: 1rem;
+// 2. Base Theme Overrides
+:root {
+    --primary: #{$primary-navy};
+    --o-brand-primary: #{$primary-navy};
+    --o-brand-odoo: #{$accent-cyan};
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: $text-dark;
+    background-color: $white;
+}
+
+// 3. Navbar Styling
+header#top {
+    background-color: $primary-navy !important;
+    .navbar {
+        padding: 1rem 0;
+    }
+    .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 500;
+        &:hover {
+            color: $accent-cyan !important;
+        }
+        &.active {
+            color: $white !important;
+            border-bottom: 2px solid $accent-cyan;
         }
     }
 }
 
-// 3. Theme Overrides
-:root {
-    --primary: #{$sky-blue};
-    --o-brand-primary: #{$sky-blue};
-}
-
-.btn-primary {
-    background-color: $sky-blue !important;
-    border-color: $sky-blue !important;
-    &:hover {
-        background-color: $sky-blue-dark !important;
-        border-color: $sky-blue-dark !important;
+// 4. Hero Section
+.s_hero_modern {
+    background: linear-gradient(135deg, $primary-navy 0%, #2a3a8a 100%);
+    color: $white;
+    padding: 100px 0;
+    
+    h1 {
+        font-weight: 800;
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .lead {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2.5rem;
     }
 }
 
-a {
-    color: $sky-blue;
+// 5. Service Cards
+.s_service_card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    background: $white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    
     &:hover {
-        color: $sky-blue-dark;
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        
+        .card-icon {
+            background-color: $accent-cyan;
+            color: $white;
+        }
+    }
+    
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background-color: rgba($accent-cyan, 0.1);
+        color: $accent-cyan;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    h3 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+}
+
+// 6. Buttons
+.btn-primary {
+    background-color: $accent-cyan !important;
+    border-color: $accent-cyan !important;
+    color: $primary-navy !important;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background-color: $accent-cyan-dark !important;
+        border-color: $accent-cyan-dark !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($accent-cyan, 0.3);
+    }
+}
+
+// 7. Sections
+.s_section_gray {
+    background-color: $background-light;
+    padding: 80px 0;
+}
+
+.section-title {
+    font-weight: 800;
+    margin-bottom: 3rem;
+    position: relative;
+    padding-bottom: 1rem;
+    
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background-color: $accent-cyan;
+    }
+}
+
+// 8. Shop & Product Enhancements
+.oe_product {
+    border: 1px solid #eee !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #fff;
+    
+    &:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        transform: translateY(-5px);
+        border-color: $accent-cyan !important;
+    }
+    
+    .oe_product_image {
+        padding: 15px;
+        background: #f9f9f9;
+    }
+}
+
+.hover-elevate {
+    transition: all 0.3s ease;
+    &:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+}
+
+.reware-badge {
+    background: rgba($accent-cyan, 0.15);
+    color: $primary-navy;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.price-save-badge {
+    background: #fff1f0;
+    color: #f5222d;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+// Sidebar Categories
+.products_categories {
+    .nav-link {
+        color: $text-dark !important;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 2px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+            background: rgba($accent-cyan, 0.1);
+            color: $primary-navy !important;
+        }
+        
+        &.active {
+            background: $primary-navy !important;
+            color: $white !important;
+        }
+    }
+}
+
+// Product Detail
+.reware-configurator {
+    .variant_attribute {
+        margin-bottom: 1.5rem;
+        .attribute_name {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #888;
+        }
     }
 }

@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Global Style Overrides -->
+    <template id="global_style_overrides" inherit_id="website.layout" name="Reware Global Styles">
+        <xpath expr="//div[@id='wrapwrap']" position="before">
+            <style>
+                :root {
+                    --primary: #1a1f71 !important;
+                    --o-brand-primary: #1a1f71 !important;
+                    --o-brand-odoo: #00d4ff !important;
+                }
+                .text-primary { color: #1a1f71 !important; }
+                .bg-primary { background-color: #1a1f71 !important; }
+                .btn-primary { background-color: #00d4ff !important; border-color: #00d4ff !important; color: #1a1f71 !important; }
+                .btn-primary:hover { background-color: #00b8e6 !important; border-color: #00b8e6 !important; }
+                
+                /* Shop Specific Styles */
+                .reware-badge {
+                    background: #e6f7ff;
+                    color: #007bff;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+                .price-save-badge {
+                    background: #fff1f0;
+                    color: #f5222d;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                }
+                .hover-elevate {
+                    transition: all 0.3s ease;
+                }
+                .hover-elevate:hover {
+                    transform: translateY(-10px);
+                    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+                }
+                .step-number {
+                    width: 40px;
+                    height: 40px;
+                    background: #1a1f71;
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    margin: 0 auto 1rem;
+                }
+                /* Fix for shop sidebar height and potential blank space */
+                .o_wsale_products_grid_before_rail {
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow-y: visible !important;
+                }
+                #products_grid_before {
+                    position: relative !important;
+                    top: 0 !important;
+                }
+                /* Hide "Not Available For Sale" if price is present */
+                .product_price:not(.d-none) + #product_unavailable {
+                    display: none !important;
+                }
+                #product_unavailable.d-flex {
+                    display: none !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- 2. Menu Records -->
+    <record id="menu_shop" model="website.menu">
+        <field name="name">Shop</field>
+        <field name="url">/shop</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">1</field>
+    </record>
+
+    <record id="menu_trade_in" model="website.menu">
+        <field name="name">Trade-in</field>
+        <field name="url">/trade-in</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">2</field>
+    </record>
+
+    <!-- 3. Enhanced Header with Search and Trade-in -->
+    <template id="template_header_default_force" inherit_id="website.template_header_default" name="Reware Header" priority="99">
+        <xpath expr="//t[@t-call='website.navbar']" position="replace">
+            <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg navbar-light o_colored_level o_cc shadow-sm" style="background-color: #ffffff !important; border-bottom: 1px solid #eee; padding: 0.5rem 0;">
+                <div id="o_main_nav" class="container">
+                    <!-- Logo -->
+                    <a href="/" class="navbar-brand logo me-4">
+                        <img t-attf-src="/web/image/website/#{website.id}/logo/0x40" t-att-alt="website.name" class="img-fluid" style="max-height: 40px;"/>
+                    </a>
+                    
+                    <!-- Search Bar (Center) -->
+                    <div class="flex-grow-1 mx-4 d-none d-lg-block" style="max-width: 600px;">
+                        <form method="get" action="/shop" class="o_wsale_products_searchbar_form w-100">
+                            <div class="input-group shadow-sm rounded-pill overflow-hidden" style="border: 2px solid #1a1f71;">
+                                <input type="text" name="search" class="form-control border-0 ps-4" placeholder="Search for refurbished iPhones, Laptops..." style="height: 40px; outline: none; box-shadow: none;"/>
+                                <button type="submit" class="btn bg-white border-0 pe-4">
+                                    <i class="fa fa-search text-primary"/>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Side Actions -->
+                    <div class="collapse navbar-collapse flex-grow-0" id="top_menu_collapse">
+                        <ul class="navbar-nav align-items-center gap-3">
+                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                                <t t-call="website.submenu">
+                                    <t t-set="item_class" t-valuef="nav-item"/>
+                                    <t t-set="link_class" t-valuef="nav-link fw-bold text-dark"/>
+                                </t>
+                            </t>
+                            <li class="nav-item">
+                                <a href="/shop/cart" class="nav-link position-relative">
+                                    <i class="fa fa-shopping-cart fs-5 text-primary"/>
+                                </a>
+                            </li>
+                            <t t-call="portal.placeholder_user_sign_in">
+                                <t t-set="_link_class" t-valuef="btn btn-primary rounded-pill px-4 btn-sm"/>
+                            </t>
+                            <t t-call="portal.user_dropdown">
+                                <t t-set="_user_name" t-value="True"/>
+                                <t t-set="_link_class" t-valuef="nav-link fw-bold text-dark"/>
+                            </t>
+                        </ul>
+                    </div>
+                    
+                    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#top_menu_collapse">
+                        <span class="navbar-toggler-icon"/>
+                    </button>
+                </div>
+            </nav>
+        </xpath>
+    </template>
+
+    <!-- 4. Shop Page Customization (website_sale.products) -->
+    <template id="reware_products" inherit_id="website_sale.products" name="Reware Shop Layout" priority="99">
+        <!-- Force Category Sidebar and Left Column -->
+        <xpath expr="//t[@t-set='opt_wsale_categories']" position="replace">
+            <t t-set="opt_wsale_categories" t-value="True"/>
+        </xpath>
+        <xpath expr="//t[@t-set='hasLeftColumn']" position="replace">
+            <t t-set="hasLeftColumn" t-value="True"/>
+        </xpath>
+
+        <!-- Move Banner and Categories ABOVE the main row to avoid flex-nowrap issues -->
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
+            <!-- Reware Banner -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="p-4 rounded-3 shadow-sm" style="background: linear-gradient(90deg, #f0f2f5 0%, #ffffff 100%); border-left: 5px solid #00d4ff;">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <h2 class="fw-bold mb-1">Reware Certified Shop</h2>
+                                <p class="text-muted mb-0">Premium refurbished tech. Expertly tested. 12-month warranty.</p>
+                            </div>
+                            <div class="d-none d-md-block">
+                                <span class="badge bg-white text-primary border p-2 px-3 rounded-pill me-2">
+                                    <i class="fa fa-check-circle me-1"/> 100-Point Check
+                                </span>
+                                <span class="badge bg-white text-primary border p-2 px-3 rounded-pill">
+                                    <i class="fa fa-truck me-1"/> Fast Shipping
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Visual Category Navigation (Dynamic) -->
+                        <div class="row g-3 text-center justify-content-start border-top pt-4">
+                            <t t-set="top_categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False)], limit=4)"/>
+                            <t t-foreach="top_categories" t-as="t_cat">
+                                <div class="col-3 col-md-2">
+                                    <a t-attf-href="/shop/category/#{slug(t_cat)}" class="text-decoration-none text-dark">
+                                        <div class="p-2 bg-white rounded-3 shadow-sm hover-elevate border h-100 d-flex flex-column align-items-center justify-content-center">
+                                            <t t-if="t_cat.image_128">
+                                                <img t-attf-src="/web/image/product.public.category/#{t_cat.id}/image_128" class="img-fluid mb-1" style="max-height: 40px; width: auto;"/>
+                                            </t>
+                                            <t t-else="">
+                                                <i t-if="t_cat.name == 'Smartphones'" class="fa fa-mobile fs-3 text-primary mb-1"/>
+                                                <i t-elif="t_cat.name == 'Laptops'" class="fa fa-laptop fs-3 text-primary mb-1"/>
+                                                <i t-elif="t_cat.name == 'Tablets'" class="fa fa-tablet fs-3 text-primary mb-1"/>
+                                                <i t-elif="t_cat.name == 'Watches'" class="fa fa-clock-o fs-3 text-primary mb-1"/>
+                                                <i t-else="" class="fa fa-tag fs-3 text-primary mb-1"/>
+                                            </t>
+                                            <div class="small fw-bold mt-auto" t-field="t_cat.name"/>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- 5. Product Item Customization (website_sale.products_item) -->
+    <template id="reware_products_item" inherit_id="website_sale.products_item" name="Reware Product Item" priority="99">
+        <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
+            <div class="position-absolute top-0 start-0 p-2 o_not_editable">
+                <span class="reware-badge shadow-sm">Certified</span>
+            </div>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('o_wsale_product_information')]" position="attributes">
+            <attribute name="class" add="p-3 border-top-0" separator=" "/>
+        </xpath>
+        
+        <!-- Add Save Badge next to price without replacing the whole block -->
+        <xpath expr="//div[hasclass('product_price')]" position="inside">
+            <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+            <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and template_price_vals['base_price'] &gt; 0">
+                <span class="price-save-badge ms-2">Save <t t-esc="int((1 - template_price_vals['price_reduce'] / template_price_vals['base_price']) * 100)"/>%</span>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 6. Product Detail Page Customization (website_sale.product) -->
+    <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="99">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+            <div class="mt-4 p-3 bg-light rounded-3 border o_not_editable">
+                <h6 class="fw-bold mb-3 text-primary"><i class="fa fa-shield me-2"/>Reware Promise</h6>
+                <div class="row g-2 small">
+                    <div class="col-6"><i class="fa fa-check text-success me-1"/> 12-Month Warranty</div>
+                    <div class="col-6"><i class="fa fa-check text-success me-1"/> 30-Day Returns</div>
+                    <div class="col-6"><i class="fa fa-check text-success me-1"/> Professional Grade</div>
+                    <div class="col-6"><i class="fa fa-check text-success me-1"/> Eco-Friendly</div>
+                </div>
+            </div>
+        </xpath>
+        
+        <xpath expr="//t[@t-call='website_sale.variants']" position="attributes">
+            <attribute name="class" add="reware-configurator" separator=" "/>
+        </xpath>
+
+        <!-- Ensure "Add to cart" is always visible if sale_ok -->
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="class" replace="d-inline-flex align-items-center mb-2 me-auto"/>
+        </xpath>
+    </template>
+
+    <!-- 7. Trade-in Page -->
+    <record id="trade_in_page" model="website.page" forcecreate="True">
+        <field name="name">Trade-in</field>
+        <field name="url">/trade-in</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.trade_in_page</field>
+        <field name="arch" type="xml">
+            <t name="Trade-in" t-name="quote_manage_ui.trade_in_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure">
+                        <section class="s_text_block pt120 pb80 text-center bg-primary text-white">
+                            <div class="container">
+                                <h1 class="display-2 fw-bold mb-4">Trade-in Your Old Tech</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">Get cash or store credit for your used devices. It's fast, easy, and good for the planet.</p>
+                            </div>
+                        </section>
+                        
+                        <section class="py-5 bg-light">
+                            <div class="container">
+                                <div class="row g-4 text-center">
+                                    <div class="col-md-4">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                            <div class="step-number">1</div>
+                                            <h4 class="fw-bold">Tell us about your device</h4>
+                                            <p class="text-muted">Select your model and condition to get an instant estimate.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                            <div class="step-number">2</div>
+                                            <h4 class="fw-bold">Ship it for free</h4>
+                                            <p class="text-muted">We'll provide a prepaid shipping label. Just pack it and send it.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm h-100">
+                                            <div class="step-number">3</div>
+                                            <h4 class="fw-bold">Get Paid</h4>
+                                            <p class="text-muted">Once we verify your device, we'll send your payment within 48 hours.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-5">
+                                    <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5">Start Your Trade-in</a>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 8. Homepage (Reware Focused) -->
+    <template id="homepage_custom" inherit_id="website.homepage" name="Reware Homepage" priority="99">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="oe_structure">
+                <!-- Hero -->
+                <section class="s_banner pt120 pb120 o_colored_level" style="background: linear-gradient(135deg, #1a1f71 0%, #00d4ff 100%); color: white;">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-lg-7">
+                                <h1 class="display-1 fw-bold mb-4">Reware: Better for You, Better for the Planet.</h1>
+                                <p class="lead fs-3 mb-5">Premium refurbished tech at up to 70% off. Expertly tested, guaranteed quality.</p>
+                                <div class="d-flex gap-3">
+                                    <a href="/shop" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow">Shop Reware</a>
+                                    <a href="/trade-in" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">Trade-in Tech</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-5 d-none d-lg-block text-center">
+                                <i class="fa fa-laptop text-white-50" style="font-size: 15rem;"/>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Trust Bar -->
+                <section class="py-4 bg-white border-bottom shadow-sm position-relative" style="z-index: 10; margin-top: -30px; border-radius: 15px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+                    <div class="container">
+                        <div class="row text-center g-4">
+                            <div class="col-md-3">
+                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-star text-warning me-2"/>4.8/5 Rating</h6>
+                            </div>
+                            <div class="col-md-3 border-start">
+                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-shield text-primary me-2"/>12-Month Warranty</h6>
+                            </div>
+                            <div class="col-md-3 border-start">
+                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-recycle text-success me-2"/>Eco-Friendly</h6>
+                            </div>
+                            <div class="col-md-3 border-start">
+                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-truck text-info me-2"/>Free Shipping</h6>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Popular Categories (Dynamic Grid) -->
+                <section class="pt100 pb80 bg-light">
+                    <div class="container text-center">
+                        <h2 class="display-4 fw-bold mb-2">Shop by Category</h2>
+                        <p class="text-muted mb-5">Find the best deals on top-quality refurbished electronics.</p>
+                        <div class="row g-4 justify-content-center">
+                            <t t-set="categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False)], limit=4)"/>
+                            <t t-foreach="categories" t-as="cat">
+                                <div class="col-6 col-md-3">
+                                    <a t-attf-href="/shop/category/#{slug(cat)}" class="text-decoration-none">
+                                        <div class="p-5 bg-white rounded-4 shadow-sm hover-elevate h-100 d-flex flex-column align-items-center">
+                                            <div class="mb-3">
+                                                <t t-if="cat.image_128">
+                                                    <img t-attf-src="/web/image/product.public.category/#{cat.id}/image_128" class="img-fluid" style="max-height: 80px; width: auto;"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="fs-1 text-primary">
+                                                        <i t-if="cat.name == 'Smartphones'" class="fa fa-mobile"/>
+                                                        <i t-elif="cat.name == 'Laptops'" class="fa fa-laptop"/>
+                                                        <i t-elif="cat.name == 'Tablets'" class="fa fa-tablet"/>
+                                                        <i t-elif="cat.name == 'Watches'" class="fa fa-clock-o"/>
+                                                        <i t-else="" class="fa fa-tag"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mt-auto" t-field="cat.name"/>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+                <!-- ... why refurbished and environmental impact sections ... -->
+                <section class="py-5 bg-white">
+                    <div class="container">
+                        <div class="row align-items-center g-5">
+                            <div class="col-lg-6">
+                                <h2 class="display-4 fw-bold mb-4 text-primary">Why choose Reware?</h2>
+                                <div class="d-flex mb-4">
+                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
+                                    <div>
+                                        <h5 class="fw-bold">Save up to 70%</h5>
+                                        <p class="text-muted">Get the tech you love for a fraction of the price of new.</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-4">
+                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
+                                    <div>
+                                        <h5 class="fw-bold">100-Point Quality Check</h5>
+                                        <p class="text-muted">Every device is tested by professionals to ensure it works like new.</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-4">
+                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
+                                    <div>
+                                        <h5 class="fw-bold">Reduce E-Waste</h5>
+                                        <p class="text-muted">Buying refurbished saves raw materials and prevents toxic waste.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 bg-light p-5 rounded-5">
+                                <div class="text-center py-5">
+                                    <h3 class="fw-bold mb-3">Ready to upgrade?</h3>
+                                    <p class="mb-4">Join thousands of happy customers who chose a smarter way to buy tech.</p>
+                                    <a href="/shop" class="btn btn-primary btn-lg rounded-pill px-5">Browse All Deals</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="py-5 bg-dark text-white">
+                    <div class="container text-center py-5">
+                        <h2 class="display-4 fw-bold mb-5">Your Impact with Reware</h2>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="fs-1 text-success mb-2">1,200kg</div>
+                                <p class="lead">CO2 Emissions Saved</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="fs-1 text-success mb-2">500kg</div>
+                                <p class="lead">Raw Materials Preserved</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="fs-1 text-success mb-2">250kg</div>
+                                <p class="lead">E-waste Prevented</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+</odoo>
