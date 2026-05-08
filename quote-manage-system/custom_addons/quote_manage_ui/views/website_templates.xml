@@ -94,7 +94,7 @@
                 <div id="o_main_nav" class="container">
                     <!-- Logo -->
                     <a href="/" class="navbar-brand logo me-4">
-                        <img t-attf-src="/web/image/website/#{website.id}/logo/0x40" t-att-alt="website.name" class="img-fluid" style="max-height: 40px;"/>
+                        <img t-attf-src="/logo.png?website=#{website.id}" t-att-alt="website.name" class="img-fluid" style="max-height: 40px;"/>
                     </a>
                     
                     <!-- Search Bar (Center) -->
