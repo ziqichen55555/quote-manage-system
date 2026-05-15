@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Product-driven filters: imported products carry these values -->
+        <record id="attr_brand" model="product.attribute">
+            <field name="name">Brand</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_series" model="product.attribute">
+            <field name="name">Series</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_cpu" model="product.attribute">
+            <field name="name">CPU</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_ram" model="product.attribute">
+            <field name="name">RAM</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_storage" model="product.attribute">
+            <field name="name">Storage</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_touchscreen" model="product.attribute">
+            <field name="name">Touchscreen</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+        <record id="attr_wan" model="product.attribute">
+            <field name="name">WAN</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
+
+        <record id="attr_val_brand_lenovo" model="product.attribute.value">
+            <field name="name">Lenovo</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_brand"/>
+        </record>
+
+        <record id="attr_val_series_t14s" model="product.attribute.value">
+            <field name="name">ThinkPad T14s</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
+        <record id="attr_val_series_t490s" model="product.attribute.value">
+            <field name="name">ThinkPad T490s</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
+        <record id="attr_val_series_t15" model="product.attribute.value">
+            <field name="name">ThinkPad T15</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
+        <record id="attr_val_series_p1" model="product.attribute.value">
+            <field name="name">ThinkPad P1</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
+
+        <record id="attr_val_cpu_i5_10210u" model="product.attribute.value">
+            <field name="name">i5-10210U @ 1.6GHz</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_cpu"/>
+        </record>
+        <record id="attr_val_cpu_i5_8265u" model="product.attribute.value">
+            <field name="name">i5-8265U @ 1.6GHz</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_cpu"/>
+        </record>
+        <record id="attr_val_cpu_i7_28ghz" model="product.attribute.value">
+            <field name="name">i7 @ 2.8GHz</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_cpu"/>
+        </record>
+        <record id="attr_val_cpu_i9_24ghz" model="product.attribute.value">
+            <field name="name">i9 3rd Gen @ 2.4GHz</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_cpu"/>
+        </record>
+
+        <record id="attr_val_ram_8gb" model="product.attribute.value">
+            <field name="name">8GB</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_ram"/>
+        </record>
+        <record id="attr_val_ram_16gb" model="product.attribute.value">
+            <field name="name">16GB</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_ram"/>
+        </record>
+        <record id="attr_val_ram_40gb" model="product.attribute.value">
+            <field name="name">40GB</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_ram"/>
+        </record>
+
+        <record id="attr_val_storage_256ssd" model="product.attribute.value">
+            <field name="name">256GB SSD</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_storage"/>
+        </record>
+        <record id="attr_val_storage_512ssd" model="product.attribute.value">
+            <field name="name">512GB SSD</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_storage"/>
+        </record>
+        <record id="attr_val_storage_1tbssd" model="product.attribute.value">
+            <field name="name">1TB SSD</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_storage"/>
+        </record>
+
+        <record id="attr_val_touchscreen_yes" model="product.attribute.value">
+            <field name="name">Yes</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_touchscreen"/>
+        </record>
+
+        <record id="attr_val_wan_enabled" model="product.attribute.value">
+            <field name="name">Enabled</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_wan"/>
+        </record>
+    </data>
+</odoo>

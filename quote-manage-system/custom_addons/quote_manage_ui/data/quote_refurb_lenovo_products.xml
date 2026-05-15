@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Data rules: strip leading "Re-ware Lenovo - " from Title → product name; tags = filter dimensions -->
+        <record id="quote_refurb_prod_20t0003uau" model="product.template">
+            <field name="name">T14s I5-102IOU@1.6GHZ, 256 SSD, 16GB RAM, TOUCHSCREEN, WAN ENABLED</field>
+            <field name="default_code">20T0003UAU</field>
+            <field name="barcode">20T0003UAU</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="180.0"/>
+            <field name="standard_price" eval="50.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_t14s')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i5_10210u')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_16gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_256ssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_t14s'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20T0003UAU</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - T14s I5-102IOU@1.6GHZ, 256 SSD, 16GB RAM, TOUCHSCREEN, WAN ENABLED</p>
+            </field>
+        </record>
+        <record id="quote_refurb_prod_20t1s6c300" model="product.template">
+            <field name="name">T14s I5-102IOU@1.6GHZ, 256 SSD, 8GB RAM, TOUCHSCREEN, WAN ENABLED</field>
+            <field name="default_code">20T1S6C300</field>
+            <field name="barcode">20T1S6C300</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="348.18"/>
+            <field name="standard_price" eval="50.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_t14s')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i5_10210u')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_8gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_256ssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_t14s'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20T1S6C300</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - T14s I5-102IOU@1.6GHZ, 256 SSD, 8GB RAM, TOUCHSCREEN, WAN ENABLED</p>
+            </field>
+        </record>
+        <record id="quote_refurb_prod_20wns6ll00" model="product.template">
+            <field name="name">T14s I5-102IOU@1.6GHZ, 256 SSD, 8GB RAM, TOUCHSCREEN, WAN ENABLED</field>
+            <field name="default_code">20WNS6LL00</field>
+            <field name="barcode">20WNS6LL00</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="278.38"/>
+            <field name="standard_price" eval="200.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_t14s')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i5_10210u')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_8gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_256ssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_t14s'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20WNS6LL00</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - T14s I5-102IOU@1.6GHZ, 256 SSD, 8GB RAM, TOUCHSCREEN, WAN ENABLED</p>
+            </field>
+        </record>
+        <record id="quote_refurb_prod_20nys4cp00" model="product.template">
+            <field name="name">T490s I5 8265U @ 1.6GHz, 8GB RAM, 512SSD, TOUCH SCREEN, WAN ENABLED</field>
+            <field name="default_code">20NYS4CP00</field>
+            <field name="barcode">20NYS4CP00</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="130.16"/>
+            <field name="standard_price" eval="50.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_t490s')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i5_8265u')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_8gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_512ssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_t490s'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20NYS4CP00</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - T490s I5 8265U @ 1.6GHz, 8GB RAM, 512SSD, TOUCH SCREEN, WAN ENABLED</p>
+            </field>
+        </record>
+        <record id="quote_refurb_prod_20w4004tau" model="product.template">
+            <field name="name">T15 I7 @2.8GHZ, 512GB SSD, 16GB RAM, TOUCHSCREEN, WAN ENABLED - Numeric Keypad</field>
+            <field name="default_code">20W4004TAU</field>
+            <field name="barcode">20W4004TAU</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="375.31"/>
+            <field name="standard_price" eval="50.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_t15')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i7_28ghz')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_16gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_512ssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_t15'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20W4004TAU</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - T15 I7 @2.8GHZ, 512GB SSD, 16GB RAM, TOUCHSCREEN, WAN ENABLED - Numeric Keypad</p>
+            </field>
+        </record>
+        <record id="quote_refurb_prod_20tj5s5wv00" model="product.template">
+            <field name="name">P1 I9 3 gen @2.4GHZ, 1TB SSD, 40GB RAM, TOUCHSCREEN, WAN ENABLED</field>
+            <field name="default_code">20TJ5S5WV00</field>
+            <field name="barcode">20TJ5S5WV00</field>
+            <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
+            <field name="public_categ_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.public_cat_laptops'),
+                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+            ])]"/>
+            <field name="website_published">True</field>
+            <field name="list_price" eval="1450.0"/>
+            <field name="standard_price" eval="50.0"/>
+            <field name="attribute_line_ids" eval="[
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_brand'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_brand_lenovo')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_series'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_series_p1')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_cpu'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_cpu_i9_24ghz')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_ram'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_ram_40gb')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_storage'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_storage_1tbssd')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_touchscreen'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_touchscreen_yes')])] }),
+                (0, 0, {'attribute_id': ref('quote_manage_ui.attr_wan'), 'value_ids': [(6, 0, [ref('quote_manage_ui.attr_val_wan_enabled')])] })
+            ]"/>
+            <field name="product_tag_ids" eval="[(6, 0, [
+                ref('quote_manage_ui.product_tag_re_ware_lenovo'),
+                ref('quote_manage_ui.product_tag_computer_systems'),
+                ref('quote_manage_ui.product_tag_thinkpad_p1'),
+            ])]"/>
+            <field name="description_sale">Re-ware Lenovo · Computer Systems · SKU 20TJ5S5WV00</field>
+            <field name="description" type="html">
+                <p><strong>Original import title</strong><br/>
+                Re-ware Lenovo - P1 I9 3 gen @2.4GHZ, 1TB SSD, 40GB RAM, TOUCHSCREEN, WAN ENABLED</p>
+            </field>
+        </record>
+    </data>
+</odoo>

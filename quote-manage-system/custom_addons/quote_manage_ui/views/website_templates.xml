@@ -5,31 +5,63 @@
         <xpath expr="//div[@id='wrapwrap']" position="before">
             <style>
                 :root {
-                    --primary: #1a1f71 !important;
-                    --o-brand-primary: #1a1f71 !important;
-                    --o-brand-odoo: #00d4ff !important;
+                    --primary: #b08a2e !important;
+                    --o-brand-primary: #b08a2e !important;
+                    --o-brand-odoo: #b08a2e !important;
                 }
-                .text-primary { color: #1a1f71 !important; }
-                .bg-primary { background-color: #1a1f71 !important; }
-                .btn-primary { background-color: #00d4ff !important; border-color: #00d4ff !important; color: #1a1f71 !important; }
-                .btn-primary:hover { background-color: #00b8e6 !important; border-color: #00b8e6 !important; }
+                .text-primary { color: #b08a2e !important; }
+                .bg-primary {
+                    background-color: #101010 !important;
+                    background-image: radial-gradient(circle at 20% 10%, rgba(176, 138, 46, 0.18), transparent 45%),
+                                      radial-gradient(circle at 80% 80%, rgba(176, 138, 46, 0.12), transparent 40%) !important;
+                }
+                .btn-primary {
+                    background-color: #b08a2e !important;
+                    border-color: #b08a2e !important;
+                    color: #101010 !important;
+                }
+                .btn-primary:hover {
+                    background-color: #c59b35 !important;
+                    border-color: #c59b35 !important;
+                    color: #101010 !important;
+                }
+
+                /* Keep shop/product pages COMSOL-like and neutral */
+                .oe_website_sale .text-primary { color: #1a1f71 !important; }
+                .oe_website_sale .bg-primary {
+                    background-color: #1a1f71 !important;
+                    background-image: none !important;
+                }
+                .oe_website_sale .btn-primary {
+                    background-color: #00d4ff !important;
+                    border-color: #00d4ff !important;
+                    color: #1a1f71 !important;
+                }
+                .oe_website_sale .btn-primary:hover {
+                    background-color: #00b8e6 !important;
+                    border-color: #00b8e6 !important;
+                    color: #1a1f71 !important;
+                }
                 
                 /* Shop Specific Styles */
                 .reware-badge {
-                    background: #e6f7ff;
-                    color: #007bff;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
+                    background: #fff;
+                    color: #1a1a1a;
+                    padding: 3px 8px;
+                    border-radius: 2px;
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    letter-spacing: 0.06em;
                     text-transform: uppercase;
+                    border: 1px solid #d0d0d0;
                 }
                 .price-save-badge {
-                    background: #fff1f0;
-                    color: #f5222d;
+                    background: #f5f5f5;
+                    color: #333;
+                    border: 1px solid #ddd;
                     padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 0.75rem;
+                    border-radius: 2px;
+                    font-size: 0.7rem;
                     font-weight: 600;
                 }
                 .hover-elevate {
@@ -40,9 +72,10 @@
                     box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
                 }
                 .step-number {
-                    width: 40px;
+                    min-width: 40px;
                     height: 40px;
-                    background: #1a1f71;
+                    padding: 0 10px;
+                    background: #b08a2e;
                     color: white;
                     border-radius: 50%;
                     display: flex;
@@ -112,7 +145,7 @@
                     <!-- Right Side Actions -->
                     <div class="collapse navbar-collapse flex-grow-0" id="top_menu_collapse">
                         <ul class="navbar-nav align-items-center gap-3">
-                            <t t-foreach="website.menu_id.child_id" t-as="submenu">
+                            <t t-foreach="website.menu_id.child_id.exists()" t-as="submenu">
                                 <t t-call="website.submenu">
                                     <t t-set="item_class" t-valuef="nav-item"/>
                                     <t t-set="link_class" t-valuef="nav-link fw-bold text-dark"/>
@@ -151,45 +184,51 @@
             <t t-set="hasLeftColumn" t-value="True"/>
         </xpath>
 
+        <!-- Hide Odoo top filmstrip (duplicate of Reware hero category tiles below) -->
+        <xpath expr="//t[@t-set='opt_wsale_categories_top']" position="replace">
+            <t t-set="opt_wsale_categories_top" t-value="False"/>
+        </xpath>
+
         <!-- Move Banner and Categories ABOVE the main row to avoid flex-nowrap issues -->
         <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
             <!-- Reware Banner -->
             <div class="row">
                 <div class="col-12 mb-4">
-                    <div class="p-4 rounded-3 shadow-sm" style="background: linear-gradient(90deg, #f0f2f5 0%, #ffffff 100%); border-left: 5px solid #00d4ff;">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div>
-                                <h2 class="fw-bold mb-1">Reware Certified Shop</h2>
-                                <p class="text-muted mb-0">Premium refurbished tech. Expertly tested. 12-month warranty.</p>
+                    <div class="qm-comsol-shop-hero p-4 p-lg-5 bg-white border">
+                        <p class="qm-comsol-eyebrow text-uppercase small text-muted mb-2">Product catalogue</p>
+                        <div class="row align-items-start g-4 mb-0 mb-lg-4">
+                            <div class="col-lg-7">
+                                <h2 class="fw-bold mb-3 text-dark" style="letter-spacing: -0.02em;">Reware certified hardware</h2>
+                                <p class="text-muted mb-4 mb-lg-0" style="max-width: 36rem; line-height: 1.6;">Professionally refurbished devices with consistent grading, documented functional testing, and warranty-backed delivery—all presented in one clear catalogue.</p>
                             </div>
-                            <div class="d-none d-md-block">
-                                <span class="badge bg-white text-primary border p-2 px-3 rounded-pill me-2">
-                                    <i class="fa fa-check-circle me-1"/> 100-Point Check
-                                </span>
-                                <span class="badge bg-white text-primary border p-2 px-3 rounded-pill">
-                                    <i class="fa fa-truck me-1"/> Fast Shipping
-                                </span>
+                            <div class="col-lg-5">
+                                <ul class="list-unstyled qm-comsol-value-list mb-0 small text-dark">
+                                    <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>End-to-end quality workflow from intake to shipment</span></li>
+                                    <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Transparent condition grades and 100-point functional checks</span></li>
+                                    <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>12-month warranty and straightforward returns</span></li>
+                                    <li class="d-flex"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Fast fulfilment and tracked logistics</span></li>
+                                </ul>
                             </div>
                         </div>
                         
                         <!-- Visual Category Navigation (Dynamic) -->
-                        <div class="row g-3 text-center justify-content-start border-top pt-4">
-                            <t t-set="top_categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False)], limit=4)"/>
+                        <div class="row g-3 text-center justify-content-start border-top pt-4 mt-2">
+                            <!-- Same filtered list as shop sidebar / controller (categories) -->
+                            <t t-set="top_categories" t-value="list(categories) if categories else []"/>
                             <t t-foreach="top_categories" t-as="t_cat">
+                                <t t-set="_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [t_cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
                                 <div class="col-3 col-md-2">
                                     <a t-attf-href="/shop/category/#{slug(t_cat)}" class="text-decoration-none text-dark">
-                                        <div class="p-2 bg-white rounded-3 shadow-sm hover-elevate border h-100 d-flex flex-column align-items-center justify-content-center">
+                                        <div class="qm-comsol-cat-tile p-3 bg-white h-100 d-flex flex-column align-items-center justify-content-center">
                                             <t t-if="t_cat.image_128">
                                                 <img t-attf-src="/web/image/product.public.category/#{t_cat.id}/image_128" class="img-fluid mb-1" style="max-height: 40px; width: auto;"/>
                                             </t>
                                             <t t-else="">
-                                                <i t-if="t_cat.name == 'Smartphones'" class="fa fa-mobile fs-3 text-primary mb-1"/>
-                                                <i t-elif="t_cat.name == 'Laptops'" class="fa fa-laptop fs-3 text-primary mb-1"/>
-                                                <i t-elif="t_cat.name == 'Tablets'" class="fa fa-tablet fs-3 text-primary mb-1"/>
-                                                <i t-elif="t_cat.name == 'Watches'" class="fa fa-clock-o fs-3 text-primary mb-1"/>
+                                                <i t-if="t_cat.name == 'Laptops'" class="fa fa-laptop fs-3 text-primary mb-1"/>
                                                 <i t-else="" class="fa fa-tag fs-3 text-primary mb-1"/>
                                             </t>
-                                            <div class="small fw-bold mt-auto" t-field="t_cat.name"/>
+                                            <div class="small fw-bold mt-auto text-center" t-field="t_cat.name"/>
+                                            <div class="small text-muted"><t t-esc="_cat_cnt"/> in stock</div>
                                         </div>
                                     </a>
                                 </div>
@@ -205,12 +244,26 @@
     <template id="reware_products_item" inherit_id="website_sale.products_item" name="Reware Product Item" priority="10">
         <xpath expr="//div[hasclass('oe_product_image')]" position="inside">
             <div class="position-absolute top-0 start-0 p-2 o_not_editable">
-                <span class="reware-badge shadow-sm">Certified</span>
+                <span class="reware-badge">Certified</span>
             </div>
         </xpath>
         
         <xpath expr="//div[hasclass('o_wsale_product_information')]" position="attributes">
             <attribute name="class" add="p-3 border-top-0" separator=" "/>
+        </xpath>
+
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+            <div class="qm-shop-spec-tags d-flex flex-wrap gap-1 mb-2 small" t-if="product.valid_product_template_attribute_line_ids">
+                <t t-foreach="product.valid_product_template_attribute_line_ids" t-as="spec_line">
+                    <span t-if="spec_line.value_ids" class="badge rounded-pill bg-light text-dark border fw-normal">
+                        <span class="text-muted" t-field="spec_line.attribute_id.name"/>: <t t-esc="', '.join(spec_line.value_ids.mapped('name'))"/>
+                    </span>
+                </t>
+            </div>
+            <div class="qm-shop-stock small text-muted mb-1" t-if="product.type == 'product'">
+                <span class="fw-semibold text-dark">Stock: </span>
+                <t t-esc="int(round(product.sudo().qty_available))"/>
+            </div>
         </xpath>
         
         <!-- Add Save Badge next to price without replacing the whole block -->
@@ -224,14 +277,22 @@
 
     <!-- 6. Product Detail Page Customization (website_sale.product) -->
     <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="10">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <p class="small text-muted mb-2 o_not_editable" t-if="product.type == 'product'">
+                <span class="fw-semibold text-dark">Stock on hand: </span>
+                <t t-esc="int(round(product.sudo().qty_available))"/>
+            </p>
+        </xpath>
         <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
-            <div class="mt-4 p-3 bg-light rounded-3 border o_not_editable">
-                <h6 class="fw-bold mb-3 text-primary"><i class="fa fa-shield me-2"/>Reware Promise</h6>
-                <div class="row g-2 small">
-                    <div class="col-6"><i class="fa fa-check text-success me-1"/> 12-Month Warranty</div>
-                    <div class="col-6"><i class="fa fa-check text-success me-1"/> 30-Day Returns</div>
-                    <div class="col-6"><i class="fa fa-check text-success me-1"/> Professional Grade</div>
-                    <div class="col-6"><i class="fa fa-check text-success me-1"/> Eco-Friendly</div>
+            <div class="mt-4 p-4 bg-white border o_not_editable qm-comsol-detail-panel">
+                <p class="qm-comsol-eyebrow text-uppercase small text-muted mb-2">Purchase confidence</p>
+                <h6 class="fw-bold mb-3 text-dark">Included with every certified device</h6>
+                <p class="small text-muted mb-4" style="line-height: 1.65;">What is included with certified stock, how you are covered, and how we support the device after purchase.</p>
+                <div class="row g-3 small text-dark">
+                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>12-month limited warranty</span></div>
+                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>30-day returns where applicable</span></div>
+                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Professional refurbishment and grading</span></div>
+                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Lower environmental impact vs. new production</span></div>
                 </div>
             </div>
         </xpath>
@@ -247,6 +308,7 @@
     </template>
 
     <!-- 7. Trade-in Page (Enhanced) -->
+    <data noupdate="1">
     <record id="trade_in_page" model="website.page" forcecreate="True">
         <field name="name">Trade-in</field>
         <field name="url">/trade-in</field>
@@ -256,7 +318,7 @@
         <field name="arch" type="xml">
             <t name="Trade-in" t-name="quote_manage_ui.trade_in_page">
                 <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure">
+                    <div id="wrap" class="oe_structure oe_empty">
                         <!-- Hero -->
                         <section class="s_text_block pt120 pb80 text-center bg-primary text-white">
                             <div class="container">
@@ -337,7 +399,7 @@
         <field name="arch" type="xml">
             <t name="Services" t-name="quote_manage_ui.services_page">
                 <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure">
+                    <div id="wrap" class="oe_structure oe_empty">
                         <section class="py-5 bg-primary text-white text-center">
                             <div class="container py-5">
                                 <h1 class="display-3 fw-bold mb-4">Our Services</h1>
@@ -377,7 +439,8 @@
                                         <div class="p-4 bg-light rounded-4 h-100 border hover-elevate">
                                             <div class="fs-1 text-primary mb-3"><i class="fa fa-recycle"/></div>
                                             <h4 class="fw-bold">Re-ware</h4>
-                                            <p class="text-muted">E-waste collection service and drop off point for all obsolete and end-of-life devices.</p>
+                                            <p class="text-muted mb-3">We provide an e-waste collection service and drop off point for obsolete and end-of-life devices. The Re-ware Project helps fight digital poverty across Western Australia.</p>
+                                            <a href="/aboutus#reware-project" class="btn btn-sm btn-outline-primary rounded-pill">Read more</a>
                                         </div>
                                     </div>
                                     <!-- Network Security -->
@@ -405,7 +468,7 @@
         </field>
     </record>
 
-    <!-- 10. About Us Page -->
+    <!-- 10. About Us Page (same as Services / Our Why: inline arch on website.page — no separate template) -->
     <record id="about_us_page" model="website.page" forcecreate="True">
         <field name="name">About Us</field>
         <field name="url">/aboutus</field>
@@ -415,24 +478,80 @@
         <field name="arch" type="xml">
             <t name="About Us" t-name="quote_manage_ui.about_us_page">
                 <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure">
+                    <div id="wrap" class="oe_structure oe_empty">
                         <section class="py-5 bg-primary text-white text-center">
                             <div class="container py-5">
-                                <h1 class="display-3 fw-bold mb-4">About Co-Creative IT</h1>
-                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">We define co-creation as the collaborative development of new value together with experts, stakeholders and customers.</p>
+                                <h1 class="display-3 fw-bold mb-4">About Us</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 800px;">Two friends, one practical idea - tech that builds community, not landfill.</p>
+                            </div>
+                        </section>
+
+                        <section id="reware-project" class="py-5 bg-light border-bottom">
+                            <div class="container py-4" style="max-width: 900px;">
+                                <h2 class="display-6 fw-bold mb-4 text-center">Re-ware</h2>
+                                <p class="lead text-muted mb-4">We provide an e-waste collection service and drop off point for all obsolete and end-of-life devices.</p>
+                                <p class="text-muted mb-4">The Re-ware Project plays a pivotal role in fighting digital poverty throughout Western Australia.</p>
+                                <p class="text-muted mb-0">Help us in contributing to save our planet by saving landfill space, protecting and preserving our natural, raw materials and resources, and most importantly in creating a sustainable and environmentally aware community.</p>
                             </div>
                         </section>
 
                         <section class="py-5 bg-white">
                             <div class="container py-5">
                                 <div class="row align-items-center g-5">
-                                    <div class="col-lg-6">
-                                        <h2 class="display-5 fw-bold mb-4">Our Vision</h2>
-                                        <p class="text-muted mb-4">Co-creation is a form of collaborative innovation: ideas are shared and improved together, rather than kept to oneself. We believe in long-term partnerships and our services are therefore designed around the specific needs of our clients.</p>
-                                        <p class="text-muted">We work hard so our clients can sleep at night, knowing that their IT operations are taken care of in the most professional way.</p>
+                                    <div class="col-lg-7">
+                                        <h2 class="display-5 fw-bold mb-3">Who we are.</h2>
+                                        <p class="lead fs-4 mb-4">Two friends, one practical idea - tech that builds community, not landfill.</p>
+                                        <p class="text-muted mb-4">From childhood friends to Dads navigating rising costs and a world that feels stretched, Louis and Drew built the Re-Ware Project for one reason - everyone deserves access to technology, without compromising the planet our kids will inherit.</p>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <a href="/contactus" class="btn btn-primary rounded-pill px-5">Let's Talk</a>
+                                        </div>
                                     </div>
-                                    <div class="col-lg-6">
-                                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800" class="img-fluid rounded-5 shadow-lg" alt="Team collaboration"/>
+                                    <div class="col-lg-5">
+                                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900" class="img-fluid rounded-4 shadow-sm" alt="Re-Ware team"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white">
+                            <div class="container py-5" style="max-width: 980px;">
+                                <h3 class="h2 fw-bold mb-4">Our story.</h3>
+                                <p class="text-muted mb-4">Louis and Drew grew up together and have always shared the same values - helping people and protecting the environment.</p>
+                                <p class="text-muted mb-4">Louis runs Co-Creative IT, a generational family business that's worked across the tech space for years. That insight showed him how devices are used throughout their lifespan. When he started seeing perfectly viable tech heading to landfill, the path forward was clear.</p>
+                                <p class="text-muted mb-4">Drew brings a practical, community-focused perspective shaped by years in technical roles - from electrical and lighting installation technician work in film and events industries, to running his own sound and lighting system design and installation business. Seeing equipment through its full lifecycle showed him how often good tech is replaced too early. This shaped his view that access should be equitable, and its lifespan respected.</p>
+                                <p class="text-muted mb-0">Together, they created a system that makes refurbished devices accessible and affordable. Which led them to develop the Re-Ware Project - a straightforward way to give reliable devices a second life and donate them to people who actually need them rather than sending them to landfill.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white border-top">
+                            <div class="container py-5" style="max-width: 980px;">
+                                <h3 class="h2 fw-bold mb-4">How we work.</h3>
+                                <p class="text-muted mb-4">Re-Ware partners with corporates, not-for-profits and community minded organisations to build practical circular solutions that keep devices in use, not waste streams.</p>
+                                <p class="text-muted mb-4">We operate simply, building long-term partnerships, clear communication, and solutions designed around real needs.</p>
+                                <p class="text-muted mb-0">It's not charity, and it's not corporate spin. It's just a better way to use what already exists and make technology part of community, not landfill. If that approach makes sense to you, we'd love to talk.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-light">
+                            <div class="container py-5 text-center" style="max-width: 40rem;">
+                                <h2 class="display-6 fw-bold mb-3">Follow our journey.</h2>
+                                <p class="fw-bold text-uppercase small mb-2">AND see how tech can make a difference!</p>
+                                <p class="text-muted mb-4">Subscribe for stories, insights, and ways to help us divert e-waste and support communities - straight to your inbox.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white border-top">
+                            <div class="container py-3 text-center">
+                                <h3 class="h5 fw-bold mb-4">Re-Ware, designed by Co-Creative IT.</h3>
+                                <div class="row justify-content-center g-4 small text-muted">
+                                    <div class="col-md-4">
+                                        <h4 class="h6 text-dark fw-bold mb-2">Contact</h4>
+                                        <p class="mb-1"><a href="/contactus">re-ware@cocreativeit.com</a></p>
+                                        <p class="mb-0"><a href="/contactus" class="text-muted">0499 909 302</a></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="h6 text-dark fw-bold mb-2">Location</h4>
+                                        <p class="mb-0">102 Edward St, Perth, Western Australia</p>
                                     </div>
                                 </div>
                             </div>
@@ -447,6 +566,7 @@
     <record id="menu_services" model="website.menu">
         <field name="name">Services</field>
         <field name="url">/services</field>
+        <field name="page_id" ref="quote_manage_ui.services_page"/>
         <field name="parent_id" ref="website.main_menu"/>
         <field name="sequence" type="int">3</field>
     </record>
@@ -454,18 +574,63 @@
     <record id="menu_about_us" model="website.menu">
         <field name="name">About Us</field>
         <field name="url">/aboutus</field>
+        <field name="page_id" ref="quote_manage_ui.about_us_page"/>
         <field name="parent_id" ref="website.main_menu"/>
         <field name="sequence" type="int">4</field>
     </record>
 
-    <record id="menu_partners" model="website.menu">
-        <field name="name">Partners</field>
-        <field name="url">/partners</field>
+    <record id="menu_our_why" model="website.menu">
+        <field name="name">Our Why</field>
+        <field name="url">/our-why</field>
+        <field name="page_id" ref="quote_manage_ui.our_why_page"/>
         <field name="parent_id" ref="website.main_menu"/>
         <field name="sequence" type="int">5</field>
     </record>
 
-    <!-- 12. Partners Page -->
+    <record id="our_why_page" model="website.page" forcecreate="True">
+        <field name="name">Our Why</field>
+        <field name="url">/our-why</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.our_why_page</field>
+        <field name="arch" type="xml">
+            <t name="Our Why" t-name="quote_manage_ui.our_why_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty">
+                        <section class="py-5 bg-primary text-white text-center">
+                            <div class="container py-5">
+                                <h1 class="display-3 fw-bold mb-4">Why it matters</h1>
+                                <p class="lead fs-3 mx-auto" style="max-width: 860px;">Less waste. Less risk. More responsible use of the tech we already have.</p>
+                            </div>
+                        </section>
+
+                        <section class="py-5 bg-white">
+                            <div class="container py-5">
+                                <div class="row g-5 align-items-center">
+                                    <div class="col-lg-7">
+                                        <h2 class="display-5 fw-bold mb-4">Digital access and environmental responsibility can scale together</h2>
+                                        <p class="text-muted mb-4">The Re-ware model helps organisations retire equipment securely while extending the lifecycle of suitable devices. That means fewer assets sent to waste streams and more practical technology support for people who need access.</p>
+                                        <p class="text-muted mb-0">We focus on clear processes, measurable outcomes, and local partnerships that turn surplus hardware into meaningful community impact.</p>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <div class="p-4 border bg-light">
+                                            <h5 class="fw-bold mb-3">Core principles</h5>
+                                            <p class="mb-2"><span class="text-primary fw-bold me-2">REPAIR.</span><span class="text-muted">Keep devices useful for longer.</span></p>
+                                            <p class="mb-2"><span class="text-primary fw-bold me-2">REPURPOSE.</span><span class="text-muted">Match quality hardware to real needs.</span></p>
+                                            <p class="mb-0"><span class="text-primary fw-bold me-2">REUSE.</span><span class="text-muted">Reduce waste by design, not by chance.</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- Partners: inline arch like Trade-in/Services so upgrade sync can restore DB; static blocks
+         stay outside oe_structure so the editor does not strip them to an empty wrap. -->
     <record id="partners_page" model="website.page" forcecreate="True">
         <field name="name">Our Partners</field>
         <field name="url">/partners</field>
@@ -473,9 +638,9 @@
         <field name="is_published">True</field>
         <field name="key">quote_manage_ui.partners_page</field>
         <field name="arch" type="xml">
-            <t name="Partners" t-name="quote_manage_ui.partners_page">
+            <t name="Our Partners" t-name="quote_manage_ui.partners_page">
                 <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure">
+                    <div id="wrap">
                         <section class="py-5 bg-primary text-white text-center">
                             <div class="container py-5">
                                 <h1 class="display-3 fw-bold mb-4">Our Strategic Partners</h1>
@@ -510,45 +675,14 @@
                             </div>
                         </section>
 
-                        <!-- Collaboration Gallery (Carousel) -->
                         <section class="py-5 bg-white border-top">
-                            <div class="container py-5">
-                                <div class="text-center mb-5">
+                            <div class="container pt-5 pb-3">
+                                <div class="text-center">
                                     <h2 class="display-5 fw-bold">Collaboration Gallery</h2>
-                                    <p class="text-muted">Moments from our successful partnerships and joint ventures. (Editable in Odoo Editor)</p>
-                                </div>
-                                
-                                <div id="partner_collaboration_carousel" class="carousel slide s_carousel s_carousel_default" data-bs-ride="carousel" data-bs-interval="5000">
-                                    <div class="carousel-indicators">
-                                        <button type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                                        <button type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                    </div>
-                                    <div class="carousel-inner">
-                                        <!-- Slide 1 -->
-                                        <div class="carousel-item active" data-name="Slide">
-                                            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200" class="d-block w-100 rounded-5 shadow" alt="Collaboration 1" style="height: 500px; object-fit: cover;"/>
-                                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-pill px-4 py-2 mb-4 mx-auto" style="max-width: fit-content;">
-                                                <h5 class="mb-0">Strategic Planning Session</h5>
-                                            </div>
-                                        </div>
-                                        <!-- Slide 2 -->
-                                        <div class="carousel-item" data-name="Slide">
-                                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200" class="d-block w-100 rounded-5 shadow" alt="Collaboration 2" style="height: 500px; object-fit: cover;"/>
-                                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-pill px-4 py-2 mb-4 mx-auto" style="max-width: fit-content;">
-                                                <h5 class="mb-0">Joint Technology Workshop</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button class="carousel-control-prev" type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" data-bs-target="#partner_collaboration_carousel" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
+                                    <p class="text-muted mb-0">Moments from our successful partnerships and joint ventures.</p>
                                 </div>
                             </div>
+                            <div class="oe_structure oe_empty container pb-5"></div>
                         </section>
 
                         <section class="py-5 bg-light">
@@ -564,10 +698,19 @@
         </field>
     </record>
 
-    <!-- 13. Contact Us Page Customization -->
+    <!-- Partners menu must come after partners_page so ref= resolves during XML load. -->
+    <record id="menu_partners" model="website.menu">
+        <field name="name">Partners</field>
+        <field name="url">/partners</field>
+        <field name="page_id" ref="quote_manage_ui.partners_page"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">6</field>
+    </record>
+
+    <!-- 12. Contact Us Page Customization -->
     <template id="reware_contactus" inherit_id="website.contactus" name="Reware Contact Us" priority="10">
         <xpath expr="//div[@id='wrap']" position="replace">
-            <div id="wrap" class="oe_structure">
+            <div id="wrap" class="oe_structure oe_empty">
                 <section class="py-5 bg-primary text-white text-center">
                     <div class="container py-5">
                         <h1 class="display-3 fw-bold mb-4">Contact Us</h1>
@@ -601,14 +744,14 @@
                                 <div class="p-5 bg-light rounded-5 shadow-sm">
                                     <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
                                         <div class="container">
-                                            <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="mail.mail" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                                            <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="crm.lead" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
                                                 <div class="s_website_form_rows row s_col_no_bgcolor">
-                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="char" data-name="Field">
+                                                    <div class="mb-3 col-12 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
                                                         <label class="form-label s_website_form_label" for="contact1">
                                                             <span class="s_website_form_label_content">Name</span>
                                                             <span class="s_website_form_mark"> *</span>
                                                         </label>
-                                                        <input id="contact1" type="text" class="form-control s_website_form_input" name="name" required="" data-fill-with="name"/>
+                                                        <input id="contact1" type="text" class="form-control s_website_form_input" name="contact_name" required="" data-fill-with="name"/>
                                                     </div>
                                                     <div class="mb-3 col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
                                                         <label class="form-label s_website_form_label" for="contact3">
@@ -622,7 +765,7 @@
                                                             <span class="s_website_form_label_content">Subject</span>
                                                             <span class="s_website_form_mark"> *</span>
                                                         </label>
-                                                        <input id="contact5" type="text" class="form-control s_website_form_input" name="subject" required=""/>
+                                                        <input id="contact5" type="text" class="form-control s_website_form_input" name="name" required=""/>
                                                     </div>
                                                     <div class="mb-3 col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
                                                         <label class="form-label s_website_form_label" for="contact6">
@@ -648,20 +791,24 @@
         </xpath>
     </template>
 
-    <!-- 8. Homepage (Reware Focused) -->
-    <template id="homepage_custom" inherit_id="website.homepage" name="Reware Homepage" priority="10">
+    <!-- 8. Homepage — marketing copy is kept in sync with the canonical public site:
+         https://www.reware-project.com/ (titles, services blurbs, steps, Why it matters,
+         follow CTA, footer). Odoo-only blocks (e.g. shop categories) stay below that story. -->
+    <template id="homepage_custom" inherit_id="website.homepage" name="Reware Homepage" priority="99">
         <xpath expr="//div[@id='wrap']" position="replace">
-            <div id="wrap" class="oe_structure">
-                <!-- Hero -->
-                <section class="s_banner pt120 pb120 o_colored_level" style="background: linear-gradient(135deg, #1a1f71 0%, #00d4ff 100%); color: white;">
+            <div id="wrap" class="oe_structure oe_empty">
+                <!-- Hero (reware-project.com) -->
+                <section class="s_banner pt120 pb120 o_colored_level oe_img_bg o_bg_img_center" style="background-color: #1a1f71; color: white;" data-snippet="s_banner">
                     <div class="container">
                         <div class="row align-items-center">
                             <div class="col-lg-7">
-                                <h1 class="display-1 fw-bold mb-4">Reware: Better for You, Better for the Planet.</h1>
-                                <p class="lead fs-3 mb-5">Premium refurbished tech at up to 70% off. Expertly tested, guaranteed quality.</p>
-                                <div class="d-flex gap-3">
-                                    <a href="/shop" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow">Shop Reware</a>
-                                    <a href="/trade-in" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">Trade-in Tech</a>
+                                <p class="text-uppercase small mb-3 opacity-75">Re-Ware Project</p>
+                                <h1 class="display-3 fw-bold mb-4">Turning old tech into opportunity.</h1>
+                                <h3 class="h4 fw-normal mb-5 opacity-90" style="line-height: 1.5;">Your secure, compliant way to clear out old devices and help close the digital divide.</h3>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="#reware-services" class="btn btn-light btn-lg rounded-pill px-5 py-3">Learn more</a>
+                                    <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow">Donate now</a>
+                                    <a href="/shop" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">Shop refurbished</a>
                                 </div>
                             </div>
                             <div class="col-lg-5 d-none d-lg-block text-center">
@@ -671,52 +818,60 @@
                     </div>
                 </section>
 
-                <!-- Trust Bar -->
-                <section class="py-4 bg-white border-bottom shadow-sm position-relative" style="z-index: 10; margin-top: -30px; border-radius: 15px; max-width: 1000px; margin-left: auto; margin-right: auto;">
-                    <div class="container">
-                        <div class="row text-center g-4">
-                            <div class="col-md-3">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-star text-warning me-2"/>4.8/5 Rating</h6>
+                <!-- Services we offer -->
+                <section id="reware-services" class="py-5 bg-white">
+                    <div class="container py-5">
+                        <p class="text-uppercase small text-muted text-center mb-2">Services we offer.</p>
+                        <div class="row g-4 mt-2">
+                            <div class="col-md-4">
+                                <div class="p-4 h-100 border rounded-4 hover-elevate">
+                                    <h2 class="h3 fw-bold mb-3">Refurb &amp; Repurpose</h2>
+                                    <p class="text-muted mb-0">We collect end-of-life devices, ensuring they are securely refurbished and ready for their new home.</p>
+                                </div>
                             </div>
-                            <div class="col-md-3 border-start">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-shield text-primary me-2"/>12-Month Warranty</h6>
+                            <div class="col-md-4">
+                                <div class="p-4 h-100 border rounded-4 hover-elevate">
+                                    <h2 class="h3 fw-bold mb-3">Data Sanitisation</h2>
+                                    <p class="text-muted mb-0">Data erasure using Certified Blancco (NIST 800-88). Full reports for SOCI, Privacy Act Reforms &amp; audits.</p>
+                                </div>
                             </div>
-                            <div class="col-md-3 border-start">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-recycle text-success me-2"/>Eco-Friendly</h6>
-                            </div>
-                            <div class="col-md-3 border-start">
-                                <h6 class="fw-bold mb-0 text-primary"><i class="fa fa-truck text-info me-2"/>Free Shipping</h6>
+                            <div class="col-md-4">
+                                <div class="p-4 h-100 border rounded-4 hover-elevate">
+                                    <h2 class="h3 fw-bold mb-3">Impactful Distribution</h2>
+                                    <p class="text-muted mb-0">Through partnerships with charities and programs, we donate repurposed devices to those in need.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Popular Categories (Dynamic Grid) -->
-                <section class="pt100 pb80 bg-light">
-                    <div class="container text-center">
-                        <h2 class="display-4 fw-bold mb-2">Shop by Category</h2>
-                        <p class="text-muted mb-5">Find the best deals on top-quality refurbished electronics.</p>
-                        <div class="row g-4 justify-content-center">
-                            <t t-set="categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False)], limit=4)"/>
-                            <t t-foreach="categories" t-as="cat">
+                <!-- Category quick access -->
+                <section class="py-5 bg-white border-top">
+                    <div class="container py-4">
+                        <div class="d-flex flex-wrap align-items-end justify-content-between mb-4 gap-3">
+                            <div>
+                                <p class="text-uppercase small text-muted mb-2">Catalogue access</p>
+                                <h2 class="display-6 fw-bold mb-0">Browse refurbished categories</h2>
+                            </div>
+                            <a href="/shop" class="btn btn-primary rounded-pill px-4">View catalogue</a>
+                        </div>
+                        <div class="row g-3 g-md-4">
+                            <t t-set="home_categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False), ('product_tmpl_ids.website_published', '=', True), ('product_tmpl_ids.sale_ok', '=', True)], limit=16, order='sequence, name, id')"/>
+                            <t t-foreach="home_categories" t-as="h_cat">
+                                <t t-set="_home_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [h_cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
                                 <div class="col-6 col-md-3">
-                                    <a t-attf-href="/shop/category/#{slug(cat)}" class="text-decoration-none">
-                                        <div class="p-5 bg-white rounded-4 shadow-sm hover-elevate h-100 d-flex flex-column align-items-center">
-                                            <div class="mb-3">
-                                                <t t-if="cat.image_128">
-                                                    <img t-attf-src="/web/image/product.public.category/#{cat.id}/image_128" class="img-fluid" style="max-height: 80px; width: auto;"/>
+                                    <a t-attf-href="/shop/category/#{slug(h_cat)}" class="text-decoration-none text-dark">
+                                        <div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                                            <div class="mb-2">
+                                                <t t-if="h_cat.image_128">
+                                                    <img t-attf-src="/web/image/product.public.category/#{h_cat.id}/image_128" class="img-fluid" style="max-height: 64px; width: auto;"/>
                                                 </t>
                                                 <t t-else="">
-                                                    <div class="fs-1 text-primary">
-                                                        <i t-if="cat.name == 'Smartphones'" class="fa fa-mobile"/>
-                                                        <i t-elif="cat.name == 'Laptops'" class="fa fa-laptop"/>
-                                                        <i t-elif="cat.name == 'Tablets'" class="fa fa-tablet"/>
-                                                        <i t-elif="cat.name == 'Watches'" class="fa fa-clock-o"/>
-                                                        <i t-else="" class="fa fa-tag"/>
-                                                    </div>
+                                                    <i class="fa fa-tag fs-1 text-primary"/>
                                                 </t>
                                             </div>
-                                            <h5 class="fw-bold text-dark mt-auto" t-field="cat.name"/>
+                                            <p class="fw-bold mb-0" t-field="h_cat.name"/>
+                                            <p class="small text-muted mb-0"><t t-esc="_home_cat_cnt"/> products</p>
                                         </div>
                                     </a>
                                 </div>
@@ -724,148 +879,168 @@
                         </div>
                     </div>
                 </section>
-                <!-- Why choose Reware? -->
-                <section class="py-5 bg-white">
-                    <div class="container">
-                        <div class="row align-items-center g-5">
-                            <div class="col-lg-6">
-                                <h2 class="display-4 fw-bold mb-4 text-primary">Why choose Reware?</h2>
-                                <div class="d-flex mb-4">
-                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
-                                    <div>
-                                        <h5 class="fw-bold">Save up to 70%</h5>
-                                        <p class="text-muted">Get the tech you love for a fraction of the price of new.</p>
-                                    </div>
-                                </div>
-                                <div class="d-flex mb-4">
-                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
-                                    <div>
-                                        <h5 class="fw-bold">100-Point Quality Check</h5>
-                                        <p class="text-muted">Every device is tested by professionals to ensure it works like new.</p>
-                                    </div>
-                                </div>
-                                <div class="d-flex mb-4">
-                                    <div class="me-4 text-success fs-2"><i class="fa fa-check-circle"/></div>
-                                    <div>
-                                        <h5 class="fw-bold">Reduce E-Waste</h5>
-                                        <p class="text-muted">Buying refurbished saves raw materials and prevents toxic waste.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6 bg-light p-5 rounded-5 shadow-sm">
-                                <div class="text-center py-5">
-                                    <h3 class="fw-bold mb-3">Ready to upgrade?</h3>
-                                    <p class="mb-4">Join thousands of happy customers who chose a smarter way to buy tech.</p>
-                                    <a href="/shop" class="btn btn-primary btn-lg rounded-pill px-5">Browse All Deals</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
-                <!-- The Re-ware Project Section (New) -->
-                <section id="reware-project" class="py-5 bg-primary text-white overflow-hidden">
-                    <div class="container py-5">
-                        <div class="row align-items-center g-5">
-                            <div class="col-lg-5 order-lg-2">
-                                <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800" class="img-fluid rounded-5 shadow-lg" alt="E-waste recycling"/>
-                            </div>
-                            <div class="col-lg-7 order-lg-1">
-                                <h2 class="display-3 fw-bold mb-4">The Re-ware Project</h2>
-                                <p class="lead fs-3 mb-4">Sustainable and ethical e-waste collection, playing a pivotal role in fighting digital poverty throughout Western Australia.</p>
-                                <p class="mb-5 opacity-75">We provide an e-waste collection service and drop-off point for all obsolete and end-of-life devices. By repurposing and refurbishing, we contribute towards digital inclusion for all and improve on closing the gap on digital poverty whilst creating a positive effect on our environment.</p>
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-start">
-                                            <i class="fa fa-recycle fs-2 me-3 text-info"/>
-                                            <div>
-                                                <h5 class="fw-bold">Save Landfill Space</h5>
-                                                <p class="small mb-0 opacity-75">Protecting and preserving our natural, raw materials and resources.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-start">
-                                            <i class="fa fa-users fs-2 me-3 text-info"/>
-                                            <div>
-                                                <h5 class="fw-bold">Digital Inclusion</h5>
-                                                <p class="small mb-0 opacity-75">Providing quality tech to those who need it most in our community.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-5">
-                                    <a href="/contactus" class="btn btn-info btn-lg rounded-pill px-5 text-white">Donate Your Old Tech</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- How it Works (New) -->
+                <!-- Consultation -->
                 <section class="py-5 bg-light">
+                    <div class="container py-5 text-center" style="max-width: 48rem;">
+                        <h2 class="display-5 fw-bold mb-4">Reserve your complimentary consultation.</h2>
+                        <p class="lead text-muted mb-4">Need a hand? We’ll guide you through the process, answer your questions, and show how your old tech can make a real difference to help WA communities doing it tough.</p>
+                        <a href="/contactus" class="btn btn-primary btn-lg rounded-pill px-5">Donate now</a>
+                    </div>
+                </section>
+
+                <!-- One click, three steps -->
+                <section class="py-5 bg-white">
                     <div class="container py-5">
                         <div class="text-center mb-5">
-                            <h2 class="display-4 fw-bold">How Re-ware Works</h2>
-                            <p class="text-muted">A circular economy for a sustainable future.</p>
+                            <h2 class="display-5 fw-bold mb-3">One click, three steps, genuine impact!</h2>
                         </div>
-                        <div class="row g-4">
-                            <div class="col-md-3 text-center">
-                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
-                                    <div class="step-number mb-3">1</div>
-                                    <h5 class="fw-bold">Collection</h5>
-                                    <p class="small text-muted">We collect obsolete and end-of-life devices from businesses and individuals.</p>
+                        <div class="row g-4 text-center">
+                            <div class="col-md-4">
+                                <div class="p-5 bg-light rounded-4 border h-100 hover-elevate">
+                                    <div class="step-number mx-auto mb-3">01</div>
+                                    <p class="fw-bold mb-2">Pick up.</p>
+                                    <p class="text-muted mb-0">We collect your unused laptops, tablets, PC’s, and other digital gear.</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 text-center">
-                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
-                                    <div class="step-number mb-3">2</div>
-                                    <h5 class="fw-bold">Testing</h5>
-                                    <p class="small text-muted">Our experts perform a 100-point quality check to assess refurbishing potential.</p>
+                            <div class="col-md-4">
+                                <div class="p-5 bg-light rounded-4 border h-100 hover-elevate">
+                                    <div class="step-number mx-auto mb-3">02</div>
+                                    <p class="fw-bold mb-2">Wipe clean.</p>
+                                    <p class="text-muted mb-0">All data securely erased, ready for a fresh start.</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 text-center">
-                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
-                                    <div class="step-number mb-3">3</div>
-                                    <h5 class="fw-bold">Refurbishing</h5>
-                                    <p class="small text-muted">Devices are ethically restored, data is securely wiped, and parts are recycled.</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 text-center">
-                                <div class="p-4 bg-white rounded-4 shadow-sm h-100 hover-elevate">
-                                    <div class="step-number mb-3">4</div>
-                                    <h5 class="fw-bold">Redistribution</h5>
-                                    <p class="small text-muted">Refurbished tech is sold at a discount or donated to fight digital poverty.</p>
+                            <div class="col-md-4">
+                                <div class="p-5 bg-light rounded-4 border h-100 hover-elevate">
+                                    <div class="step-number mx-auto mb-3">03</div>
+                                    <p class="fw-bold mb-2">Pay it forward.</p>
+                                    <p class="text-muted mb-0">We donate the devices to those who need them most.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Your Impact with Reware -->
-                <section class="py-5 bg-dark text-white">
-                    <div class="container text-center py-5">
-                        <h2 class="display-4 fw-bold mb-5">Your Impact with Reware</h2>
-                        <div class="row g-4">
+                <!-- Why it matters -->
+                <section class="py-5 bg-primary text-white">
+                    <div class="container py-5" style="max-width: 52rem;">
+                        <h2 class="display-5 fw-bold mb-4 text-center">Why it matters.</h2>
+                        <p class="lead text-center mb-4 opacity-90">Less waste. Less risk. More responsible use of the tech you already own.</p>
+                        <p class="mb-4 opacity-90">The Re-Ware project is a sustainable model which supports a range of economic benefits that help address digital poverty in our society.</p>
+                        <p class="mb-0 opacity-90">Re-Ware refurbishes suitable devices and donates them to Western Australians experiencing digital poverty - including lower-income individuals and families, people that are displaced, people with disabilities, justice programs, and to support women and children rebuilding after domestic violence who need safe digital access.</p>
+                    </div>
+                </section>
+
+                <!-- Repair. Repurpose. Reuse. -->
+                <section class="py-5 bg-dark text-white text-center">
+                    <div class="container py-4">
+                        <p class="display-6 fw-bold mb-2" style="letter-spacing: 0.35em;">R E P A I R .</p>
+                        <p class="display-6 fw-bold mb-2" style="letter-spacing: 0.35em;">R E P U R P O S E .</p>
+                        <p class="display-6 fw-bold mb-0" style="letter-spacing: 0.35em;">R E U S E .</p>
+                        <a href="#reware-services" class="btn btn-outline-light rounded-pill px-4 mt-4">Learn more</a>
+                    </div>
+                </section>
+
+                <!-- Follow our journey -->
+                <section class="py-5 bg-light">
+                    <div class="container py-5 text-center" style="max-width: 40rem;">
+                        <h2 class="display-6 fw-bold mb-3">Follow our journey.</h2>
+                        <p class="fw-bold text-uppercase small mb-2">AND be part of the change!</p>
+                        <p class="text-muted mb-4">Get the latest on how we’re refurbishing tech, supporting WA communities, and making a real impact - straight to your inbox.</p>
+                        <a href="/contactus" class="btn btn-primary rounded-pill px-5">Get in touch</a>
+                    </div>
+                </section>
+
+                <!-- Credit + contact (reware-project.com footer) -->
+                <section class="py-5 bg-white border-top">
+                    <div class="container py-3 text-center">
+                        <h3 class="h5 fw-bold mb-4">Re-Ware, designed by Co-Creative IT.</h3>
+                        <div class="row justify-content-center g-4 small text-muted">
                             <div class="col-md-4">
-                                <div class="fs-1 text-info mb-2 fw-bold">1,200kg</div>
-                                <p class="lead">CO2 Emissions Saved</p>
-                                <p class="small opacity-50">Equivalent to planting 50 trees</p>
+                                <h4 class="h6 text-dark fw-bold mb-2">Contact</h4>
+                                <p class="mb-1"><a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a></p>
+                                <p class="mb-0"><a href="tel:0499909302" class="text-muted">0499 909 302</a></p>
                             </div>
                             <div class="col-md-4">
-                                <div class="fs-1 text-info mb-2 fw-bold">500kg</div>
-                                <p class="lead">Raw Materials Preserved</p>
-                                <p class="small opacity-50">Saving precious metals and minerals</p>
+                                <h4 class="h6 text-dark fw-bold mb-2">Location</h4>
+                                <p class="mb-0">102 Edward St, Perth, Western Australia</p>
                             </div>
-                            <div class="col-md-4">
-                                <div class="fs-1 text-info mb-2 fw-bold">250kg</div>
-                                <p class="lead">E-waste Prevented</p>
-                                <p class="small opacity-50">Kept out of Western Australian landfills</p>
+                        </div>
+                        <p class="mt-4 mb-0"><a href="https://www.cocreativeit.com/" class="text-muted" target="_blank" rel="noopener noreferrer">Co-Creative IT</a></p>
+                    </div>
+                </section>
+
+                <!-- Shop: categories (retained for e-commerce) -->
+                <section class="pt80 pb80 bg-light border-top">
+                    <div class="container">
+                        <div class="qm-comsol-shop-hero p-4 p-lg-5 bg-white border mb-4 mb-lg-5">
+                            <p class="qm-comsol-eyebrow text-uppercase small text-muted mb-2">Refurbished shop</p>
+                            <div class="row align-items-start g-4">
+                                <div class="col-lg-7">
+                                    <h2 class="fw-bold mb-3 text-dark" style="letter-spacing: -0.02em;">Shop by category</h2>
+                                    <p class="text-muted mb-0" style="max-width: 36rem; line-height: 1.6;">Browse certified refurbished inventory. Same grading and fulfilment standards as the main catalogue.</p>
+                                </div>
+                                <div class="col-lg-5">
+                                    <a href="/shop" class="btn btn-primary rounded-pill px-4">View catalogue</a>
+                                </div>
                             </div>
+                        </div>
+                        <div class="row g-3 g-md-4 justify-content-center">
+                            <t t-set="categories" t-value="request.env['product.public.category'].search([('parent_id', '=', False), ('product_tmpl_ids.website_published', '=', True), ('product_tmpl_ids.sale_ok', '=', True)], limit=16, order='sequence, name, id')"/>
+                            <t t-foreach="categories" t-as="cat">
+                                <t t-set="_shop_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
+                                <div class="col-6 col-md-3">
+                                    <a t-attf-href="/shop/category/#{slug(cat)}" class="text-decoration-none text-dark">
+                                        <div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                                            <div class="mb-3">
+                                                <t t-if="cat.image_128">
+                                                    <img t-attf-src="/web/image/product.public.category/#{cat.id}/image_128" class="img-fluid" style="max-height: 72px; width: auto;"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="fs-1 text-primary">
+                                                        <i t-if="cat.name == 'Laptops'" class="fa fa-laptop"/>
+                                                        <i t-else="" class="fa fa-tag"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mt-auto mb-0" t-field="cat.name"/>
+                                            <p class="small text-muted mb-0"><t t-esc="_shop_cat_cnt"/> products</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </t>
                         </div>
                     </div>
                 </section>
             </div>
+        </xpath>
+    </template>
+    </data>
+
+    <!-- Blog listing: match other Reware pages (dark bg-primary intro via global CSS).
+         Skip when Odoo "Top banner / latest post cover" is active to avoid double headers. -->
+    <template id="reware_blog_list_hero" inherit_id="website_blog.blog_post_short" name="Reware Blog Listing Intro" priority="20">
+        <xpath expr="//div[@id='o_wblog_blog_top']" position="before">
+            <section class="py-5 bg-primary text-white text-center" t-if="(not blog) or not is_view_active('website_blog.opt_blog_cover_post')">
+                <div class="container py-4">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <t t-if="blog">
+                            <span t-field="blog.name"/>
+                        </t>
+                        <t t-else="">
+                            News
+                        </t>
+                    </h1>
+                    <p class="lead fs-4 mx-auto mb-0 text-white-50" style="max-width: 720px;">
+                        <t t-if="blog">
+                            <span t-field="blog.subtitle" placeholder="Add a short subtitle in the blog settings."/>
+                        </t>
+                        <t t-else="">
+                            Latest stories, guides, and updates from the Re-Ware team.
+                        </t>
+                    </p>
+                </div>
+            </section>
         </xpath>
     </template>
 </odoo>

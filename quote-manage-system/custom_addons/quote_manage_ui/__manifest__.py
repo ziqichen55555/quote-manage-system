@@ -1,16 +1,37 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0',
+    'version': '1.0.29',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
-    'depends': ['web', 'sale', 'website', 'website_sale', 'website_blog', 'website_crm'],
+    'depends': [
+        'web',
+        'sale',
+        'stock',
+        'website',
+        'website_sale',
+        'website_blog',
+        'website_crm',
+        'product_images',
+    ],
     'data': [
-        'views/sale_order_views.xml',
+        'data/quote_refurb_product_category.xml',
+        'data/quote_refurb_product_tags.xml',
+        'data/quote_refurb_product_attributes.xml',
+        # Product rows are imported via scripts/import_products_to_odoo.sh;
+        # loading them on every -u hits duplicate barcode errors.
+        'data/quote_manage_ui_arch_sync_policy.xml',
         'views/website_templates.xml',
+        'views/sale_order_views.xml',
+        'views/product_template_views.xml',
+        'views/crm_lead_views.xml',
+        'data/website_homepage_fix.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'quote_manage_ui/static/src/scss/backend_style.scss',
+        ],
+        'web.assets_frontend': [
+            'quote_manage_ui/static/src/scss/style.scss',
         ],
     },
     'installable': True,

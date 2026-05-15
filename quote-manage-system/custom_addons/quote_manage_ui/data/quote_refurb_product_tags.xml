@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Parsed from import sheet: filter products by tag in Products list / eCommerce -->
+        <record id="product_tag_re_ware_lenovo" model="product.tag">
+            <field name="name">Re-ware Lenovo</field>
+            <field name="color">#0F6CBD</field>
+        </record>
+        <record id="product_tag_computer_systems" model="product.tag">
+            <field name="name">Computer Systems</field>
+            <field name="color">#2E7D32</field>
+        </record>
+        <record id="product_tag_thinkpad_t14s" model="product.tag">
+            <field name="name">ThinkPad T14s</field>
+            <field name="color">#6A1B9A</field>
+        </record>
+        <record id="product_tag_thinkpad_t490s" model="product.tag">
+            <field name="name">ThinkPad T490s</field>
+            <field name="color">#6A1B9A</field>
+        </record>
+        <record id="product_tag_thinkpad_t15" model="product.tag">
+            <field name="name">ThinkPad T15</field>
+            <field name="color">#1565C0</field>
+        </record>
+        <record id="product_tag_thinkpad_p1" model="product.tag">
+            <field name="name">ThinkPad P1</field>
+            <field name="color">#C62828</field>
+        </record>
+        <record id="product_tag_monitors" model="product.tag">
+            <field name="name">Monitors</field>
+            <field name="color">#00838F</field>
+        </record>
+        <record id="product_tag_docks" model="product.tag">
+            <field name="name">Docks</field>
+            <field name="color">#37474F</field>
+        </record>
+        <record id="product_tag_accessories" model="product.tag">
+            <field name="name">Accessories</field>
+            <field name="color">#5D4037</field>
+        </record>
+        <record id="product_tag_desktops" model="product.tag">
+            <field name="name">Desktops</field>
+            <field name="color">#283593</field>
+        </record>
+    </data>
+</odoo>

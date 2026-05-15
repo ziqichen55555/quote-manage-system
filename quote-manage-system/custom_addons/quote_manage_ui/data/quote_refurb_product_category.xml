@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate=0: upgrade (-u) reapplies fields so tags/names stay in sync with XML -->
+    <data noupdate="0">
+        <function model="product.public.category" name="_quote_remove_legacy_demo_root_categories"/>
+        <function model="website" name="_quote_clear_website_menu_template_cache"/>
+
+        <!-- Sub-category for imported refurb systems (under Saleable) -->
+        <record id="product_category_computer_systems_refurb" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">Computer Systems</field>
+        </record>
+
+        <!-- Website top-level categories -->
+        <record id="public_cat_laptops" model="product.public.category">
+            <field name="name">Laptops</field>
+            <field name="sequence" eval="10"/>
+        </record>
+
+        <!-- Optional level-2 category for current imported stock -->
+        <record id="public_cat_laptops_computer_systems" model="product.public.category">
+            <field name="name">Computer Systems</field>
+            <field name="parent_id" ref="quote_manage_ui.public_cat_laptops"/>
+        </record>
+
+        <!-- Internal categories (inventory / reporting) — use with product.template categ_id -->
+        <record id="product_category_monitors" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">Monitors &amp; Displays</field>
+        </record>
+        <record id="product_category_docks" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">Docks &amp; Port Replicators</field>
+        </record>
+        <record id="product_category_pc_accessories" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">PC Accessories</field>
+        </record>
+        <record id="product_category_workstations" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">Desktops &amp; Workstations</field>
+        </record>
+        <record id="product_category_services" model="product.category">
+            <field name="parent_id" ref="product.product_category_1"/>
+            <field name="name">Services</field>
+        </record>
+
+        <!-- eCommerce navigation -->
+        <record id="public_cat_monitors" model="product.public.category">
+            <field name="name">Monitors &amp; Displays</field>
+        </record>
+        <record id="public_cat_docks" model="product.public.category">
+            <field name="name">Docks</field>
+        </record>
+        <record id="public_cat_accessories" model="product.public.category">
+            <field name="name">Accessories</field>
+        </record>
+        <record id="public_cat_desktops" model="product.public.category">
+            <field name="name">Desktops &amp; Mini PCs</field>
+        </record>
+        <record id="public_cat_projectors_av" model="product.public.category">
+            <field name="name">Projectors &amp; AV</field>
+        </record>
+        <record id="public_cat_services" model="product.public.category">
+            <field name="name">Services</field>
+        </record>
+    </data>
+</odoo>

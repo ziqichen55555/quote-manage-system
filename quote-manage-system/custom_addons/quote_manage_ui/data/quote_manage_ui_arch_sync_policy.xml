@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Default: do not overwrite website.page QWeb arch from module XML on every -u.
+         Editors can change About/Services/… in the Website Builder without losing work.
+         Set to true (Technical → Parameters) before upgrading when you intentionally
+         deploy updated arch from views/website_templates.xml. -->
+    <data noupdate="1">
+        <record id="icp_quote_manage_ui_sync_inline_page_arch" model="ir.config_parameter">
+            <field name="key">quote_manage_ui.sync_inline_page_arch_from_xml</field>
+            <field name="value">false</field>
+        </record>
+    </data>
+</odoo>
