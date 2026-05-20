@@ -14,6 +14,40 @@ def _quote_manage_ui_website_templates_xml_path():
         return False
 
 
+class IrUiView(models.Model):
+    _inherit = 'ir.ui.view'
+
+    @api.model
+    def _quote_manage_ui_lock_module_archs(self):
+        """Editor-first policy: lock arch_db of all quote_manage_ui-owned views.
+
+        Sets ``ir.model.data.noupdate = True`` on every record this module owns
+        across the layout-bearing models. Once locked, the next `-u` short-
+        circuits in ``odoo/tools/convert.py`` (`if self.noupdate and self.mode
+        != 'init': return`) before re-writing fields, so Website Builder edits
+        on the homepage / header / /partners / /contactus / category names /
+        menu order stay across upgrades.
+
+        Re-run idempotently at the end of every upgrade so newly added views
+        (e.g. when bumping to 1.0.31+) are auto-locked after their first load.
+        To intentionally redeploy XML, clear ``noupdate`` on the specific
+        ir.model.data row before `-u`.
+        """
+        self.env['ir.model.data'].sudo().search([
+            ('module', '=', 'quote_manage_ui'),
+            ('model', 'in', (
+                'ir.ui.view',
+                'website.page',
+                'website.menu',
+                'product.public.category',
+                'product.tag',
+                'product.attribute',
+                'product.attribute.value',
+            )),
+            ('noupdate', '=', False),
+        ]).write({'noupdate': True})
+
+
 class WebsitePage(models.Model):
     _inherit = 'website.page'
 
@@ -51,17 +85,13 @@ class WebsitePage(models.Model):
         View = self.env['ir.ui.view'].sudo()
         Website = self.env['website'].sudo()
         Page = self.sudo().with_context(active_test=False)
-        # Keep category/tag/attribute XML updatable on -u; skip product.template rows
-        # (re-importing barcodes raises "Barcode already assigned" on duplicates).
-        self.env['ir.model.data'].sudo().search([
-            ('module', '=', 'quote_manage_ui'),
-            ('name', '=like', 'quote_refurb_%'),
-            ('model', '!=', 'product.template'),
-        ]).write({'noupdate': False})
-        self.env['ir.model.data'].sudo().search([
-            ('module', '=', 'quote_manage_ui'),
-            ('name', '=like', 'public_cat_%'),
-        ]).write({'noupdate': False})
+        # NOTE: We used to reset noupdate=False on quote_refurb_% and public_cat_%
+        # ir.model.data rows here so that XML reapplied on -u. That silently undid
+        # backend edits (category names, tag colors, attribute values) every upgrade.
+        # Policy is now editor-first: XML seeds once, the database is the source of
+        # truth afterwards. To force-resync from XML, set the system parameter
+        # 'quote_manage_ui.sync_inline_page_arch_from_xml' to True before -u and
+        # manually clear noupdate on the records you want pushed.
         def _homepage_primary_domain(website):
             dom = [
                 ('key', '=', 'website.homepage'),
@@ -74,6 +104,13 @@ class WebsitePage(models.Model):
             return dom
 
         for page in Page.search([('url', '=', '/')]):
+            # Editor-first: only repoint when the current view_id is missing or
+            # disabled. Otherwise leave the Website Builder's COW copy alone --
+            # `limit=1` on the domain below could pick the *wrong* primary view
+            # (multiple COW copies in the wild) and silently roll the homepage back.
+            current = page.view_id
+            if current and current.active and current.key == 'website.homepage' and current.mode == 'primary':
+                continue
             website = page.website_id
             active = View.search(_homepage_primary_domain(website), limit=1)
             if active and page.view_id.id != active.id:
@@ -122,23 +159,32 @@ class WebsitePage(models.Model):
     def _quote_manage_ui_ensure_partners_module_page(self, Page):
         """One canonical /partners page: module key ``quote_manage_ui.partners_page``.
 
-        Editor-created pages reuse the URL but not the module key; they are served
-        first and hide module XML. Remove duplicate URL rows, recreate the module
-        page from ``website_templates.xml`` if missing, and repoint menus.
+        Editor-created pages at /partners that use a DIFFERENT key (e.g. via
+        Site → New Page) shadow the module page in ``_serve_page``. Remove only
+        those foreign-key duplicates and repoint menus. Website-specific COW
+        copies of the module page share the same key and MUST be preserved
+        (``website_id`` differs) — they hold the user's Website Builder edits.
         """
         Menu = self.env['website.menu'].sudo().with_context(active_test=False)
         KEY = 'quote_manage_ui.partners_page'
         Page = Page.sudo()
-        mod = Page.search([('key', '=', KEY)], limit=1)
-        others = Page.search([('url', 'in', ('/partners', '/partners/'))]) - mod
-        if others:
+        # Prefer the generic (website_id=False) row as canonical; COW copies keep
+        # the same key but have website_id set and stay untouched.
+        mod = Page.search([('key', '=', KEY), ('website_id', '=', False)], limit=1)
+        if not mod:
+            mod = Page.search([('key', '=', KEY)], limit=1)
+        foreign = Page.search([
+            ('url', 'in', ('/partners', '/partners/')),
+            ('key', '!=', KEY),
+        ])
+        if foreign:
             if mod:
-                Menu.search([('page_id', 'in', others.ids)]).write({'page_id': mod.id})
-            others.unlink()
+                Menu.search([('page_id', 'in', foreign.ids)]).write({'page_id': mod.id})
+            foreign.unlink()
         if not Page.search([('key', '=', KEY)]):
             _pk, arch = self._quote_manage_ui_read_page_record_xml('partners_page')
             if arch:
-                Page.create({
+                mod = Page.create({
                     'name': 'Our Partners',
                     'url': '/partners',
                     'type': 'qweb',
@@ -147,7 +193,6 @@ class WebsitePage(models.Model):
                     'key': KEY,
                     'arch': arch,
                 })
-        mod = Page.search([('key', '=', KEY)], limit=1)
         if mod:
             Menu.search([
                 ('url', 'in', ('/partners', '/partners/')),

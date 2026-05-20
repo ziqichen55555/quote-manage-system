@@ -1,0 +1,12 @@
+# 复制到 ~/.cloudflared/config.yml 并替换 TUNNEL_ID
+# credentials 文件路径在 cloudflared tunnel create 后自动生成
+
+tunnel: reware-local
+credentials-file: /Users/chrischan/.cloudflared/TUNNEL_ID.json
+
+ingress:
+  - hostname: reware-project.com
+    service: http://localhost:8070
+  - hostname: www.reware-project.com
+    service: http://localhost:8070
+  - service: http_status:404

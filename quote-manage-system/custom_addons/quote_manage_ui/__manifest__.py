@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.29',
+    'version': '1.0.30',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -25,6 +25,9 @@
         'views/product_template_views.xml',
         'views/crm_lead_views.xml',
         'data/website_homepage_fix.xml',
+        # MUST be last: locks ir.model.data.noupdate=True on layout records so
+        # subsequent `-u` skips arch_db rewrites and preserves Builder edits.
+        'data/zz_lock_module_archs.xml',
     ],
     'assets': {
         'web.assets_backend': [

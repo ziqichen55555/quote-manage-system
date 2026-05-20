@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- noupdate=0: upgrade (-u) reapplies fields so tags/names stay in sync with XML -->
-    <data noupdate="0">
+    <!-- noupdate="1": editor-first policy. The category/tag/menu records below are
+         SEEDS — they are created on first install, and from that point on the
+         backend (or Website Builder) is the source of truth. `-u` MUST NOT reset
+         names/sequences/parents back to the XML values. To force-resync from XML,
+         clear noupdate on individual ir.model.data rows before running -u. -->
+    <data noupdate="1">
         <function model="product.public.category" name="_quote_remove_legacy_demo_root_categories"/>
         <function model="website" name="_quote_clear_website_menu_template_cache"/>
 

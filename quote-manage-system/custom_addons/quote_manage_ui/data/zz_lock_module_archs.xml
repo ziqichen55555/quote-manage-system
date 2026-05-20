@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Filename starts with "zz_" so the manifest list keeps this LAST.
+
+         Editor-first policy: after the view/page XML has been loaded (or
+         skipped because noupdate=True is already on the records), lock the
+         ir.model.data.noupdate flag on every quote_manage_ui-owned layout
+         record. The pre-migration in migrations/1.0.30/pre-migration.py does
+         the same thing the FIRST time we upgrade to 1.0.30; this function
+         keeps the lock in place for any new view/page added in later
+         versions (they ship with noupdate=False initially, get loaded on
+         first -u, then this function locks them on the same upgrade so the
+         second -u already skips arch_db rewrites).
+
+         This <data> block intentionally has NO noupdate="1": the function
+         must run on every `-u quote_manage_ui` to (re)apply the lock. -->
+    <data>
+        <function model="ir.ui.view" name="_quote_manage_ui_lock_module_archs"/>
+    </data>
+</odoo>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <!-- noupdate="1": run the legacy homepage/menu cleanup ONLY on first install of
+         this XML (or when explicitly invoked via Settings → Technical → Run a function).
+         Running it on every `-u` was repointing website.page.view_id to a stale
+         primary view (limit=1 picks the wrong COW copy) and resetting noupdate flags
+         on refurb/category data, which silently undid Website Builder edits. -->
+    <data noupdate="1">
         <function model="website.page" name="_quote_manage_ui_fix_homepage_view"/>
     </data>
 </odoo>
