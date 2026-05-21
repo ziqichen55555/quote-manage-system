@@ -1,307 +1,598 @@
-// Modern Frontend Styles inspired by Co-Creative IT
-// 1. Variables
-$primary-navy: #1a1f71;
-$accent-cyan: #00d4ff;
-$accent-cyan-dark: #00b8e6;
-$reware-gold: #b08a2e;
-$reware-gold-hover: #c59b35;
-$reware-black: #101010;
-$text-dark: #2c2c2c;
-$background-light: #fafafa;
-$white: #ffffff;
+// =============================================================================
+// Re-Ware Project — Front-end design system (rev 2)
+// Visual reference: https://www.reware-project.com/
+//
+// Two coexisting brand surfaces:
+//   - .rw-* helpers / brand pages  : cream / dark / gold / coral (Re-Ware)
+//   - .oe_website_sale (Shop)      : neutral cream surface tuned for catalogue
+//
+// All tokens exposed as CSS variables so the Website Builder can theme them.
+// =============================================================================
 
-// 2. Base Theme Overrides
+// ---------- 1. Design tokens --------------------------------------------------
+$rw-cream:        #f1ead9;
+$rw-cream-soft:   #f6f0e3;
+$rw-cream-deep:   #e7dfca;
+$rw-dark:         #1a1a1a;
+$rw-dark-soft:    #2a2a2a;
+$rw-gold:         #b48a30;
+$rw-gold-soft:    #c79e4a;
+$rw-gold-hover:   #cfa552;
+$rw-coral:        #ec6e62;
+$rw-coral-hover:  #d85a4e;
+$rw-text:         #1a1a1a;
+$rw-text-soft:    #4a4a4a;
+$rw-text-muted:   #7a7a7a;
+$rw-text-onDark:  #f5f0e6;
+$rw-border:       #d9d2c1;
+$rw-border-dark:  #3a3a3a;
+
+// Legacy aliases (kept so existing markup doesn't break)
+$primary-navy:        $rw-dark;
+$accent-cyan:         $rw-gold;
+$accent-cyan-dark:    $rw-gold-hover;
+$reware-gold:         $rw-gold;
+$reware-gold-hover:   $rw-gold-hover;
+$reware-black:        $rw-dark;
+$text-dark:           $rw-text;
+$background-light:    $rw-cream-soft;
+$white:               #ffffff;
+
 :root {
-    --primary: #{$reware-gold};
-    --o-brand-primary: #{$reware-gold};
-    --o-brand-odoo: #{$reware-gold};
+    --rw-cream:        #{$rw-cream};
+    --rw-cream-soft:   #{$rw-cream-soft};
+    --rw-cream-deep:   #{$rw-cream-deep};
+    --rw-dark:         #{$rw-dark};
+    --rw-dark-soft:    #{$rw-dark-soft};
+    --rw-gold:         #{$rw-gold};
+    --rw-gold-soft:    #{$rw-gold-soft};
+    --rw-gold-hover:   #{$rw-gold-hover};
+    --rw-coral:        #{$rw-coral};
+    --rw-coral-hover:  #{$rw-coral-hover};
+    --rw-text:         #{$rw-text};
+    --rw-text-soft:    #{$rw-text-soft};
+    --rw-text-muted:   #{$rw-text-muted};
+    --rw-text-onDark:  #{$rw-text-onDark};
+    --rw-border:       #{$rw-border};
+
+    // Odoo brand hooks (so .btn-primary, .text-primary, etc. inherit Re-Ware gold)
+    --primary:         #{$rw-gold};
+    --o-brand-primary: #{$rw-gold};
+    --o-brand-odoo:    #{$rw-gold};
+
+    // ---- Odoo theme palette override (cc1..cc5 used by Editor color picker) ----
+    // Editor "background color" / "text color" panels read --o-cc{N}-* runtime vars.
+    // Map them so the Re-Ware swatches appear native in the Website Builder.
+    --o-cc1-bg:        #{$rw-cream};         // light background
+    --o-cc1-text:      #{$rw-text};
+    --o-cc1-headings:  #{$rw-text};
+    --o-cc1-btn-primary: #{$rw-gold};        // Donate now style
+    --o-cc1-btn-primary-text: #{$rw-dark};
+    --o-cc1-btn-secondary: #{$rw-coral};     // Learn more style
+    --o-cc1-btn-secondary-text: #ffffff;
+
+    --o-cc2-bg:        #{$rw-cream-soft};    // softer cream surface
+    --o-cc2-text:      #{$rw-text-soft};
+    --o-cc2-headings:  #{$rw-text};
+
+    --o-cc3-bg:        #{$rw-cream-deep};    // accented surface
+    --o-cc3-text:      #{$rw-text};
+    --o-cc3-headings:  #{$rw-text};
+
+    --o-cc4-bg:        #{$rw-dark};          // dark hero / RRR strip
+    --o-cc4-text:      #{$rw-text-onDark};
+    --o-cc4-headings:  #ffffff;
+    --o-cc4-btn-primary: #{$rw-gold};
+    --o-cc4-btn-primary-text: #{$rw-dark};
+
+    --o-cc5-bg:        #{$rw-gold};          // bold gold band
+    --o-cc5-text:      #{$rw-dark};
+    --o-cc5-headings:  #{$rw-dark};
+
+    // Five theme color tokens (Editor swatches "Color 1..5")
+    --o-color-1: #{$rw-cream};
+    --o-color-2: #{$rw-dark};
+    --o-color-3: #{$rw-gold};
+    --o-color-4: #{$rw-coral};
+    --o-color-5: #{$rw-cream-deep};
 }
+
+// ---------- 2. Google Fonts (loaded on every page via @import; Odoo strips
+// <link> we add in QWeb headers on COW copies, @import inside the bundled
+// stylesheet survives that) -----------------------------------------------------
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300%3B400%3B500%3B600%3B700%3B800&family=DM+Serif+Display:ital@0%3B1&display=swap');
+
+// ---------- 3. Base typography ------------------------------------------------
+$rw-font-sans:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$rw-font-display: 'DM Serif Display', 'Manrope', Georgia, serif;
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: $text-dark;
+    font-family: $rw-font-sans;
+    color: $rw-text;
     background-color: $white;
+    font-weight: 400;
+    letter-spacing: -0.005em;
 }
 
-// 3. Navbar Styling
+h1, h2, h3, h4, h5, h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+    font-family: $rw-font-sans;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: $rw-text;
+}
+
+// Display headlines (gold serif hero title) — opt-in via .rw-display
+.rw-display {
+    font-family: $rw-font-display;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+}
+
+.rw-eyebrow {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: $rw-text-muted;
+}
+
+// ---------- 4. Re-Ware surfaces ----------------------------------------------
+.rw-bg-cream      { background-color: $rw-cream !important; }
+.rw-bg-cream-soft { background-color: $rw-cream-soft !important; }
+.rw-bg-cream-deep { background-color: $rw-cream-deep !important; }
+.rw-bg-dark       { background-color: $rw-dark !important;  color: $rw-text-onDark; }
+.rw-bg-dark-soft  { background-color: $rw-dark-soft !important; color: $rw-text-onDark; }
+
+.rw-section {
+    padding: 5.5rem 0;
+    @media (max-width: 768px) { padding: 3.5rem 0; }
+}
+.rw-section-sm { padding: 3.5rem 0; }
+.rw-section-lg { padding: 7rem 0; @media (max-width: 768px) { padding: 4rem 0; } }
+
+.rw-container-narrow { max-width: 920px; margin-left: auto; margin-right: auto; }
+.rw-container-tight  { max-width: 720px; margin-left: auto; margin-right: auto; }
+
+// ---------- 5. Buttons --------------------------------------------------------
+%rw-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 2.25rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    line-height: 1.1;
+    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    &:hover { transform: translateY(-1px); text-decoration: none; }
+}
+
+.rw-btn-coral   { @extend %rw-btn; background: $rw-coral; color: #fff !important;
+    &:hover { background: $rw-coral-hover; color: #fff !important; box-shadow: 0 8px 22px rgba($rw-coral, 0.32); }
+}
+.rw-btn-gold    { @extend %rw-btn; background: $rw-gold; color: $rw-dark !important;
+    &:hover { background: $rw-gold-hover; color: $rw-dark !important; box-shadow: 0 8px 22px rgba($rw-gold, 0.32); }
+}
+.rw-btn-dark    { @extend %rw-btn; background: $rw-dark; color: $rw-text-onDark !important;
+    &:hover { background: $rw-dark-soft; color: #fff !important; box-shadow: 0 8px 22px rgba(0,0,0,0.25); }
+}
+.rw-btn-outline-dark { @extend %rw-btn; background: transparent; color: $rw-dark !important; border-color: $rw-dark;
+    &:hover { background: $rw-dark; color: #fff !important; }
+}
+.rw-btn-outline-light { @extend %rw-btn; background: transparent; color: #fff !important; border-color: rgba(255,255,255,0.6);
+    &:hover { background: #fff; color: $rw-dark !important; border-color: #fff; }
+}
+.rw-btn-text {
+    color: $rw-dark; font-weight: 600; text-decoration: none;
+    border-bottom: 2px solid $rw-gold; padding-bottom: 2px;
+    &:hover { color: $rw-gold; text-decoration: none; }
+}
+
+// ---------- 6. Announcement bar ---------------------------------------------
+.rw-announcement {
+    background: $rw-dark;
+    color: $rw-text-onDark;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.55rem 1rem;
+    text-align: center;
+    position: relative;
+    a {
+        color: $rw-gold;
+        font-weight: 600;
+        text-decoration: none;
+        &:hover { color: $rw-gold-hover; text-decoration: underline; }
+    }
+    .rw-announcement-close {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: 0;
+        color: $rw-text-onDark;
+        opacity: 0.6;
+        padding: 0 0.4rem;
+        font-size: 1rem;
+        cursor: pointer;
+        &:hover { opacity: 1; }
+    }
+}
+body.rw-announcement-hidden .rw-announcement { display: none; }
+
+// ---------- 7. Header / Navigation -------------------------------------------
 header#top {
-    .navbar {
+    .rw-navbar {
+        background-color: $rw-cream;
         padding: 1rem 0;
+        border-bottom: 0;
+        transition: background-color 0.2s ease;
     }
+    .rw-navbar.rw-navbar-light  { background-color: $rw-cream; }
+    .rw-navbar.rw-navbar-dark   { background-color: $rw-dark; .rw-brand, .nav-link { color: $rw-text-onDark !important; } }
+
+    .rw-brand {
+        font-family: $rw-font-display;
+        font-size: 1.55rem;
+        color: $rw-dark !important;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        &:hover { color: $rw-gold !important; }
+    }
+
     .nav-link {
-        color: #1f1f1f !important;
+        color: $rw-dark !important;
         font-weight: 500;
-        &:hover {
-            color: $reware-gold !important;
-        }
+        padding: 0.5rem 1rem !important;
+        font-size: 0.95rem;
+        position: relative;
+        &:hover { color: $rw-gold !important; }
         &.active {
-            color: $reware-gold !important;
-            border-bottom: 2px solid $reware-gold;
+            color: $rw-dark !important;
+            text-decoration: underline;
+            text-underline-offset: 6px;
+            border-bottom: 0;
         }
     }
 }
 
+// Shop pages keep dark navbar text against cream
 .oe_website_sale header#top {
     .nav-link {
-        &:hover {
-            color: $accent-cyan !important;
-        }
-        &.active {
-            color: $primary-navy !important;
-            border-bottom: 2px solid $accent-cyan;
-        }
+        &:hover  { color: $rw-gold !important; }
+        &.active { color: $rw-gold !important; border-bottom: 0; text-decoration: underline; text-underline-offset: 6px; }
     }
 }
 
-// 4. Hero Section
-.s_hero_modern {
-    background: linear-gradient(135deg, $primary-navy 0%, #2a3a8a 100%);
-    color: $white;
-    padding: 100px 0;
-    
-    h1 {
-        font-weight: 800;
-        font-size: 3.5rem;
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-    }
-    
-    .lead {
-        font-size: 1.25rem;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 2.5rem;
-    }
-}
-
-// 5. Service Cards
-.s_service_card {
-    transition: all 0.3s ease;
-    border: none;
-    border-radius: 12px;
-    background: $white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    height: 100%;
-    
-    &:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-        
-        .card-icon {
-            background-color: $accent-cyan;
-            color: $white;
-        }
-    }
-    
-    .card-icon {
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        background-color: rgba($accent-cyan, 0.1);
-        color: $accent-cyan;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-    }
-    
-    h3 {
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-}
-
-// 6. Buttons (non-shop: Re-Ware black+gold)
-.btn-primary {
-    background-color: $reware-gold !important;
-    border-color: $reware-gold !important;
-    color: $reware-black !important;
-    font-weight: 600;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    
-    &:hover {
-        background-color: $reware-gold-hover !important;
-        border-color: $reware-gold-hover !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($reware-gold, 0.28);
-    }
-}
-
-// Shop pages keep COMSOL-like accent
-.oe_website_sale {
-    .btn-primary {
-        background-color: $accent-cyan !important;
-        border-color: $accent-cyan !important;
-        color: $primary-navy !important;
-
-        &:hover {
-            background-color: $accent-cyan-dark !important;
-            border-color: $accent-cyan-dark !important;
-            box-shadow: 0 4px 12px rgba($accent-cyan, 0.3);
-        }
-    }
-}
-
-// 7. Sections
-.s_section_gray {
-    background-color: $background-light;
-    padding: 80px 0;
-}
-
-.section-title {
-    font-weight: 800;
-    margin-bottom: 3rem;
+// ---------- 8. Hero -----------------------------------------------------------
+.rw-hero {
+    background: $rw-dark;
+    color: $rw-text-onDark;
+    padding: 7rem 0 6rem;
     position: relative;
-    padding-bottom: 1rem;
-    
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 60px;
-        height: 4px;
-        background-color: $accent-cyan;
+    overflow: hidden;
+
+    @media (max-width: 992px) { padding: 5rem 0 4rem; }
+
+    .rw-hero-title {
+        font-family: $rw-font-display;
+        color: $rw-gold;
+        font-size: clamp(2.6rem, 5.4vw, 4.7rem);
+        line-height: 1.02;
+        margin-bottom: 1.5rem;
+        font-weight: 400;
+        letter-spacing: -0.015em;
+    }
+    .rw-hero-sub {
+        color: $rw-text-onDark;
+        font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+        font-weight: 500;
+        line-height: 1.45;
+        margin-bottom: 2.5rem;
+        max-width: 32rem;
+    }
+    .rw-hero-image {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+    .rw-hero-image-placeholder {
+        @extend .rw-hero-image;
+        min-height: 420px;
+        background:
+            radial-gradient(circle at 30% 30%, rgba($rw-coral, 0.5), transparent 55%),
+            radial-gradient(circle at 70% 70%, rgba($rw-gold, 0.45), transparent 55%),
+            linear-gradient(135deg, #2a2a2a 0%, #0e0e0e 100%);
     }
 }
 
-// 8. Shop & product (COMSOL-adjacent: flat panels, structured copy, minimal motion)
+// Sub-hero (used on About / Our Why / Contact / Services etc. — cream surface)
+.rw-page-hero {
+    background: $rw-cream;
+    padding: 5rem 0 4rem;
+    @media (max-width: 768px) { padding: 3.5rem 0 2.5rem; }
+    h1 {
+        font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+        line-height: 1.05;
+        margin-bottom: 1.25rem;
+    }
+    p.lead { color: $rw-text-soft; max-width: 38rem; font-size: 1.15rem; line-height: 1.5; }
+}
+
+// ---------- 9. Cards (services, steps, etc.) ---------------------------------
+.rw-card {
+    background: #fff;
+    border-radius: 4px;
+    padding: 2rem;
+    height: 100%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    &:hover { transform: translateY(-4px); box-shadow: 0 14px 35px rgba(0,0,0,0.08); }
+
+    h3, h2 {
+        font-size: 1.4rem;
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+    }
+    p { color: $rw-text-soft; margin-bottom: 0; line-height: 1.55; font-size: 0.95rem; }
+
+    .rw-card-image {
+        margin-top: auto;
+        height: 180px;
+        background: $rw-cream-deep;
+        border-radius: 2px;
+        overflow: hidden;
+        filter: grayscale(0.85) contrast(1.05);
+        img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+}
+
+// ---------- 10. Steps (One click, three steps) -------------------------------
+.rw-steps {
+    background:
+        radial-gradient(circle at 0% 20%, rgba(255,255,255,0.04), transparent 60%),
+        radial-gradient(circle at 100% 80%, rgba(180, 138, 48, 0.08), transparent 55%),
+        $rw-dark;
+    color: $rw-text-onDark;
+
+    .rw-step {
+        padding: 1.2rem 0;
+        b, strong { color: $rw-gold; font-weight: 700; }
+        p { color: rgba(255,255,255,0.85); font-size: 1.1rem; line-height: 1.55; max-width: 30rem; }
+    }
+}
+
+// ---------- 11. "REPAIR. REPURPOSE. REUSE." big caps -------------------------
+.rw-rrr {
+    .rw-rrr-line {
+        font-family: $rw-font-display;
+        font-size: clamp(2rem, 4.8vw, 4.2rem);
+        font-weight: 400;
+        letter-spacing: 0.18em;
+        color: $rw-gold;
+        line-height: 1.15;
+        margin: 0;
+    }
+}
+
+// ---------- 12. Newsletter / form ---------------------------------------------
+.rw-newsletter {
+    .form-control {
+        border: 0;
+        border-bottom: 1.5px solid $rw-border;
+        background: transparent;
+        border-radius: 0;
+        padding: 0.6rem 0;
+        font-size: 0.95rem;
+        color: $rw-text;
+        box-shadow: none;
+        &:focus { border-color: $rw-gold; box-shadow: none; outline: none; }
+        &::placeholder { color: $rw-text-muted; }
+    }
+    label { color: $rw-text-soft; font-size: 0.85rem; font-weight: 500; }
+}
+
+// ---------- 13. Footer --------------------------------------------------------
+.rw-footer {
+    background: $rw-cream;
+    padding: 4rem 0 2rem;
+    color: $rw-text-soft;
+
+    .rw-footer-title {
+        font-family: $rw-font-display;
+        font-size: 1.6rem;
+        font-weight: 400;
+        color: $rw-dark;
+        margin-bottom: 2.5rem;
+        text-align: center;
+    }
+    h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.15em; color: $rw-dark; margin-bottom: 1rem; font-weight: 700; }
+    a  { color: $rw-text-soft; text-decoration: none;
+        &:hover { color: $rw-gold; }
+    }
+    .rw-footer-bottom { border-top: 1px solid $rw-border; padding-top: 1.5rem; margin-top: 2.5rem; font-size: 0.8rem; color: $rw-text-muted; }
+}
+
+// ---------- 14. Re-Ware brand surface for shop pages -------------------------
+// Light touch: keep shop functional but adopt Re-Ware cream surface + typography
+.oe_website_sale {
+    body, & { background-color: $rw-cream-soft; }
+
+    .text-primary { color: $rw-gold !important; }
+
+    .btn-primary {
+        background-color: $rw-gold !important;
+        border-color: $rw-gold !important;
+        color: $rw-dark !important;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 0.65rem 1.4rem;
+        border-radius: 999px;
+        &:hover {
+            background-color: $rw-gold-hover !important;
+            border-color: $rw-gold-hover !important;
+            color: $rw-dark !important;
+            box-shadow: 0 8px 20px rgba($rw-gold, 0.28);
+        }
+    }
+    .btn-outline-primary {
+        color: $rw-dark !important;
+        border-color: $rw-dark !important;
+        border-radius: 999px;
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 0.85rem;
+        &:hover { background-color: $rw-dark !important; color: #fff !important; }
+    }
+}
+
+// ---------- 15. Legacy/back-compat helpers used elsewhere --------------------
+.hover-elevate {
+    transition: all 0.3s ease;
+    &:hover { transform: translateY(-6px); box-shadow: 0 14px 35px rgba(0,0,0,0.1) !important; }
+}
+
+.reware-badge {
+    background: #fff;
+    color: $rw-dark;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid $rw-border;
+}
+
+.price-save-badge {
+    background: $rw-coral;
+    color: #fff;
+    border: 0;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.step-number {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    background: $rw-gold;
+    color: $rw-dark;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: $rw-font-sans;
+}
+
+// COMSOL-era shop helpers — kept so existing markup keeps working
 .qm-comsol-shop-hero {
-    border-left: 4px solid $primary-navy;
+    border-left: 4px solid $rw-gold;
+    background: #fff;
     box-shadow: none;
 }
-
 .qm-comsol-eyebrow {
-    letter-spacing: 0.12em;
+    letter-spacing: 0.16em;
     font-weight: 600;
     font-size: 0.7rem !important;
+    color: $rw-text-muted !important;
 }
-
-.qm-comsol-value-list li {
-    line-height: 1.55;
-}
-
+.qm-comsol-value-list li { line-height: 1.55; }
 .qm-comsol-bullet {
     width: 6px;
     height: 6px;
-    margin-top: 0.35rem;
-    background: $primary-navy;
+    margin-top: 0.55rem;
+    background: $rw-gold;
     border-radius: 1px;
     flex-shrink: 0;
 }
-
 .qm-comsol-cat-tile {
-    border: 1px solid #e0e0e0;
+    border: 1px solid $rw-border;
     border-radius: 2px;
+    background: #fff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover {
-        border-color: $primary-navy;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    }
+    &:hover { border-color: $rw-gold; box-shadow: 0 6px 22px rgba(0,0,0,0.06); }
 }
-
-.qm-comsol-home-cat-tile {
-    min-height: 148px;
-    padding: 1.25rem 0.75rem !important;
-}
+.qm-comsol-home-cat-tile { min-height: 148px; padding: 1.25rem 0.75rem !important; }
 
 .oe_product {
-    border: 1px solid #e0e0e0 !important;
+    border: 1px solid $rw-border !important;
     border-radius: 2px !important;
     overflow: hidden;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     background: #fff;
     box-shadow: none !important;
-
-    &:hover {
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07) !important;
-        transform: none;
-        border-color: #c8c8c8 !important;
-    }
-
-    .oe_product_image {
-        padding: 1rem;
-        background: #fafafa;
-    }
+    &:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.07) !important; transform: none; border-color: $rw-gold !important; }
+    .oe_product_image { padding: 1rem; background: $rw-cream-soft; }
 }
 
-.hover-elevate {
-    transition: all 0.3s ease;
-    &:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
-    }
+.products_categories .nav-link {
+    color: $rw-text !important;
+    padding: 0.65rem 0.9rem;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    &:hover { background: rgba($rw-gold, 0.12); color: $rw-dark !important; }
+    &.active { background: $rw-dark !important; color: #fff !important; }
 }
 
-.reware-badge {
-    background: #fff;
-    color: #1a1a1a;
-    padding: 3px 8px;
-    border-radius: 2px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border: 1px solid #d0d0d0;
-}
-
-.price-save-badge {
-    background: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
-    padding: 2px 8px;
-    border-radius: 2px;
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-// Sidebar Categories
-.products_categories {
-    .nav-link {
-        color: $text-dark !important;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 2px;
-        transition: all 0.2s ease;
-        
-        &:hover {
-            background: rgba($accent-cyan, 0.1);
-            color: $primary-navy !important;
-        }
-        
-        &.active {
-            background: $primary-navy !important;
-            color: $white !important;
-        }
+// Product detail variant configurator
+.reware-configurator .variant_attribute {
+    margin-bottom: 1.5rem;
+    .attribute_name {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        color: $rw-text-muted;
     }
 }
-
-// Product Detail
-.reware-configurator {
-    .variant_attribute {
-        margin-bottom: 1.5rem;
-        .attribute_name {
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            color: #888;
-        }
-    }
-}
-
-// Shop listing: attribute tags + stock line
 .oe_product .qm-shop-spec-tags .badge {
     font-size: 0.68rem;
     max-width: 100%;
     white-space: normal;
     text-align: left;
     line-height: 1.25;
+    background: $rw-cream-soft !important;
+    color: $rw-text !important;
+    border: 1px solid $rw-border !important;
+    font-weight: 500;
 }
-.oe_product .qm-shop-stock {
-    font-size: 0.75rem;
+.oe_product .qm-shop-stock { font-size: 0.75rem; color: $rw-text-muted; }
+
+// ---------- 16. Form fields (Contact / Newsletter shared look) ---------------
+.rw-form {
+    .form-label, label { font-size: 0.85rem; font-weight: 600; color: $rw-text-soft; text-transform: uppercase; letter-spacing: 0.08em; }
+    .form-control, input.form-control, textarea.form-control {
+        border: 1.5px solid $rw-border;
+        border-radius: 4px;
+        background: #fff;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        color: $rw-text;
+        box-shadow: none;
+        &:focus { border-color: $rw-gold; outline: none; box-shadow: 0 0 0 3px rgba($rw-gold, 0.15); }
+    }
+    textarea.form-control { min-height: 140px; }
 }

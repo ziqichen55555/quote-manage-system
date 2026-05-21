@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         Re-Ware Snippets — registered to Website Builder
+         Visual reference: https://www.reware-project.com/
+         Each <template id="s_rw_*"> is what gets inserted when the
+         user drags the corresponding tile from the Editor panel.
+         Page records call them via <t t-call="..."/> so that the
+         default content is also "snippet-aware" and the Editor
+         attaches the right option panel when clicked.
+         ============================================================ -->
+
+    <!-- s_rw_hero -->
+    <template id="s_rw_hero" name="Re-Ware Hero">
+        <section class="s_rw_hero rw-hero" data-name="Re-Ware Hero" data-snippet="s_rw_hero">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6">
+                        <h1 class="rw-hero-title">Turning old tech into opportunity.</h1>
+                        <p class="rw-hero-sub">Your secure, compliant way to clear out old devices and help close the digital divide.</p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="#rw-services" class="rw-btn-coral">Learn more</a>
+                            <a href="/contactus" class="rw-btn-outline-light">Donate now</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 d-none d-lg-block">
+                        <div class="rw-hero-image-placeholder"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_page_hero -->
+    <template id="s_rw_page_hero" name="Re-Ware Page Hero">
+        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+            <div class="container">
+                <p class="rw-eyebrow mb-3">Section label</p>
+                <h1 class="mb-3">Section title.</h1>
+                <p class="lead">A short subtitle that introduces this page.</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_services -->
+    <template id="s_rw_services" name="Re-Ware Services">
+        <section class="s_rw_services rw-section rw-bg-cream" data-name="Re-Ware Services" data-snippet="s_rw_services">
+            <div class="container">
+                <h2 class="mb-5" style="font-size: clamp(2rem, 3.5vw, 2.6rem);">Services we offer.</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="rw-card">
+                            <h3>Refurb &amp; Repurpose</h3>
+                            <p>We collect end-of-life devices and securely refurbish them, ready for a new home.</p>
+                            <div class="rw-card-image"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rw-card">
+                            <h3>Data Sanitisation</h3>
+                            <p>Certified Blancco erasure (NIST 800-88). Full reports for SOCI, Privacy Act reforms and audits.</p>
+                            <div class="rw-card-image"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="rw-card">
+                            <h3>Impactful Distribution</h3>
+                            <p>Through partnerships with charities and programs, we donate refurbished devices to those in need.</p>
+                            <div class="rw-card-image"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_consultation -->
+    <template id="s_rw_consultation" name="Re-Ware Consultation CTA">
+        <section class="s_rw_consultation rw-section rw-bg-cream-soft" data-name="Re-Ware Consultation" data-snippet="s_rw_consultation">
+            <div class="container rw-container-tight text-center">
+                <h2 class="mb-3">Reserve your complimentary consultation.</h2>
+                <p class="mb-4" style="color: var(--rw-text-soft); font-size: 1.1rem; line-height: 1.55;">Need a hand? We'll guide you through the process and show how your old tech can make a real difference for WA communities.</p>
+                <a href="/contactus" class="rw-btn-gold">Donate now</a>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_steps -->
+    <template id="s_rw_steps" name="Re-Ware Three Steps">
+        <section class="s_rw_steps rw-section rw-steps" data-name="Re-Ware Three Steps" data-snippet="s_rw_steps">
+            <div class="container rw-container-narrow">
+                <h2 class="text-center mb-5" style="color: #fff;">One click, three steps, genuine impact.</h2>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="rw-step"><p><b>01 Pick up.</b> We collect your unused laptops, tablets, PCs and other digital gear.</p></div>
+                        <div class="rw-step"><p><b>02 Wipe clean.</b> All data securely erased, ready for a fresh start.</p></div>
+                        <div class="rw-step"><p><b>03 Pay it forward.</b> We donate the devices to those who need them most.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_why -->
+    <template id="s_rw_why" name="Re-Ware Why">
+        <section class="s_rw_why rw-section rw-bg-cream" data-name="Re-Ware Why" data-snippet="s_rw_why">
+            <div class="container rw-container-narrow text-center">
+                <h2 class="mb-4">Why it matters.</h2>
+                <p class="mb-4" style="color: var(--rw-text); font-size: 1.25rem; font-weight: 500; line-height: 1.45;">Less waste. Less risk. More responsible use of the tech we already own.</p>
+                <p class="mb-0" style="color: var(--rw-text-soft); line-height: 1.7;">A sustainable model that supports economic benefits and helps address digital poverty across Western Australia — for lower-income families, displaced people, justice programs and people rebuilding after hardship.</p>
+                <div class="mt-4"><a href="/our-why" class="rw-btn-outline-dark">Learn more</a></div>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_rrr -->
+    <template id="s_rw_rrr" name="Re-Ware RRR Strip">
+        <section class="s_rw_rrr rw-section rw-bg-dark rw-rrr text-center" data-name="Re-Ware RRR Strip" data-snippet="s_rw_rrr">
+            <div class="container">
+                <p class="rw-rrr-line">R E P A I R .</p>
+                <p class="rw-rrr-line">R E P U R P O S E .</p>
+                <p class="rw-rrr-line">R E U S E .</p>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_newsletter -->
+    <template id="s_rw_newsletter" name="Re-Ware Newsletter">
+        <section class="s_rw_newsletter rw-section rw-bg-cream-soft" data-name="Re-Ware Newsletter" data-snippet="s_rw_newsletter">
+            <div class="container rw-container-tight text-center">
+                <h2 class="mb-3">Follow our journey.</h2>
+                <p class="rw-eyebrow mb-2">And be part of the change!</p>
+                <p class="mb-4" style="color: var(--rw-text-soft);">Stories, insights and updates from Re-Ware — straight to your inbox.</p>
+                <form class="rw-newsletter rw-form text-start" action="/website_mass_mailing/subscribe" method="post">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="rw_nl_fn">First name</label>
+                            <input id="rw_nl_fn" type="text" name="first_name" class="form-control" required="required"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="rw_nl_ln">Last name</label>
+                            <input id="rw_nl_ln" type="text" name="last_name" class="form-control" required="required"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="rw_nl_email">Email</label>
+                            <input id="rw_nl_email" type="email" name="email" class="form-control" required="required"/>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="rw-btn-coral">Join us</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_categories -->
+    <template id="s_rw_categories" name="Re-Ware Categories">
+        <section class="s_rw_categories rw-section rw-bg-cream-soft" data-name="Re-Ware Categories" data-snippet="s_rw_categories">
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-end justify-content-between mb-4 gap-3">
+                    <div>
+                        <p class="rw-eyebrow mb-2">Catalogue access</p>
+                        <h2 class="mb-0">Browse refurbished categories</h2>
+                    </div>
+                    <a href="/shop" class="rw-btn-outline-dark">View catalogue</a>
+                </div>
+                <div class="row g-3 g-md-4">
+                    <!-- request is unbound when the Editor renders snippet
+                         thumbnails or t-snippet previews, so always guard
+                         data lookups; without the guard the WHOLE snippet
+                         panel rendering aborts and zero Re-Ware tiles show
+                         up in the Builder. -->
+                    <t t-set="home_categories" t-value="(request.env['product.public.category'].search([('parent_id', '=', False), ('product_tmpl_ids.website_published', '=', True), ('product_tmpl_ids.sale_ok', '=', True)], limit=16, order='sequence, name, id')) if (request and request.env) else []"/>
+                    <t t-foreach="home_categories" t-as="h_cat">
+                        <t t-set="_home_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [h_cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
+                        <div class="col-6 col-md-3">
+                            <a t-attf-href="/shop/category/#{slug(h_cat)}" class="text-decoration-none text-dark">
+                                <div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                                    <div class="mb-2">
+                                        <t t-if="h_cat.image_128">
+                                            <img t-attf-src="/web/image/product.public.category/#{h_cat.id}/image_128" class="img-fluid" style="max-height: 64px; width: auto;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-tag fs-1" style="color: var(--rw-gold);"/>
+                                        </t>
+                                    </div>
+                                    <p class="fw-bold mb-0" t-field="h_cat.name"/>
+                                    <p class="small mb-0" style="color: var(--rw-text-muted);"><t t-esc="_home_cat_cnt"/> products</p>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                    <!-- Placeholder shown only inside the Editor preview
+                         where the live category list isn't reachable. -->
+                    <t t-if="not home_categories">
+                        <div class="col-6 col-md-3"><div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center"><div class="mb-2"><i class="fa fa-tag fs-1" style="color: var(--rw-gold);"/></div><p class="fw-bold mb-0">Laptops</p><p class="small mb-0" style="color: var(--rw-text-muted);">— products</p></div></div>
+                        <div class="col-6 col-md-3"><div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center"><div class="mb-2"><i class="fa fa-tag fs-1" style="color: var(--rw-gold);"/></div><p class="fw-bold mb-0">Monitors</p><p class="small mb-0" style="color: var(--rw-text-muted);">— products</p></div></div>
+                        <div class="col-6 col-md-3"><div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center"><div class="mb-2"><i class="fa fa-tag fs-1" style="color: var(--rw-gold);"/></div><p class="fw-bold mb-0">Docks</p><p class="small mb-0" style="color: var(--rw-text-muted);">— products</p></div></div>
+                        <div class="col-6 col-md-3"><div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center"><div class="mb-2"><i class="fa fa-tag fs-1" style="color: var(--rw-gold);"/></div><p class="fw-bold mb-0">Accessories</p><p class="small mb-0" style="color: var(--rw-text-muted);">— products</p></div></div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- ============================================================
+         Register snippets to the Website Editor panel
+         (appears under "Structure" group, drag onto any page)
+         ============================================================ -->
+    <template id="rw_snippets_register" inherit_id="website.snippets" name="Re-Ware Snippets Register">
+        <xpath expr="//div[@id='snippet_structure']//div[hasclass('o_panel_body')]" position="inside">
+            <t t-snippet="quote_manage_ui.s_rw_hero" string="Re-Ware Hero"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_hero.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_page_hero" string="Re-Ware Page Hero"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_page_hero.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_services" string="Re-Ware Services"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_services.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_consultation" string="Re-Ware Consultation"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_consultation.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_steps" string="Re-Ware Three Steps"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_steps.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_why" string="Re-Ware Why"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_why.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_rrr" string="Re-Ware RRR Strip"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_rrr.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_newsletter" string="Re-Ware Newsletter"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_newsletter.svg"/>
+            <t t-snippet="quote_manage_ui.s_rw_categories" string="Re-Ware Categories"
+               t-thumbnail="/quote_manage_ui/static/src/img/snippets/s_rw_categories.svg"/>
+        </xpath>
+    </template>
+
+    <!-- ============================================================
+         Snippet options (color variant + section toggle)
+         User clicks any Re-Ware section -> "Re-Ware background"
+         dropdown shows up in the right-hand options panel
+         ============================================================ -->
+    <template id="rw_snippets_options" inherit_id="website.snippet_options" name="Re-Ware Snippet Options">
+        <xpath expr="." position="inside">
+            <div data-selector="section[data-snippet^='s_rw_']">
+                <we-select string="Re-Ware background">
+                    <we-button data-select-class="">Default</we-button>
+                    <we-button data-select-class="rw-bg-cream">Cream</we-button>
+                    <we-button data-select-class="rw-bg-cream-soft">Cream soft</we-button>
+                    <we-button data-select-class="rw-bg-cream-deep">Cream deep</we-button>
+                    <we-button data-select-class="rw-bg-dark">Dark</we-button>
+                </we-select>
+                <we-select string="Section spacing">
+                    <we-button data-select-class="">Standard</we-button>
+                    <we-button data-select-class="rw-section-sm">Compact</we-button>
+                    <we-button data-select-class="rw-section-lg">Tall</we-button>
+                </we-select>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.30',
+    'version': '1.0.33',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -20,6 +20,10 @@
         # Product rows are imported via scripts/import_products_to_odoo.sh;
         # loading them on every -u hits duplicate barcode errors.
         'data/quote_manage_ui_arch_sync_policy.xml',
+        # Snippets must be declared BEFORE website_templates.xml so the
+        # <t t-call="quote_manage_ui.s_rw_*"/> references inside page archs
+        # resolve cleanly during the same data-load.
+        'views/snippets.xml',
         'views/website_templates.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',

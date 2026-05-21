@@ -14,8 +14,104 @@ def _quote_manage_ui_website_templates_xml_path():
         return False
 
 
+def _quote_manage_ui_template_xml_paths():
+    """All XML files in this module that contain ``<template>`` declarations.
+
+    Used by the sync helpers so that newly added snippet libraries (e.g.
+    ``views/snippets.xml``) are picked up alongside ``website_templates.xml``
+    without needing to update every helper individually.
+    """
+    paths = []
+    for rel in ('quote_manage_ui/views/website_templates.xml',
+                'quote_manage_ui/views/snippets.xml'):
+        try:
+            paths.append(file_path(rel))
+        except (FileNotFoundError, ValueError):
+            continue
+    return paths
+
+
 class IrUiView(models.Model):
     _inherit = 'ir.ui.view'
+
+    @api.model
+    def _quote_manage_ui_read_template_arch_from_xml(self, template_id, root=None):
+        """Return ``arch_db`` string for a ``<template id="…">`` in any module XML.
+
+        ``root`` may be a single ElementTree root (legacy callers) or an
+        iterable of roots (multi-file lookup). When omitted, every file
+        returned by :func:`_quote_manage_ui_template_xml_paths` is searched
+        and the first match wins.
+        """
+        if root is None:
+            roots = []
+            for path in _quote_manage_ui_template_xml_paths():
+                if not os.path.isfile(path):
+                    continue
+                try:
+                    roots.append(ET.parse(path).getroot())
+                except ET.ParseError:
+                    continue
+        elif isinstance(root, (list, tuple)):
+            roots = list(root)
+        else:
+            roots = [root]
+
+        for r in roots:
+            for tmpl in r.findall('.//template'):
+                if tmpl.get('id') != template_id:
+                    continue
+                inner = ''.join(
+                    ET.tostring(child, encoding='unicode') for child in list(tmpl)
+                ).strip()
+                inherit_id = tmpl.get('inherit_id')
+                if inherit_id:
+                    attrs = [
+                        f'inherit_id="{inherit_id}"',
+                        f'name="{tmpl.get("name", "")}"',
+                    ]
+                    if tmpl.get('priority'):
+                        attrs.append(f'priority="{tmpl.get("priority")}"')
+                    return f'<data {" ".join(attrs)}>{inner}</data>'
+                return inner
+        return None
+
+    @api.model
+    def _quote_manage_ui_sync_module_templates_from_xml(self):
+        """Push every module-owned ``<template>`` onto its COW copies.
+
+        Website Builder creates per-website ``ir.ui.view`` rows (same ``key``,
+        different ``website_id``) whose ``arch_db`` can stay on an old header /
+        homepage extension after ``-u``. This walks both ``website_templates.xml``
+        and ``snippets.xml`` and rewrites every matching COW row so the latest
+        snippet structure is the one users see.
+        """
+        roots = []
+        for path in _quote_manage_ui_template_xml_paths():
+            if not os.path.isfile(path):
+                continue
+            try:
+                roots.append(ET.parse(path).getroot())
+            except ET.ParseError:
+                continue
+        template_ids = []
+        seen = set()
+        for r in roots:
+            for el in r.findall('.//template'):
+                tid = el.get('id')
+                if not tid or tid in seen:
+                    continue
+                seen.add(tid)
+                template_ids.append(tid)
+
+        View = self.sudo().with_context(active_test=False)
+        for tid in template_ids:
+            arch_db = self._quote_manage_ui_read_template_arch_from_xml(tid, root=roots)
+            if not arch_db:
+                continue
+            view_key = f'quote_manage_ui.{tid}'
+            for view in View.search([('key', '=', view_key)]):
+                view.write({'arch_db': arch_db})
 
     @api.model
     def _quote_manage_ui_lock_module_archs(self):
@@ -146,6 +242,8 @@ class WebsitePage(models.Model):
             'quote_manage_ui.sync_inline_page_arch_from_xml', 'false'
         ).lower() in ('1', 'true', 'yes'):
             self._quote_manage_ui_sync_inline_page_archs_from_module_xml()
+            self.env['ir.ui.view']._quote_manage_ui_sync_module_templates_from_xml()
+            self._quote_manage_ui_cleanup_duplicate_menus()
 
         # Allow website.page XML to overwrite DB on subsequent upgrades (same idea as refurb data).
         # DEPRECATED: This was erasing user edits on every upgrade. 
@@ -231,33 +329,8 @@ class WebsitePage(models.Model):
 
     @api.model
     def _quote_manage_ui_ensure_menu_parents(self, Website):
-        """Ensure module menus (Shop, Trade-in, Partners, etc.) are attached to every website's main menu."""
-        Menu = self.env['website.menu'].sudo().with_context(active_test=False)
-        module_menu_xmlids = [
-            'menu_shop',
-            'menu_trade_in',
-            'menu_services',
-            'menu_about_us',
-            'menu_our_why',
-            'menu_partners',
-        ]
-        
-        for site in Website.search([]):
-            main_menu = site.menu_id
-            if not main_menu:
-                continue
-            
-            for xmlid in module_menu_xmlids:
-                try:
-                    menu_record = self.env.ref(f'quote_manage_ui.{xmlid}')
-                    # If the menu record exists and is not attached to this website's main menu,
-                    # we might need to create a website-specific copy or just ensure the generic one is visible.
-                    # Odoo's website.menu is tricky with multi-website.
-                    # For now, let's just ensure the XML record's parent is set correctly if it's the only one.
-                    if menu_record.parent_id.id != main_menu.id:
-                        menu_record.write({'parent_id': main_menu.id})
-                except ValueError:
-                    continue
+        """Re-attach module menus to each website's top menu (dedupe included)."""
+        self._quote_manage_ui_cleanup_duplicate_menus()
 
     @api.model
     def _quote_manage_ui_sync_inline_page_archs_from_module_xml(self):
@@ -289,3 +362,49 @@ class WebsitePage(models.Model):
                 continue
             for v in View.search([('key', '=', page_key), ('type', '=', 'qweb')]):
                 v.write({'arch_db': arch_db})
+
+    @api.model
+    def _quote_manage_ui_cleanup_duplicate_menus(self):
+        """One Re-Ware nav: drop typo/duplicate menus and align labels."""
+        Menu = self.env['website.menu'].sudo().with_context(active_test=False)
+        Website = self.env['website'].sudo()
+        # Typo from an old Website Builder page (/partners-10).
+        Menu.search([
+            '|',
+            ('url', '=', '/partners-10'),
+            ('name', 'ilike', 'Patner'),
+        ]).unlink()
+
+        menu_specs = (
+            ('menu_shop', 'Shop', 1),
+            ('menu_trade_in', 'Trade-in', 2),
+            ('menu_our_why', 'Our Why.', 3),
+            ('menu_services', 'Services', 4),
+            ('menu_about_us', 'About.', 5),
+            ('menu_partners', 'Partners', 8),
+        )
+        for site in Website.search([]):
+            main_menu = site.menu_id
+            if not main_menu:
+                continue
+            for xmlid, label, seq in menu_specs:
+                try:
+                    mod_menu = self.env.ref(f'quote_manage_ui.{xmlid}')
+                except ValueError:
+                    continue
+                mod_menu.write({
+                    'name': label,
+                    'parent_id': main_menu.id,
+                    'website_id': site.id,
+                    'sequence': seq,
+                })
+                Menu.search([
+                    ('url', '=', mod_menu.url),
+                    ('parent_id', '=', main_menu.id),
+                    ('id', '!=', mod_menu.id),
+                ]).unlink()
+            # Contact stays reachable via Donate button, not duplicated in the bar.
+            Menu.search([
+                ('parent_id', '=', main_menu.id),
+                ('url', '=', '/contactus'),
+            ]).unlink()
