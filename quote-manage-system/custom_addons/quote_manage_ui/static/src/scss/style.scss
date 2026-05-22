@@ -10,22 +10,29 @@
 // =============================================================================
 
 // ---------- 1. Design tokens --------------------------------------------------
-$rw-cream:        #f1ead9;
-$rw-cream-soft:   #f6f0e3;
+// Hex values mirror Re-Ware's Squarespace site palette (site.css :root).
+//   --white-hsl       34.29,21.21%,93.53%   → #F1EAD9 (sectionTheme="white")
+//   --black-hsl       0,0%,19.22%           → #313131 (sectionTheme="black-bold")
+//   --lightAccent-hsl 60,100%,99.61%        → #FFFFFE (sectionTheme="light")
+//   --accent-hsl      38.12,35.56%,53.14%   → #B48A30 (gold)
+//   --darkAccent-hsl  5.42,77.57%,58.04%    → #E96354 (coral)
+$rw-cream:        #f1ead9;            // "white" theme on Re-Ware (cream)
+$rw-cream-soft:   #f6f0e3;            // local lighter cream variant
 $rw-cream-deep:   #e7dfca;
-$rw-dark:         #1a1a1a;
-$rw-dark-soft:    #2a2a2a;
+$rw-light:        #fffffe;            // "light" theme on Re-Ware (near white)
+$rw-dark:         #313131;            // "black-bold" theme on Re-Ware (charcoal, NOT pure black)
+$rw-dark-soft:    #444444;
 $rw-gold:         #b48a30;
 $rw-gold-soft:    #c79e4a;
 $rw-gold-hover:   #cfa552;
-$rw-coral:        #ec6e62;
+$rw-coral:        #e96354;
 $rw-coral-hover:  #d85a4e;
-$rw-text:         #1a1a1a;
+$rw-text:         #313131;
 $rw-text-soft:    #4a4a4a;
 $rw-text-muted:   #7a7a7a;
-$rw-text-onDark:  #f5f0e6;
+$rw-text-onDark:  #f1ead9;
 $rw-border:       #d9d2c1;
-$rw-border-dark:  #3a3a3a;
+$rw-border-dark:  #4a4a4a;
 
 // Legacy aliases (kept so existing markup doesn't break)
 $primary-navy:        $rw-dark;
@@ -55,7 +62,8 @@ $white:               #ffffff;
     --rw-text-onDark:  #{$rw-text-onDark};
     --rw-border:       #{$rw-border};
 
-    // Odoo brand hooks (so .btn-primary, .text-primary, etc. inherit Re-Ware gold)
+    // Odoo brand hooks — Re-Ware primary CTA is gold (Squarespace
+    // `safeLightAccent` / `safeDarkAccent` both = #B48A30).
     --primary:         #{$rw-gold};
     --o-brand-primary: #{$rw-gold};
     --o-brand-odoo:    #{$rw-gold};
@@ -66,9 +74,9 @@ $white:               #ffffff;
     --o-cc1-bg:        #{$rw-cream};         // light background
     --o-cc1-text:      #{$rw-text};
     --o-cc1-headings:  #{$rw-text};
-    --o-cc1-btn-primary: #{$rw-gold};        // Donate now style
-    --o-cc1-btn-primary-text: #{$rw-dark};
-    --o-cc1-btn-secondary: #{$rw-coral};     // Learn more style
+    --o-cc1-btn-primary: #{$rw-gold};        // primary CTA = gold (Donate, Join, Learn more)
+    --o-cc1-btn-primary-text: #ffffff;
+    --o-cc1-btn-secondary: #{$rw-dark};      // outline-on-cream style
     --o-cc1-btn-secondary-text: #ffffff;
 
     --o-cc2-bg:        #{$rw-cream-soft};    // softer cream surface
@@ -82,12 +90,12 @@ $white:               #ffffff;
     --o-cc4-bg:        #{$rw-dark};          // dark hero / RRR strip
     --o-cc4-text:      #{$rw-text-onDark};
     --o-cc4-headings:  #ffffff;
-    --o-cc4-btn-primary: #{$rw-gold};
-    --o-cc4-btn-primary-text: #{$rw-dark};
+    --o-cc4-btn-primary: #{$rw-gold};        // CTA on dark sections = gold
+    --o-cc4-btn-primary-text: #ffffff;
 
     --o-cc5-bg:        #{$rw-gold};          // bold gold band
-    --o-cc5-text:      #{$rw-dark};
-    --o-cc5-headings:  #{$rw-dark};
+    --o-cc5-text:      #ffffff;
+    --o-cc5-headings:  #ffffff;
 
     // Five theme color tokens (Editor swatches "Color 1..5")
     --o-color-1: #{$rw-cream};
@@ -100,33 +108,49 @@ $white:               #ffffff;
 // ---------- 2. Google Fonts (loaded on every page via @import; Odoo strips
 // <link> we add in QWeb headers on COW copies, @import inside the bundled
 // stylesheet survives that) -----------------------------------------------------
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300%3B400%3B500%3B600%3B700%3B800&family=DM+Serif+Display:ital@0%3B1&display=swap');
+// Re-Ware uses Manrope (500/700) for display + Nunito Sans (400/700, italic)
+// for body copy — same combo as reware-project.com.
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500%3B600%3B700%3B800&family=Nunito+Sans:ital,wght@0,300%3B0,400%3B0,600%3B0,700%3B1,400%3B1,700&display=swap');
 
 // ---------- 3. Base typography ------------------------------------------------
-$rw-font-sans:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-$rw-font-display: 'DM Serif Display', 'Manrope', Georgia, serif;
+$rw-font-body:    'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$rw-font-display: 'Manrope', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+// Legacy alias kept for older rules; both now point at Manrope.
+$rw-font-sans:    $rw-font-display;
 
 body {
-    font-family: $rw-font-sans;
+    font-family: $rw-font-body;
     color: $rw-text;
     background-color: $white;
     font-weight: 400;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
+    line-height: 1.55;
+    font-size: clamp(0.92rem, 1vw, 1rem);
 }
 
 h1, h2, h3, h4, h5, h6,
 .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
-    font-family: $rw-font-sans;
+    font-family: $rw-font-display;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: $rw-text;
+    line-height: 1.15;
 }
 
-// Display headlines (gold serif hero title) — opt-in via .rw-display
+// Global responsive sizing — defaults that any wysiwyg h1..h6 will inherit
+// unless an explicit clamp() is supplied by a section.
+h1 { font-size: clamp(1.85rem, 3.6vw, 2.6rem); }
+h2 { font-size: clamp(1.4rem, 2.6vw, 1.95rem); }
+h3 { font-size: clamp(1.15rem, 1.8vw, 1.45rem); }
+h4 { font-size: clamp(1rem, 1.4vw, 1.2rem); }
+h5 { font-size: clamp(0.95rem, 1.2vw, 1.05rem); }
+h6 { font-size: clamp(0.85rem, 1.1vw, 0.95rem); }
+
+// Display headlines (Manrope, used on hero / sub-hero titles) — opt-in via .rw-display
 .rw-display {
     font-family: $rw-font-display;
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 700;
+    letter-spacing: -0.015em;
     line-height: 1.05;
 }
 
@@ -142,18 +166,131 @@ h1, h2, h3, h4, h5, h6,
 .rw-bg-cream      { background-color: $rw-cream !important; }
 .rw-bg-cream-soft { background-color: $rw-cream-soft !important; }
 .rw-bg-cream-deep { background-color: $rw-cream-deep !important; }
+.rw-bg-light      { background-color: $rw-light !important; color: $rw-text; }
 .rw-bg-dark       { background-color: $rw-dark !important;  color: $rw-text-onDark; }
 .rw-bg-dark-soft  { background-color: $rw-dark-soft !important; color: $rw-text-onDark; }
 
 .rw-section {
-    padding: 5.5rem 0;
-    @media (max-width: 768px) { padding: 3.5rem 0; }
+    padding: clamp(3rem, 6vw, 4.5rem) 0;
 }
-.rw-section-sm { padding: 3.5rem 0; }
-.rw-section-lg { padding: 7rem 0; @media (max-width: 768px) { padding: 4rem 0; } }
+.rw-section-sm { padding: clamp(2.25rem, 4vw, 3rem) 0; }
+.rw-section-lg { padding: clamp(3.5rem, 7vw, 5.5rem) 0; }
 
-.rw-container-narrow { max-width: 920px; margin-left: auto; margin-right: auto; }
-.rw-container-tight  { max-width: 720px; margin-left: auto; margin-right: auto; }
+// Full-bleed background-image sections (mirror Re-Ware homepage hero strips)
+.rw-bg-image {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    isolation: isolate;
+
+    > .container { position: relative; z-index: 1; }
+}
+
+.rw-bg-consultation {
+    background-image: url('/quote_manage_ui/static/src/img/backgrounds/consultation.png');
+    background-attachment: scroll;
+    color: $rw-text-onDark;
+    padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 0;
+    }
+
+    .rw-consultation-title,
+    .rw-consultation-steps-title {
+        color: $rw-text-onDark;
+        font-size: clamp(1.6rem, 3.2vw, 2.15rem);
+        font-weight: 700;
+        line-height: 1.15;
+    }
+    .rw-consultation-lead {
+        color: rgba($rw-text-onDark, 0.95);
+        font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+        line-height: 1.55;
+        max-width: 36rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .rw-consultation-steps {
+        max-width: 32rem;
+        margin: 0 auto;
+        text-align: left;
+    }
+    .rw-consultation-step {
+        color: $rw-text-onDark;
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.55;
+        margin-bottom: 1rem;
+        &:last-child { margin-bottom: 0; }
+        strong { font-weight: 700; }
+    }
+}
+
+.rw-bg-why {
+    background-image: url('/quote_manage_ui/static/src/img/backgrounds/why-it-matters.png');
+    color: $rw-text;
+    padding: clamp(3.5rem, 7vw, 6rem) 0;
+
+    .rw-why-card {
+        background: #ffffff;
+        max-width: 640px;
+        padding: clamp(1.75rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+        border-radius: 6px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    h2 {
+        color: $rw-text;
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        margin-bottom: 1rem;
+    }
+    .rw-why-lead {
+        color: $rw-text;
+        font-size: clamp(1rem, 1.35vw, 1.15rem);
+        font-weight: 600;
+        line-height: 1.45;
+    }
+    .rw-why-body {
+        color: $rw-text-soft;
+        line-height: 1.65;
+        font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+    }
+    // Re-Ware why card: RRR lines use the same body face (Nunito Sans) as the
+    // "Re-Ware refurbishes…" paragraph — one size step up, bold, modest tracking.
+    .rw-why-rrr-line {
+        font-family: $rw-font-body;
+        font-weight: 700;
+        font-size: clamp(1rem, 1.2vw, 1.05rem);
+        letter-spacing: 0.06em;
+        color: $rw-text;
+        line-height: 1.5;
+        margin: 0.15rem 0;
+    }
+}
+
+.rw-container-narrow { max-width: 820px; margin-left: auto; margin-right: auto; padding-inline: 1rem; }
+.rw-container-tight  { max-width: 640px; margin-left: auto; margin-right: auto; padding-inline: 1rem; }
+
+// Cap the overall page container so content stays readable on large
+// monitors (Re-Ware site is ~1140px max). Bootstrap's xxl/xl break
+// out to 1320/1140 which felt too wide per design feedback.
+.container,
+.container-fluid > .container,
+.s_rw_hero .container,
+.s_rw_services .container,
+.s_rw_consultation .container,
+.s_rw_why .container,
+.s_rw_steps .container,
+.s_rw_rrr .container,
+.s_rw_newsletter .container,
+.rw-page-hero .container {
+    max-width: 1140px;
+}
 
 // ---------- 5. Buttons --------------------------------------------------------
 %rw-btn {
@@ -161,25 +298,56 @@ h1, h2, h3, h4, h5, h6,
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.85rem 2.25rem;
+    padding: 0.7rem 1.6rem;
     border-radius: 999px;
     font-weight: 600;
-    font-size: 0.9rem;
-    letter-spacing: 0.06em;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     text-decoration: none;
     line-height: 1.1;
-    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: transform 0.18s ease, background-color 0.18s ease,
+                color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     border: 1.5px solid transparent;
     cursor: pointer;
     &:hover { transform: translateY(-1px); text-decoration: none; }
+
+    @media (max-width: 575.98px) {
+        padding: 0.65rem 1.35rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+    }
 }
 
-.rw-btn-coral   { @extend %rw-btn; background: $rw-coral; color: #fff !important;
-    &:hover { background: $rw-coral-hover; color: #fff !important; box-shadow: 0 8px 22px rgba($rw-coral, 0.32); }
+// Re-Ware primary CTA on the live site is gold (Squarespace
+// safeLightAccent / safeDarkAccent = #B48A30). Both alias classes
+// resolve to gold so existing markup keeps rendering correctly.
+.rw-btn-coral,
+.rw-btn-gold {
+    @extend %rw-btn;
+    background: $rw-gold;
+    color: #fff !important;
+
+    &:hover {
+        background: $rw-gold-hover;
+        color: #fff !important;
+        box-shadow: 0 6px 18px rgba($rw-gold, 0.28);
+    }
 }
-.rw-btn-gold    { @extend %rw-btn; background: $rw-gold; color: $rw-dark !important;
-    &:hover { background: $rw-gold-hover; color: $rw-dark !important; box-shadow: 0 8px 22px rgba($rw-gold, 0.32); }
+// Coral-red CTA — used by the header "Donate now" + "Shop" pair so
+// they share the same warm red accent (Re-Ware darkAccent #E96354).
+.rw-btn-coral-red {
+    @extend %rw-btn;
+    background: $rw-coral;
+    color: #fff !important;
+    border-color: $rw-coral;
+
+    &:hover {
+        background: $rw-coral-hover;
+        color: #fff !important;
+        border-color: $rw-coral-hover;
+        box-shadow: 0 6px 18px rgba($rw-coral, 0.32);
+    }
 }
 .rw-btn-dark    { @extend %rw-btn; background: $rw-dark; color: $rw-text-onDark !important;
     &:hover { background: $rw-dark-soft; color: #fff !important; box-shadow: 0 8px 22px rgba(0,0,0,0.25); }
@@ -230,31 +398,34 @@ h1, h2, h3, h4, h5, h6,
 body.rw-announcement-hidden .rw-announcement { display: none; }
 
 // ---------- 7. Header / Navigation -------------------------------------------
+// Mobile header keeps Odoo defaults (navbar-light + o_cc + menu-gradient).
+// Desktop .rw-navbar gets the same classes in XML — do NOT override backgrounds
+// here or mobile will diverge.
 header#top {
-    .rw-navbar {
-        background-color: $rw-cream;
+    .rw-navbar:not(.o_header_mobile) {
         padding: 1rem 0;
         border-bottom: 0;
-        transition: background-color 0.2s ease;
     }
-    .rw-navbar.rw-navbar-light  { background-color: $rw-cream; }
-    .rw-navbar.rw-navbar-dark   { background-color: $rw-dark; .rw-brand, .nav-link { color: $rw-text-onDark !important; } }
+    .rw-navbar.rw-navbar-dark {
+        background-color: $rw-dark !important;
+        .rw-brand, .nav-link { color: $rw-text-onDark !important; }
+    }
 
     .rw-brand {
         font-family: $rw-font-display;
-        font-size: 1.55rem;
-        color: $rw-dark !important;
-        font-weight: 400;
-        letter-spacing: -0.01em;
+        font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+        color: $rw-gold !important;
+        font-weight: 700;
+        letter-spacing: -0.015em;
         text-decoration: none;
-        &:hover { color: $rw-gold !important; }
+        &:hover { color: $rw-gold-hover !important; }
     }
 
     .nav-link {
         color: $rw-dark !important;
         font-weight: 500;
-        padding: 0.5rem 1rem !important;
-        font-size: 0.95rem;
+        padding: 0.4rem 0.85rem !important;
+        font-size: 0.86rem;
         position: relative;
         &:hover { color: $rw-gold !important; }
         &.active {
@@ -266,11 +437,23 @@ header#top {
     }
 }
 
-// Shop pages keep dark navbar text against cream
-.oe_website_sale header#top {
-    .nav-link {
-        &:hover  { color: $rw-gold !important; }
-        &.active { color: $rw-gold !important; border-bottom: 0; text-decoration: underline; text-underline-offset: 6px; }
+// Shop pages: hide the entire site header (announcement strip + navbar)
+// so the catalogue/cart/checkout chrome reads as a standalone shopping
+// surface. Footer stays visible.
+//
+// IMPORTANT: do NOT use `.o_wsale_my_cart` here — that class is the cart
+// icon rendered inside the header on EVERY page, so it would hide the
+// header globally. Only `.oe_website_sale` (shop content container) and
+// `.o_wsale_products_page` (catalogue listing) are shop-only markers.
+html:has(main .oe_website_sale),
+html:has(main .o_wsale_products_page) {
+    header#top,
+    .rw-announcement,
+    #rw-announcement {
+        display: none !important;
+    }
+    body {
+        background-color: #ffffff !important;
     }
 }
 
@@ -278,28 +461,26 @@ header#top {
 .rw-hero {
     background: $rw-dark;
     color: $rw-text-onDark;
-    padding: 7rem 0 6rem;
+    padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
     position: relative;
     overflow: hidden;
-
-    @media (max-width: 992px) { padding: 5rem 0 4rem; }
 
     .rw-hero-title {
         font-family: $rw-font-display;
         color: $rw-gold;
-        font-size: clamp(2.6rem, 5.4vw, 4.7rem);
-        line-height: 1.02;
-        margin-bottom: 1.5rem;
-        font-weight: 400;
-        letter-spacing: -0.015em;
+        font-size: clamp(2rem, 4.2vw, 3.4rem);
+        line-height: 1.08;
+        margin-bottom: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
     .rw-hero-sub {
         color: $rw-text-onDark;
-        font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+        font-size: clamp(0.95rem, 1.25vw, 1.1rem);
         font-weight: 500;
-        line-height: 1.45;
-        margin-bottom: 2.5rem;
-        max-width: 32rem;
+        line-height: 1.55;
+        margin-bottom: 1.75rem;
+        max-width: 30rem;
     }
     .rw-hero-image {
         border-radius: 8px;
@@ -311,54 +492,133 @@ header#top {
         @extend .rw-hero-image;
         min-height: 420px;
         background:
-            radial-gradient(circle at 30% 30%, rgba($rw-coral, 0.5), transparent 55%),
-            radial-gradient(circle at 70% 70%, rgba($rw-gold, 0.45), transparent 55%),
+            radial-gradient(circle at 30% 30%, rgba($rw-coral, 0.55), transparent 55%),
+            radial-gradient(circle at 70% 70%, rgba($rw-coral, 0.35), transparent 55%),
             linear-gradient(135deg, #2a2a2a 0%, #0e0e0e 100%);
+    }
+
+    .rw-hero-carousel {
+        min-height: 360px;
+
+        .carousel,
+        .carousel-inner,
+        .carousel-item {
+            height: 100%;
+            min-height: 360px;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 360px;
+            object-fit: cover;
+        }
+
+        @media (max-width: 991.98px) {
+            min-height: 280px;
+            .carousel, .carousel-inner, .carousel-item { min-height: 280px; }
+            .carousel-item img { height: 280px; }
+        }
+
+        .carousel-indicators {
+            margin-bottom: 1rem;
+
+            [data-bs-target] {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                border: 0;
+                background-color: rgba($rw-text-onDark, 0.45);
+                opacity: 1;
+
+                &.active { background-color: $rw-gold; }
+            }
+        }
+
+        .carousel-control-prev,
+        .carousel-control-next {
+            width: 3rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        &:hover .carousel-control-prev,
+        &:hover .carousel-control-next { opacity: 0.85; }
+
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon { display: none; }
+
+        .oi {
+            color: $rw-text-onDark;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+        }
     }
 }
 
 // Sub-hero (used on About / Our Why / Contact / Services etc. — cream surface)
 .rw-page-hero {
     background: $rw-cream;
-    padding: 5rem 0 4rem;
-    @media (max-width: 768px) { padding: 3.5rem 0 2.5rem; }
+    padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(2rem, 4vw, 3rem);
+
     h1 {
-        font-size: clamp(2.4rem, 4.6vw, 3.6rem);
-        line-height: 1.05;
-        margin-bottom: 1.25rem;
+        font-size: clamp(1.85rem, 3.6vw, 2.8rem);
+        line-height: 1.1;
+        margin-bottom: 1rem;
     }
-    p.lead { color: $rw-text-soft; max-width: 38rem; font-size: 1.15rem; line-height: 1.5; }
+    p.lead {
+        color: $rw-text-soft;
+        max-width: 34rem;
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.55;
+    }
 }
 
 // ---------- 9. Cards (services, steps, etc.) ---------------------------------
 .rw-card {
     background: #fff;
-    border-radius: 4px;
-    padding: 2rem;
+    border-radius: 6px;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
     height: 100%;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    &:hover { transform: translateY(-4px); box-shadow: 0 14px 35px rgba(0,0,0,0.08); }
+    gap: 0.85rem;
+    &:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
 
     h3, h2 {
-        font-size: 1.4rem;
+        font-size: clamp(1.05rem, 1.6vw, 1.2rem);
         margin-bottom: 0.25rem;
         font-weight: 700;
+        line-height: 1.25;
     }
-    p { color: $rw-text-soft; margin-bottom: 0; line-height: 1.55; font-size: 0.95rem; }
+    p {
+        color: $rw-text-soft;
+        margin-bottom: 0;
+        line-height: 1.55;
+        font-size: clamp(0.85rem, 1vw, 0.92rem);
+    }
 
     .rw-card-image {
         margin-top: auto;
-        height: 180px;
+        height: 160px;
         background: $rw-cream-deep;
-        border-radius: 2px;
+        border-radius: 4px;
         overflow: hidden;
-        filter: grayscale(0.85) contrast(1.05);
         img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        @media (max-width: 575.98px) { height: 180px; }
     }
+}
+
+// Services / page section heading helper — shrinks the "Services we offer"
+// style h2 globally so all section heads stay in one visual scale.
+.s_rw_services h2,
+.s_rw_about_story h2,
+.s_rw_about_howwework h2,
+.s_rw_why_outcome h2,
+.s_rw_why_pillars h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2rem) !important;
+    line-height: 1.2;
 }
 
 // ---------- 10. Steps (One click, three steps) -------------------------------
@@ -370,9 +630,14 @@ header#top {
     color: $rw-text-onDark;
 
     .rw-step {
-        padding: 1.2rem 0;
+        padding: 1rem 0;
         b, strong { color: $rw-gold; font-weight: 700; }
-        p { color: rgba(255,255,255,0.85); font-size: 1.1rem; line-height: 1.55; max-width: 30rem; }
+        p {
+            color: rgba(255,255,255,0.85);
+            font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+            line-height: 1.6;
+            max-width: 28rem;
+        }
     }
 }
 
@@ -380,30 +645,145 @@ header#top {
 .rw-rrr {
     .rw-rrr-line {
         font-family: $rw-font-display;
-        font-size: clamp(2rem, 4.8vw, 4.2rem);
-        font-weight: 400;
-        letter-spacing: 0.18em;
+        font-size: clamp(1.1rem, 2.6vw, 1.9rem);
+        font-weight: 700;
+        letter-spacing: 0.16em;
         color: $rw-gold;
-        line-height: 1.15;
-        margin: 0;
+        line-height: 1.2;
+        margin: 0.15rem 0;
     }
 }
 
-// ---------- 12. Newsletter / form ---------------------------------------------
-.rw-newsletter {
-    .form-control {
-        border: 0;
-        border-bottom: 1.5px solid $rw-border;
-        background: transparent;
-        border-radius: 0;
-        padding: 0.6rem 0;
-        font-size: 0.95rem;
-        color: $rw-text;
-        box-shadow: none;
-        &:focus { border-color: $rw-gold; box-shadow: none; outline: none; }
-        &::placeholder { color: $rw-text-muted; }
+// ---------- 12. Newsletter / "Follow our journey" -----------------------------
+// Full-bleed charcoal section, stacked centered copy, then rounded form
+// fields. Hover/focus on inputs paints them a dark-red wash (coral-tinted
+// dark) per design feedback.
+.s_rw_newsletter.rw-bg-dark {
+    padding: clamp(3rem, 6vw, 5rem) 0;
+
+    .rw-newsletter-title {
+        color: $rw-text-onDark;
+        font-family: $rw-font-display;
+        font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
-    label { color: $rw-text-soft; font-size: 0.85rem; font-weight: 500; }
+
+    .rw-newsletter-tagline {
+        color: $rw-gold;
+        font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+        font-weight: 700;
+        font-style: normal;
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+        text-transform: uppercase;
+    }
+
+    .rw-newsletter-body {
+        color: rgba($rw-text-onDark, 0.82);
+        font-size: clamp(0.9rem, 1.1vw, 1rem);
+        line-height: 1.6;
+        max-width: 32rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    // Form sits directly on the charcoal section, with rounded inputs
+    // (white-tinted background) — hover/focus = dark-red wash.
+    .rw-newsletter {
+        max-width: 540px;
+
+        .form-label {
+            display: block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+            color: rgba($rw-text-onDark, 0.75);
+            margin-bottom: 0.45rem;
+        }
+
+        .rw-required {
+            color: rgba($rw-text-onDark, 0.55);
+            font-weight: 400;
+            font-size: 0.85em;
+            text-transform: none;
+            letter-spacing: 0;
+            margin-left: 0.25rem;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            background: rgba($rw-text-onDark, 0.06);
+            border: 1.5px solid rgba($rw-text-onDark, 0.22);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.95rem;
+            color: $rw-text-onDark;
+            box-shadow: none;
+            transition: background-color 0.18s ease, border-color 0.18s ease;
+
+            &:hover {
+                background: rgba($rw-coral, 0.28);
+                border-color: rgba($rw-coral, 0.55);
+            }
+            &:focus {
+                background: rgba($rw-coral, 0.32);
+                border-color: $rw-coral;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba($rw-coral, 0.18);
+                color: $rw-text-onDark;
+            }
+            &::placeholder { color: rgba($rw-text-onDark, 0.45); }
+
+            // Keep autofill matching the dark theme.
+            &:-webkit-autofill,
+            &:-webkit-autofill:hover,
+            &:-webkit-autofill:focus {
+                -webkit-text-fill-color: $rw-text-onDark;
+                -webkit-box-shadow: 0 0 0 1000px darken($rw-dark, 2%) inset;
+                caret-color: $rw-text-onDark;
+            }
+        }
+    }
+
+    .rw-newsletter-submit {
+        min-width: 180px;
+        padding: 0.85rem 2rem;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+
+        &:disabled,
+        &[aria-busy="true"] {
+            opacity: 0.7;
+            cursor: progress;
+            pointer-events: none;
+            transform: none;
+        }
+    }
+
+    .rw-newsletter.is-submitting .form-control {
+        opacity: 0.65;
+        pointer-events: none;
+    }
+
+    // Status message slot under the submit button. Empty by default;
+    // populated on success / error with the matching modifier class.
+    .rw-newsletter-status {
+        min-height: 1.25rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.4;
+        color: rgba($rw-text-onDark, 0.85);
+
+        &:empty { display: none; }
+
+        &--success { color: #c5e8b9; }
+        &--error   { color: lighten($rw-coral, 12%); }
+    }
 }
 
 // ---------- 13. Footer --------------------------------------------------------
@@ -415,7 +795,8 @@ header#top {
     .rw-footer-title {
         font-family: $rw-font-display;
         font-size: 1.6rem;
-        font-weight: 400;
+        font-weight: 700;
+        letter-spacing: -0.015em;
         color: $rw-dark;
         margin-bottom: 2.5rem;
         text-align: center;
@@ -424,13 +805,26 @@ header#top {
     a  { color: $rw-text-soft; text-decoration: none;
         &:hover { color: $rw-gold; }
     }
+    .rw-footer-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        img {
+            display: block;
+            max-width: 180px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+    }
     .rw-footer-bottom { border-top: 1px solid $rw-border; padding-top: 1.5rem; margin-top: 2.5rem; font-size: 0.8rem; color: $rw-text-muted; }
 }
 
 // ---------- 14. Re-Ware brand surface for shop pages -------------------------
-// Light touch: keep shop functional but adopt Re-Ware cream surface + typography
+// Shop surface is plain white now (no cream); the "Re-Ware certified
+// hardware" hero block carries the charcoal accent instead.
 .oe_website_sale {
-    body, & { background-color: $rw-cream-soft; }
+    body, & { background-color: #ffffff; }
 
     .text-primary { color: $rw-gold !important; }
 
@@ -505,11 +899,35 @@ header#top {
     font-family: $rw-font-sans;
 }
 
-// COMSOL-era shop helpers — kept so existing markup keeps working
+// COMSOL-era shop helpers — kept so existing markup keeps working.
+// "Re-Ware certified hardware" hero block sits on charcoal so it reads
+// as a brand banner above the catalogue grid.
 .qm-comsol-shop-hero {
     border-left: 4px solid $rw-gold;
-    background: #fff;
+    background: $rw-dark;
     box-shadow: none;
+    color: $rw-text-onDark;
+
+    h2, h3, h4 { color: #ffffff; }
+    p {
+        color: $rw-text-onDark !important;
+        // Override the inline `color: var(--rw-text-soft)` on the lead paragraph.
+        &[style*="--rw-text-soft"] { color: $rw-text-onDark !important; }
+    }
+    .rw-eyebrow { color: $rw-gold-soft; }
+    .qm-comsol-value-list li,
+    .qm-comsol-value-list span { color: $rw-text-onDark; }
+    .border-top { border-color: rgba(255, 255, 255, 0.12) !important; }
+
+    // Category tiles inside the hero stay white so they pop against charcoal.
+    .qm-comsol-cat-tile {
+        background: #ffffff;
+        border-color: rgba(255, 255, 255, 0.18);
+        .small { color: $rw-text; }
+    }
+    a.text-decoration-none {
+        color: $rw-text !important;
+    }
 }
 .qm-comsol-eyebrow {
     letter-spacing: 0.16em;
@@ -581,18 +999,581 @@ header#top {
 }
 .oe_product .qm-shop-stock { font-size: 0.75rem; color: $rw-text-muted; }
 
+// ---------- 15b. About page ---------------------------------------------------
+.s_rw_about_intro {
+    h1 {
+        font-size: clamp(1.9rem, 3.6vw, 2.75rem);
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
+    .rw-about-lead {
+        font-size: clamp(1rem, 1.5vw, 1.2rem);
+        font-weight: 600;
+        color: $rw-text;
+        line-height: 1.4;
+    }
+    .rw-about-portrait {
+        position: relative;
+        min-height: 340px;
+        background:
+            linear-gradient(135deg, rgba($rw-gold, 0.18), rgba($rw-dark, 0.6)),
+            linear-gradient(135deg, #2a2a2a 0%, #0e0e0e 100%);
+        border-radius: 8px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        padding: 1.5rem 1.75rem;
+
+        @media (max-width: 767.98px) { min-height: 240px; }
+    }
+    .rw-about-portrait-caption {
+        font-family: $rw-font-display;
+        color: $rw-text-onDark;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+    }
+}
+
+.rw-about-body {
+    color: $rw-text-soft;
+    font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+    line-height: 1.7;
+}
+
+// ---------- 15c. Our Why page -------------------------------------------------
+// Two-column desktop layout mirroring the Squarespace fluid grid: left
+// column gets the headline + lead (top-aligned), right column gets the
+// long supporting paragraph + Join us CTA. Both stack on mobile.
+.s_rw_why_intro {
+    h1 {
+        font-size: clamp(2rem, 4vw, 2.9rem);
+        line-height: 1.08;
+        margin-bottom: 1rem;
+    }
+    .rw-why-intro-lead {
+        font-size: clamp(1rem, 1.4vw, 1.2rem);
+        color: $rw-text;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+    .rw-why-intro-body {
+        color: $rw-text-soft;
+        font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+        line-height: 1.7;
+    }
+}
+
+// Photograph on the Our Why intro section (right column).
+.s_rw_why_intro {
+    .rw-why-photo {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+        img {
+            display: block;
+            object-fit: cover;
+            aspect-ratio: 4 / 5;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 767.98px) {
+            margin-top: 1.5rem;
+            img { aspect-ratio: 4 / 3; }
+        }
+    }
+}
+
+// Section 2 — outcome split (gold display headline + dark body).
+.s_rw_why_outcome {
+    .rw-why-outcome-headline {
+        font-family: $rw-font-display;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+        color: $rw-gold;
+        font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    }
+    .rw-why-outcome-body {
+        color: $rw-text;
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.7;
+    }
+}
+
+// Pillars accordion — left sticky heading, right expandable list.
+.s_rw_why_pillars {
+    .rw-why-pillars-title {
+        font-family: $rw-font-display;
+        font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+        line-height: 1.2;
+        color: $rw-text;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+    @media (min-width: 992px) {
+        .col-lg-5 {
+            position: sticky;
+            top: 6rem;
+            align-self: flex-start;
+        }
+    }
+}
+
+// ---------- Charcoal contact surfaces (shared with homepage newsletter) ---
+// Any section on rw-bg-dark that hosts a contact / enquiry form reuses the
+// same label, input, checkbox and radio styling as s_rw_newsletter.
+.rw-bg-dark {
+    .rw-form,
+    .rw-newsletter {
+        .form-label, label:not(.form-check-label) {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: rgba($rw-text-onDark, 0.75);
+        }
+        .s_website_form_mark,
+        .rw-required {
+            color: rgba($rw-text-onDark, 0.55);
+            font-weight: 400;
+        }
+        .form-control,
+        input.form-control,
+        textarea.form-control,
+        select.form-control {
+            background: rgba($rw-text-onDark, 0.06);
+            border: 1.5px solid rgba($rw-text-onDark, 0.22);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.95rem;
+            color: $rw-text-onDark;
+            box-shadow: none;
+            transition: background-color 0.18s ease, border-color 0.18s ease;
+            &::placeholder { color: rgba($rw-text-onDark, 0.45); }
+            &:hover {
+                background: rgba($rw-coral, 0.28);
+                border-color: rgba($rw-coral, 0.55);
+            }
+            &:focus {
+                background: rgba($rw-coral, 0.32);
+                border-color: $rw-coral;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba($rw-coral, 0.18);
+                color: $rw-text-onDark;
+            }
+            &:-webkit-autofill,
+            &:-webkit-autofill:hover,
+            &:-webkit-autofill:focus {
+                -webkit-text-fill-color: $rw-text-onDark;
+                -webkit-box-shadow: 0 0 0 1000px darken($rw-dark, 2%) inset;
+                caret-color: $rw-text-onDark;
+            }
+        }
+        textarea.form-control { min-height: 130px; }
+    }
+}
+
+// Our Why contact block — charcoal, left copy / right form.
+.s_rw_why_contact.rw-bg-dark {
+    padding: clamp(3rem, 6vw, 5rem) 0;
+
+    .rw-why-contact-title {
+        font-family: $rw-font-display;
+        color: $rw-text-onDark;
+        font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+        font-weight: 700;
+        letter-spacing: -0.015em;
+    }
+    .rw-why-contact-lead {
+        color: rgba($rw-text-onDark, 0.85);
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.55;
+    }
+}
+
+// /contactus page — white section: LEFT copy + form, RIGHT photo.
+.s_rw_contact.rw-bg-light {
+    padding: clamp(3rem, 6vw, 5rem) 0;
+
+    .rw-contact-title {
+        font-family: $rw-font-display;
+        color: $rw-text;
+        font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+        font-weight: 700;
+        letter-spacing: -0.015em;
+    }
+    .rw-contact-lead {
+        color: $rw-text-soft;
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.55;
+    }
+
+    .rw-contact-email {
+        color: $rw-text;
+        text-decoration: none;
+        border-bottom: 1px solid $rw-gold;
+        padding-bottom: 1px;
+        font-size: 1rem;
+        font-weight: 700;
+        strong { font-weight: 700; }
+        &:hover {
+            color: $rw-gold;
+            border-bottom-color: $rw-gold-hover;
+        }
+    }
+
+    .rw-contact-form {
+        margin-top: 1.5rem;
+
+        .rw-contact-group-label,
+        .rw-contact-sub-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: $rw-text;
+            text-transform: none;
+            letter-spacing: 0;
+            margin-bottom: 0.4rem;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.4rem;
+        }
+        .rw-contact-sub-label {
+            font-weight: 500;
+        }
+        .rw-required-hint {
+            display: inline;
+            margin: 0;
+            font-size: 0.78rem;
+            color: $rw-text-muted;
+            font-style: italic;
+            font-weight: 400;
+        }
+        .form-control {
+            border: 1.5px solid $rw-border;
+            border-radius: 6px;
+            background: #fff;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.95rem;
+            color: $rw-text;
+            box-shadow: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            &::placeholder { color: $rw-text-muted; }
+            &:hover { border-color: rgba($rw-gold, 0.55); }
+            &:focus {
+                border-color: $rw-gold;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba($rw-gold, 0.15);
+            }
+        }
+        textarea.form-control { min-height: 130px; }
+        .rw-contact-send {
+            min-width: 12rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+    }
+
+    .rw-contact-photo {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+        img {
+            display: block;
+            object-fit: cover;
+            aspect-ratio: 4 / 5;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 991.98px) {
+            margin-top: 1.5rem;
+            img { aspect-ratio: 4 / 3; }
+        }
+    }
+}
+
+.s_rw_why_contact.rw-bg-dark {
+    .rw-why-field-group-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: rgba($rw-text-onDark, 0.75);
+        margin-bottom: 0;
+    }
+
+    .rw-why-newsletter-check .form-check-label {
+        color: rgba($rw-text-onDark, 0.82);
+        font-size: 0.92rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .rw-why-enquiry-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+
+        .form-check { margin: 0; padding: 0.15rem 0; }
+        .form-check-label {
+            color: rgba($rw-text-onDark, 0.9);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+        }
+        .form-check-input {
+            border-color: rgba($rw-text-onDark, 0.35);
+            background-color: transparent;
+            &:checked {
+                background-color: $rw-coral;
+                border-color: $rw-coral;
+            }
+            &:focus { box-shadow: 0 0 0 3px rgba($rw-coral, 0.18); }
+        }
+    }
+}
+
+// ---------- 15d. Accordion (Our Why) -----------------------------------------
+// Native <details>/<summary> based, no JS dependency. Plus icon rotates
+// to ‘×’ on open via the [open] selector. Each item is a thin underline
+// with a click-to-expand body, matching the Squarespace pattern on
+// reware-project.com/why.
+.rw-accordion {
+    margin: 0;
+    padding: 0;
+
+    .rw-accordion-item {
+        border-top: 1px solid rgba($rw-text, 0.18);
+        &:last-child { border-bottom: 1px solid rgba($rw-text, 0.18); }
+
+        details { width: 100%; }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 0.25rem;
+            transition: color 0.18s ease;
+
+            // Hide default disclosure marker.
+            &::-webkit-details-marker { display: none; }
+            &::marker { display: none; }
+
+            &:hover {
+                color: $rw-coral;
+                .rw-accordion-title { color: $rw-coral; }
+                .rw-accordion-icon   { color: $rw-coral; }
+            }
+        }
+
+        .rw-accordion-title {
+            font-family: $rw-font-display;
+            font-weight: 700;
+            font-size: clamp(1rem, 1.6vw, 1.2rem);
+            color: $rw-text;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+        }
+
+        .rw-accordion-icon {
+            flex: 0 0 1.5rem;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: $rw-text;
+            font-weight: 400;
+            transition: transform 0.25s ease, color 0.18s ease;
+            transform-origin: center;
+            text-align: right;
+        }
+
+        details[open] {
+            .rw-accordion-icon {
+                transform: rotate(45deg); // + becomes ×
+                color: $rw-coral;
+            }
+            .rw-accordion-title { color: $rw-coral; }
+        }
+
+        .rw-accordion-body {
+            padding: 0 0 1.25rem 0;
+            color: $rw-text-soft;
+            font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+            line-height: 1.65;
+
+            p { margin-bottom: 0.85rem; }
+            p:last-child { margin-bottom: 0; }
+
+            .rw-why-stats {
+                list-style: none;
+                padding: 0;
+                margin: 0.25rem 0 1rem;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.35rem 1.25rem;
+                @media (min-width: 768px) {
+                    grid-template-columns: 1fr 1fr;
+                }
+                li {
+                    position: relative;
+                    padding-left: 1.1rem;
+                    font-size: clamp(0.85rem, 1vw, 0.92rem);
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        left: 0;
+                        top: 0.7em;
+                        width: 0.4rem;
+                        height: 0.4rem;
+                        background: $rw-gold;
+                        border-radius: 50%;
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ---------- 16. Form fields (Contact / Newsletter shared look) ---------------
 .rw-form {
-    .form-label, label { font-size: 0.85rem; font-weight: 600; color: $rw-text-soft; text-transform: uppercase; letter-spacing: 0.08em; }
+    .form-label, label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: $rw-text-soft;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
     .form-control, input.form-control, textarea.form-control {
         border: 1.5px solid $rw-border;
-        border-radius: 4px;
+        border-radius: 8px;
         background: #fff;
-        padding: 0.85rem 1rem;
-        font-size: 0.95rem;
+        padding: 0.7rem 0.95rem;
+        font-size: 0.92rem;
         color: $rw-text;
         box-shadow: none;
-        &:focus { border-color: $rw-gold; outline: none; box-shadow: 0 0 0 3px rgba($rw-gold, 0.15); }
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        &:hover {
+            border-color: rgba($rw-coral, 0.5);
+            background: rgba($rw-coral, 0.04);
+        }
+        &:focus {
+            border-color: $rw-coral;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba($rw-coral, 0.18);
+            background: #fff;
+        }
     }
-    textarea.form-control { min-height: 140px; }
+    textarea.form-control { min-height: 120px; }
+}
+
+// ---------- 16b. Auth pages (Sign up / Login / Reset password) --------------
+// Squarespace-style centered card on a cream background. Inputs adopt the
+// same rounded-pill + dark-red focus look as the rest of the site so the
+// Odoo signup flow stops feeling like backend chrome.
+.oe_website_login_container,
+.oe_website_signup_container {
+    background: $rw-cream;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(2rem, 5vw, 4rem) 1rem;
+
+    > .o_database_list,
+    > div {
+        width: 100%;
+        max-width: 460px;
+        background: #fff;
+        border-radius: 10px;
+        padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.5rem);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.08);
+
+        h1.rw-display { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+    }
+}
+
+.rw-auth-form {
+    .form-control {
+        border: 1.5px solid $rw-border;
+        border-radius: 8px;
+        background: #fff;
+        padding: 0.7rem 0.95rem;
+        font-size: 0.95rem;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        &:hover {
+            border-color: rgba($rw-coral, 0.5);
+            background: rgba($rw-coral, 0.04);
+        }
+        &:focus {
+            border-color: $rw-coral;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba($rw-coral, 0.18);
+            background: #fff;
+        }
+    }
+    .form-label, label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: $rw-text-soft;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.4rem;
+    }
+    a { color: $rw-coral; text-decoration: none;
+        &:hover { color: $rw-gold; text-decoration: underline; }
+    }
+}
+
+// ---------- 17. Responsive overrides (tablet + mobile) ----------------------
+@media (max-width: 991.98px) {
+    .container,
+    .container-fluid > .container,
+    .s_rw_hero .container,
+    .s_rw_services .container,
+    .s_rw_consultation .container,
+    .s_rw_why .container,
+    .s_rw_steps .container,
+    .s_rw_rrr .container,
+    .s_rw_newsletter .container,
+    .rw-page-hero .container {
+        max-width: 92%;
+    }
+
+    .rw-hero .row { row-gap: 2rem; }
+    .rw-hero-carousel { margin-top: 0.5rem; }
+}
+
+@media (max-width: 767.98px) {
+    .container,
+    .container-fluid > .container { max-width: 100%; padding-inline: 1rem; }
+
+    .rw-section,
+    .rw-section-sm,
+    .rw-section-lg { padding: 2.5rem 0; }
+
+    .s_rw_why_pillars .row > [class*='col-'] { margin-bottom: 1rem; }
+
+    // Make the side-by-side first / last name stack cleanly on phones.
+    .s_rw_newsletter .rw-newsletter .row > [class*='col-'] { margin-bottom: 0.5rem; }
+}
+
+@media (max-width: 575.98px) {
+    .rw-hero-title { font-size: clamp(1.6rem, 7vw, 2rem); }
+    .rw-page-hero h1 { font-size: clamp(1.5rem, 6vw, 1.9rem); }
+    .rw-newsletter-title { font-size: clamp(1.4rem, 6vw, 1.75rem); }
+    .rw-newsletter-tagline { font-size: 1rem; }
+    .rw-why-rrr-line { font-size: clamp(1rem, 2.5vw, 1.05rem); letter-spacing: 0.06em; }
+    .rw-rrr .rw-rrr-line { font-size: clamp(0.95rem, 4.5vw, 1.2rem); letter-spacing: 0.12em; }
+    .rw-consultation-title,
+    .rw-consultation-steps-title { font-size: clamp(1.3rem, 5.5vw, 1.6rem); }
+    .rw-bg-why h2 { font-size: clamp(1.3rem, 5vw, 1.6rem); }
 }

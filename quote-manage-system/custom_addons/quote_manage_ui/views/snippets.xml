@@ -24,7 +24,39 @@
                         </div>
                     </div>
                     <div class="col-lg-6 d-none d-lg-block">
-                        <div class="rw-hero-image-placeholder"/>
+                        <div class="rw-hero-image rw-hero-carousel">
+                            <t t-set="uniq" t-value="datetime.datetime.now().microsecond"/>
+                            <div t-attf-id="rwHeroCarousel{{uniq}}" class="s_carousel carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-team-workshop.jpg" data-name="Image" alt="Re-Ware team with a refurbished laptop in the workshop"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-laptop-inspect.jpg" data-name="Image" alt="Inspecting a device before donation to the community"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-ccit-card.png" data-name="Image" alt="Co-Creative IT — Creative Technology Solutions"/>
+                                    </div>
+                                </div>
+                                <ol class="carousel-indicators">
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="0" class="active"/>
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="1"/>
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="2"/>
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="3"/>
+                                </ol>
+                                <a class="carousel-control-prev o_we_no_overlay o_not_editable" t-attf-href="#rwHeroCarousel{{uniq}}" data-bs-slide="prev" aria-label="Previous" title="Previous">
+                                    <span class="oi oi-chevron-left fa-2x"/>
+                                    <span class="visually-hidden">Previous</span>
+                                </a>
+                                <a class="carousel-control-next o_we_no_overlay o_not_editable" t-attf-href="#rwHeroCarousel{{uniq}}" data-bs-slide="next" aria-label="Next" title="Next">
+                                    <span class="oi oi-chevron-right fa-2x"/>
+                                    <span class="visually-hidden">Next</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -52,21 +84,27 @@
                         <div class="rw-card">
                             <h3>Refurb &amp; Repurpose</h3>
                             <p>We collect end-of-life devices and securely refurbish them, ready for a new home.</p>
-                            <div class="rw-card-image"/>
+                            <div class="rw-card-image">
+                                <img src="/quote_manage_ui/static/src/img/services/refurb-repurpose.jpg" alt="Stack of devices ready for refurbishment" data-name="Image"/>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="rw-card">
                             <h3>Data Sanitisation</h3>
                             <p>Certified Blancco erasure (NIST 800-88). Full reports for SOCI, Privacy Act reforms and audits.</p>
-                            <div class="rw-card-image"/>
+                            <div class="rw-card-image">
+                                <img src="/quote_manage_ui/static/src/img/services/data-sanitisation.png" alt="Secure IT disposal and certified data wipe" data-name="Image"/>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="rw-card">
                             <h3>Impactful Distribution</h3>
                             <p>Through partnerships with charities and programs, we donate refurbished devices to those in need.</p>
-                            <div class="rw-card-image"/>
+                            <div class="rw-card-image">
+                                <img src="/quote_manage_ui/static/src/img/services/impactful-distribution.png" alt="Refurbished devices powering education and opportunity" data-name="Image"/>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,41 +112,55 @@
         </section>
     </template>
 
-    <!-- s_rw_consultation -->
+    <!-- s_rw_consultation — CTA + three steps on one background (matches reware-project.com) -->
     <template id="s_rw_consultation" name="Re-Ware Consultation CTA">
-        <section class="s_rw_consultation rw-section rw-bg-cream-soft" data-name="Re-Ware Consultation" data-snippet="s_rw_consultation">
-            <div class="container rw-container-tight text-center">
-                <h2 class="mb-3">Reserve your complimentary consultation.</h2>
-                <p class="mb-4" style="color: var(--rw-text-soft); font-size: 1.1rem; line-height: 1.55;">Need a hand? We'll guide you through the process and show how your old tech can make a real difference for WA communities.</p>
-                <a href="/contactus" class="rw-btn-gold">Donate now</a>
-            </div>
-        </section>
-    </template>
-
-    <!-- s_rw_steps -->
-    <template id="s_rw_steps" name="Re-Ware Three Steps">
-        <section class="s_rw_steps rw-section rw-steps" data-name="Re-Ware Three Steps" data-snippet="s_rw_steps">
-            <div class="container rw-container-narrow">
-                <h2 class="text-center mb-5" style="color: #fff;">One click, three steps, genuine impact.</h2>
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="rw-step"><p><b>01 Pick up.</b> We collect your unused laptops, tablets, PCs and other digital gear.</p></div>
-                        <div class="rw-step"><p><b>02 Wipe clean.</b> All data securely erased, ready for a fresh start.</p></div>
-                        <div class="rw-step"><p><b>03 Pay it forward.</b> We donate the devices to those who need them most.</p></div>
-                    </div>
+        <section class="s_rw_consultation rw-section rw-bg-image rw-bg-consultation" data-name="Re-Ware Consultation" data-snippet="s_rw_consultation">
+            <div class="container rw-container-narrow position-relative">
+                <h2 class="rw-consultation-title mb-3 text-center">Reserve your complimentary consultation.</h2>
+                <p class="mb-4 rw-consultation-lead text-center">Need a hand? We'll guide you through the process, answer your questions, and show how your old tech can make a real difference to help WA communities doing it tough.</p>
+                <div class="text-center mb-5 mb-lg-6">
+                    <a href="/contactus" class="rw-btn-gold">Donate now</a>
+                </div>
+                <h2 class="rw-consultation-steps-title mb-4 text-center">One click, three steps, genuine impact!</h2>
+                <div class="rw-consultation-steps text-start">
+                    <p class="rw-consultation-step"><strong>01 Pick up.</strong> We collect your unused laptops, tablets, PCs and other digital gear.</p>
+                    <p class="rw-consultation-step"><strong>02 Wipe clean.</strong> All data securely erased, ready for a fresh start.</p>
+                    <p class="rw-consultation-step"><strong>03 Pay it forward.</strong> We donate the devices to those who need them most.</p>
                 </div>
             </div>
         </section>
     </template>
 
-    <!-- s_rw_why -->
+    <!-- s_rw_steps — kept for Website Builder; homepage uses merged consultation block -->
+    <template id="s_rw_steps" name="Re-Ware Three Steps">
+        <section class="s_rw_steps rw-section rw-bg-image rw-bg-consultation" data-name="Re-Ware Three Steps" data-snippet="s_rw_steps">
+            <div class="container rw-container-narrow position-relative">
+                <h2 class="rw-consultation-steps-title mb-4 text-center">One click, three steps, genuine impact!</h2>
+                <div class="rw-consultation-steps text-start">
+                    <p class="rw-consultation-step"><strong>01 Pick up.</strong> We collect your unused laptops, tablets, PCs and other digital gear.</p>
+                    <p class="rw-consultation-step"><strong>02 Wipe clean.</strong> All data securely erased, ready for a fresh start.</p>
+                    <p class="rw-consultation-step"><strong>03 Pay it forward.</strong> We donate the devices to those who need them most.</p>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- s_rw_why — centred white card sitting on the photo background (matches reware-project.com) -->
     <template id="s_rw_why" name="Re-Ware Why">
-        <section class="s_rw_why rw-section rw-bg-cream" data-name="Re-Ware Why" data-snippet="s_rw_why">
-            <div class="container rw-container-narrow text-center">
-                <h2 class="mb-4">Why it matters.</h2>
-                <p class="mb-4" style="color: var(--rw-text); font-size: 1.25rem; font-weight: 500; line-height: 1.45;">Less waste. Less risk. More responsible use of the tech we already own.</p>
-                <p class="mb-0" style="color: var(--rw-text-soft); line-height: 1.7;">A sustainable model that supports economic benefits and helps address digital poverty across Western Australia — for lower-income families, displaced people, justice programs and people rebuilding after hardship.</p>
-                <div class="mt-4"><a href="/our-why" class="rw-btn-outline-dark">Learn more</a></div>
+        <section class="s_rw_why rw-section rw-bg-image rw-bg-why" data-name="Re-Ware Why" data-snippet="s_rw_why">
+            <div class="container position-relative">
+                <div class="rw-why-card text-center mx-auto">
+                    <h2 class="mb-4">Why it matters.</h2>
+                    <p class="mb-3 rw-why-lead">Less waste. Less risk. More responsible use of the tech you already own.</p>
+                    <p class="mb-3 rw-why-body">The Re-Ware project is a sustainable model which supports a range of economic benefits that help address digital poverty in our society.</p>
+                    <p class="mb-4 rw-why-body">Re-Ware refurbishes suitable devices and donates them to Western Australians experiencing digital poverty — including lower-income individuals and families, people that are displaced, people with disabilities, justice programs, and to support women and children rebuilding after domestic violence who need safe digital access.</p>
+                    <div class="rw-why-rrr mb-4">
+                        <p class="rw-why-rrr-line"><strong>R E P A I R .</strong></p>
+                        <p class="rw-why-rrr-line"><strong>R E P U R P O S E .</strong></p>
+                        <p class="rw-why-rrr-line"><strong>R E U S E .</strong></p>
+                    </div>
+                    <a href="/our-why" class="rw-btn-outline-dark">Learn more</a>
+                </div>
             </div>
         </section>
     </template>
@@ -124,31 +176,39 @@
         </section>
     </template>
 
-    <!-- s_rw_newsletter -->
+    <!-- s_rw_newsletter — Follow our journey block from reware-project.com.
+         Stacked single-column layout on charcoal: heading + copy centered,
+         then rounded First Name / Last Name / Email inputs, finally the
+         gold JOIN US! button. -->
     <template id="s_rw_newsletter" name="Re-Ware Newsletter">
-        <section class="s_rw_newsletter rw-section rw-bg-cream-soft" data-name="Re-Ware Newsletter" data-snippet="s_rw_newsletter">
-            <div class="container rw-container-tight text-center">
-                <h2 class="mb-3">Follow our journey.</h2>
-                <p class="rw-eyebrow mb-2">And be part of the change!</p>
-                <p class="mb-4" style="color: var(--rw-text-soft);">Stories, insights and updates from Re-Ware — straight to your inbox.</p>
-                <form class="rw-newsletter rw-form text-start" action="/website_mass_mailing/subscribe" method="post">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label" for="rw_nl_fn">First name</label>
-                            <input id="rw_nl_fn" type="text" name="first_name" class="form-control" required="required"/>
+        <section class="s_rw_newsletter rw-section rw-bg-dark" data-name="Re-Ware Newsletter" data-snippet="s_rw_newsletter">
+            <div class="container rw-container-narrow text-center">
+                <h2 class="rw-newsletter-title mb-2">Follow our journey.</h2>
+                <p class="rw-newsletter-tagline mb-3">AND be part of the change!</p>
+                <p class="rw-newsletter-body mb-4">Subscribe for stories, insights, and ways to help us divert e-waste and support communities &#8212; straight to your inbox.</p>
+
+                <form class="rw-newsletter rw-form mx-auto js_rw_newsletter_form"
+                      action="/quote_manage_ui/newsletter/subscribe"
+                      method="post"
+                      data-submit-label="Join us!"
+                      data-submitting-label="Submitting…"
+                      novalidate="novalidate">
+                    <div class="row g-3 text-start">
+                        <div class="col-sm-6">
+                            <label class="form-label" for="rw_nl_first_name">First Name <span class="rw-required">(required)</span></label>
+                            <input id="rw_nl_first_name" type="text" name="first_name" class="form-control" autocomplete="given-name" required="required"/>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="rw_nl_ln">Last name</label>
-                            <input id="rw_nl_ln" type="text" name="last_name" class="form-control" required="required"/>
+                        <div class="col-sm-6">
+                            <label class="form-label" for="rw_nl_last_name">Last Name <span class="rw-required">(required)</span></label>
+                            <input id="rw_nl_last_name" type="text" name="last_name" class="form-control" autocomplete="family-name" required="required"/>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="rw_nl_email">Email</label>
-                            <input id="rw_nl_email" type="email" name="email" class="form-control" required="required"/>
+                            <label class="form-label" for="rw_nl_email">Email Address <span class="rw-required">(required)</span></label>
+                            <input id="rw_nl_email" type="email" name="email" class="form-control" autocomplete="email" required="required"/>
                         </div>
                     </div>
-                    <div class="text-center">
-                        <button type="submit" class="rw-btn-coral">Join us</button>
-                    </div>
+                    <button type="submit" class="rw-btn-gold rw-newsletter-submit mt-4">Join us!</button>
+                    <div class="rw-newsletter-status mt-3" role="status" aria-live="polite"/>
                 </form>
             </div>
         </section>

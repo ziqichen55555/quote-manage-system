@@ -349,8 +349,6 @@ class WebsitePage(models.Model):
         except ET.ParseError:
             return
         record_xmlids = (
-            'trade_in_page',
-            'services_page',
             'about_us_page',
             'our_why_page',
             'partners_page',
@@ -365,8 +363,19 @@ class WebsitePage(models.Model):
 
     @api.model
     def _quote_manage_ui_cleanup_duplicate_menus(self):
-        """One Re-Ware nav: drop typo/duplicate menus and align labels."""
+        """One Re-Ware nav: About. / Our Why. / Contact. + DONATE / SHOP buttons.
+
+        Hidden from the navigation (their page records stay so direct URLs
+        keep working): ``/shop``, ``/partners``, ``/trade-in``, ``/services``.
+        Trade-in and Services pages are also fully removed (legacy URLs).
+        The seeded ``/contactus`` menu is reattached under each website's
+        main menu and renamed to ``Contact.`` at sequence 3 so it shows up
+        in both the desktop nav and the mobile offcanvas.
+        """
         Menu = self.env['website.menu'].sudo().with_context(active_test=False)
+        Page = self.env['website.page'].sudo().with_context(active_test=False)
+        View = self.env['ir.ui.view'].sudo().with_context(active_test=False)
+        ModelData = self.env['ir.model.data'].sudo()
         Website = self.env['website'].sudo()
         # Typo from an old Website Builder page (/partners-10).
         Menu.search([
@@ -375,13 +384,45 @@ class WebsitePage(models.Model):
             ('name', 'ilike', 'Patner'),
         ]).unlink()
 
+        # ---- Drop Trade-in / Services from the navigation entirely --------
+        retired_urls = ('/trade-in', '/services')
+        retired_keys = (
+            'quote_manage_ui.trade_in_page',
+            'quote_manage_ui.services_page',
+        )
+        retired_menu_xmlids = (
+            'menu_trade_in', 'menu_services', 'menu_shop', 'menu_partners',
+        )
+
+        # Menus first (FK on website.menu.page_id would block page unlink).
+        Menu.search([('url', 'in', retired_urls)]).unlink()
+        # /shop and /partners menus hidden (page records kept for direct URLs).
+        Menu.search([('url', 'in', ('/shop', '/partners', '/partners/'))]).unlink()
+        # Pages and their COW copies.
+        retired_pages = Page.search([
+            '|',
+            ('url', 'in', retired_urls),
+            ('key', 'in', retired_keys),
+        ])
+        retired_view_ids = retired_pages.mapped('view_id').ids
+        retired_pages.unlink()
+        # ir.ui.view rows that backed those pages (generic + per-website COW).
+        View.search([
+            '|',
+            ('id', 'in', retired_view_ids),
+            ('key', 'in', retired_keys),
+        ]).unlink()
+        # ir.model.data references so a future -u doesn't try to recreate them.
+        ModelData.search([
+            ('module', '=', 'quote_manage_ui'),
+            '|',
+            ('name', 'in', retired_menu_xmlids),
+            ('name', 'in', ('trade_in_page', 'services_page')),
+        ]).unlink()
+
         menu_specs = (
-            ('menu_shop', 'Shop', 1),
-            ('menu_trade_in', 'Trade-in', 2),
-            ('menu_our_why', 'Our Why.', 3),
-            ('menu_services', 'Services', 4),
-            ('menu_about_us', 'About.', 5),
-            ('menu_partners', 'Partners', 8),
+            ('menu_about_us', 'About.', 1),
+            ('menu_our_why', 'Our Why.', 2),
         )
         for site in Website.search([]):
             main_menu = site.menu_id
@@ -403,8 +444,44 @@ class WebsitePage(models.Model):
                     ('parent_id', '=', main_menu.id),
                     ('id', '!=', mod_menu.id),
                 ]).unlink()
-            # Contact stays reachable via Donate button, not duplicated in the bar.
-            Menu.search([
+
+            # Reattach the seeded /contactus menu under this website's main
+            # menu (it lands at parent_id=1 / generic root by default, which
+            # makes it invisible in the per-website nav). Rename to
+            # "Contact." and put it at sequence 3 so the order is
+            # About. / Our Why. / Contact. — matching the design.
+            site_contact = Menu.search([
                 ('parent_id', '=', main_menu.id),
                 ('url', '=', '/contactus'),
+            ], limit=1)
+            if not site_contact:
+                generic_contact = Menu.search([
+                    ('url', '=', '/contactus'),
+                    '|', ('parent_id', '!=', main_menu.id),
+                    ('parent_id', '=', False),
+                ], limit=1)
+                if generic_contact:
+                    generic_contact.write({
+                        'parent_id': main_menu.id,
+                        'website_id': site.id,
+                        'name': 'Contact.',
+                        'sequence': 3,
+                    })
+                    site_contact = generic_contact
+            else:
+                site_contact.write({'name': 'Contact.', 'sequence': 3})
+            if site_contact:
+                Menu.search([
+                    ('parent_id', '=', main_menu.id),
+                    ('url', '=', '/contactus'),
+                    ('id', '!=', site_contact.id),
+                ]).unlink()
+
+            # Re-sweep retired menus that may have been re-seeded by COW.
+            Menu.search([
+                ('parent_id', '=', main_menu.id),
+                '|', '|',
+                ('url', 'in', retired_urls + ('/shop', '/partners', '/partners/')),
+                ('name', '=', 'Shop'),
+                ('name', '=', 'Partners'),
             ]).unlink()

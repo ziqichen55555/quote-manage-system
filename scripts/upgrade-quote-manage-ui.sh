@@ -14,10 +14,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-DB="${ODOO_DATABASE:-cocreativeit-quote}"
+DB="${ODOO_DATABASE:-cocreativeit-quote}" 
 MODULE="${ODOO_MODULE:-quote_manage_ui}"
 
 echo "Upgrading module ${MODULE} on database ${DB}..."
 docker compose run --rm web odoo -c /etc/odoo/odoo.conf -d "$DB" -u "$MODULE" --stop-after-init
+echo "Syncing locked snippet/template views from XML..."
+docker compose run --rm -T web odoo shell -c /etc/odoo/odoo.conf -d "$DB" --stop-after-init < scripts/sync_rw_templates.py
 docker compose restart web nginx
 echo "Done."

@@ -1,0 +1,27 @@
+# Caddy v2 配置
+# SITE_HOSTNAME / ACME_EMAIL 由 docker-compose.prod.yml 通过环境变量注入。
+#
+# 现在期间： SITE_HOSTNAME=xxxxx.duckdns.org
+# 未来切回主域名时: SITE_HOSTNAME=reware-project.com
+#   （可选）想同时支持 www: 把下面 hostname 改成
+#       reware-project.com, www.reware-project.com {
+
+{
+    email {$ACME_EMAIL}
+}
+
+{$SITE_HOSTNAME} {
+    encode gzip zstd
+
+    # 100MB upload limit (matches the old nginx client_max_body_size)
+    request_body {
+        max_size 100MB
+    }
+
+    reverse_proxy web:8069 {
+        # WebSocket / longpolling: Caddy v2 already handles upgrades automatically.
+        # Forward standard proxy headers; X-Forwarded-Proto is set automatically.
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+    }
+}

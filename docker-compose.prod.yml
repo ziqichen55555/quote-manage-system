@@ -1,0 +1,68 @@
+# 生产部署版（Oracle Cloud / 任意公网 VPS）
+# 与本地开发用的 docker-compose.yml 区别：
+#   1. 用 Caddy 替换 nginx，自动签发 / 续期 Let's Encrypt 证书
+#   2. 关键密码通过 .env 注入，不再硬编码 odoo/odoo
+#   3. Odoo 端口 8069 不暴露到宿主，全部走 Caddy 反代
+#
+# 使用：
+#   cp .env.prod.example .env
+#   # 修改 .env 里的 SITE_HOSTNAME / POSTGRES_PASSWORD
+#   docker compose -f docker-compose.prod.yml --env-file .env up -d
+
+services:
+  web:
+    image: odoo:17.0
+    restart: unless-stopped
+    command: odoo -c /etc/odoo/odoo.conf --proxy-mode
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./quote-manage-system/addons:/mnt/extra-addons
+      - ./quote-manage-system/custom_addons:/mnt/custom-addons
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD missing in .env}
+      - PROXY_MODE=1
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - SITE_HOSTNAME=${SITE_HOSTNAME:?SITE_HOSTNAME missing in .env}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD missing in .env}
+      - POSTGRES_USER=odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+  caddy-data:
+  caddy-config:

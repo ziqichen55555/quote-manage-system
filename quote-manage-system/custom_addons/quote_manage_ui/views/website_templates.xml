@@ -19,26 +19,17 @@
         </xpath>
     </template>
 
-    <!-- 2. Menu records (Shop / Trade-in seeded; About / Services / Our Why / Partners
-         created later, after their page records, so ref= resolves correctly.) -->
-    <record id="menu_shop" model="website.menu">
-        <field name="name">Shop</field>
-        <field name="url">/shop</field>
-        <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">1</field>
-    </record>
+    <!-- 2. Menu records (About / Our Why / Partners created later, after
+         their page records so ref= resolves correctly). Shop, Trade-in
+         and Services were dropped from the navigation per design feedback;
+         /shop is reachable via the header SHOP button.
+         _quote_manage_ui_cleanup_duplicate_menus removes leftover DB rows
+         on every upgrade. -->
 
-    <record id="menu_trade_in" model="website.menu">
-        <field name="name">Trade-in</field>
-        <field name="url">/trade-in</field>
-        <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">2</field>
-    </record>
-
-    <!-- 3. Header — minimal nav (Re-Ware Project · About · Our Why · Contact · DONATE NOW) -->
+    <!-- 3. Header — Re-Ware nav: About. / Our Why. / Contact. / DONATE NOW / SHOP -->
     <template id="template_header_default_force" inherit_id="website.template_header_default" name="Reware Header" priority="99">
         <xpath expr="//t[@t-call='website.navbar']" position="replace">
-            <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg rw-navbar rw-navbar-light">
+            <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg d-none d-lg-block shadow-sm navbar-light o_colored_level o_cc rw-navbar">
                 <div class="container">
                     <a href="/" class="rw-brand me-auto">Re-Ware Project</a>
 
@@ -47,9 +38,9 @@
                     </button>
 
                     <div class="collapse navbar-collapse flex-grow-0" id="top_menu_collapse">
-                        <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                        <ul class="navbar-nav align-items-lg-center gap-lg-3">
                             <t t-foreach="website.menu_id.child_id.exists()" t-as="submenu">
-                                <t t-if="submenu.url not in ('/contactus', '/partners', '/partners-10')">
+                                <t t-if="submenu.url not in ('/shop', '/partners', '/partners-10', '/trade-in', '/services')">
                                     <t t-call="website.submenu">
                                         <t t-set="item_class" t-valuef="nav-item"/>
                                         <t t-set="link_class" t-valuef="nav-link"/>
@@ -57,12 +48,10 @@
                                 </t>
                             </t>
                             <li class="nav-item ms-lg-2">
-                                <a href="/contactus" class="rw-btn-gold">Donate now</a>
+                                <a href="/contactus" class="rw-btn-coral-red">Donate now</a>
                             </li>
-                            <li class="nav-item ms-lg-2">
-                                <a href="/shop/cart" class="nav-link position-relative" aria-label="Cart">
-                                    <i class="fa fa-shopping-cart"/>
-                                </a>
+                            <li class="nav-item">
+                                <a href="/shop" class="rw-btn-coral-red">Shop</a>
                             </li>
                             <t t-call="portal.placeholder_user_sign_in">
                                 <t t-set="_link_class" t-valuef="nav-link"/>
@@ -78,18 +67,47 @@
         </xpath>
     </template>
 
+    <!-- 3b. Mobile header — same nav filter + DONATE / SHOP buttons -->
+    <template id="template_header_mobile_force" inherit_id="website.template_header_mobile" name="Reware Header Mobile" priority="99">
+        <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="replace">
+            <t t-foreach="website.menu_id.child_id.exists()" t-as="submenu">
+                <t t-if="submenu.url not in ('/shop', '/partners', '/partners-10', '/trade-in', '/services')">
+                    <t t-call="website.submenu">
+                        <t t-set="item_class" t-valuef="nav-item"/>
+                        <t t-set="link_class" t-valuef="nav-link"/>
+                        <t t-set="dropdown_toggler_classes" t-valuef="d-flex justify-content-between align-items-center"/>
+                        <t t-set="dropdown_menu_classes" t-valuef="position-relative rounded-0 o_dropdown_without_offset"/>
+                    </t>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-call='website.header_call_to_action_large']" position="replace">
+            <li class="nav-item w-100">
+                <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate now</a>
+            </li>
+            <li class="nav-item w-100">
+                <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block">Shop</a>
+            </li>
+        </xpath>
+    </template>
+
     <!-- 4. Footer — single reusable QWeb t-call, also replaces website.layout's footer -->
     <template id="rw_footer_block" name="Reware Footer Block">
         <footer class="rw-footer">
             <div class="container">
                 <h2 class="rw-footer-title">Re-Ware, designed by Co-Creative IT.</h2>
-                <div class="row justify-content-center text-center g-4">
-                    <div class="col-md-4">
+                <div class="row justify-content-center text-center g-4 align-items-center">
+                    <div class="col-md-4 order-2 order-md-1">
                         <h4>Contact</h4>
                         <p class="mb-1"><a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a></p>
                         <p class="mb-0"><a href="tel:0499909302">0499 909 302</a></p>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 order-1 order-md-2">
+                        <div class="rw-footer-logo">
+                            <img src="/quote_manage_ui/static/src/img/brand/reware-logo.png" alt="Re-Ware logo" class="img-fluid"/>
+                        </div>
+                    </div>
+                    <div class="col-md-4 order-3">
                         <h4>Location</h4>
                         <p class="mb-0">102 Edward St, Perth, Western Australia</p>
                     </div>
@@ -236,94 +254,10 @@
          ============================================================ -->
     <data noupdate="1">
 
-    <!-- 7a. Trade-in -->
-    <record id="trade_in_page" model="website.page" forcecreate="True">
-        <field name="name">Trade-in</field>
-        <field name="url">/trade-in</field>
-        <field name="type">qweb</field>
-        <field name="is_published">True</field>
-        <field name="key">quote_manage_ui.trade_in_page</field>
-        <field name="arch" type="xml">
-            <t name="Trade-in" t-name="quote_manage_ui.trade_in_page">
-                <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure oe_empty rw-site">
-                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
-                            <div class="container">
-                                <p class="rw-eyebrow mb-3">Trade-in</p>
-                                <h1 class="mb-3">Trade in your old tech.</h1>
-                                <p class="lead">Cash or store credit for your used devices — fast, secure, and good for the planet.</p>
-                            </div>
-                        </section>
+    <!-- Trade-in & Services pages were removed per design feedback. The
+         post-init hook below cleans them out of the database on upgrade. -->
 
-                        <section class="s_rw_tradein_why rw-section rw-bg-cream-soft" data-name="Trade-in Why" data-snippet="s_rw_tradein_why">
-                            <div class="container">
-                                <div class="row align-items-center g-5">
-                                    <div class="col-lg-6">
-                                        <p class="rw-eyebrow mb-2">Why trade in</p>
-                                        <h2 class="mb-4">Fighting digital poverty.</h2>
-                                        <p style="color: var(--rw-text-soft); font-size: 1.05rem; line-height: 1.6;">Re-Ware plays a pivotal role fighting digital poverty across Western Australia by giving end-of-life devices a second life.</p>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="rw-card">
-                                            <p class="rw-eyebrow mb-2">Drop-off point</p>
-                                            <h3 class="mb-2">Co-Creative IT</h3>
-                                            <p>102 Edward Street, Perth, Western Australia 6000</p>
-                                            <div class="mt-2"><a href="/contactus" class="rw-btn-outline-dark">Get directions</a></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <t t-call="quote_manage_ui.s_rw_steps"/>
-
-                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
-                    </div>
-                </t>
-            </t>
-        </field>
-    </record>
-
-    <!-- 7b. Services -->
-    <record id="services_page" model="website.page" forcecreate="True">
-        <field name="name">Our Services</field>
-        <field name="url">/services</field>
-        <field name="type">qweb</field>
-        <field name="is_published">True</field>
-        <field name="key">quote_manage_ui.services_page</field>
-        <field name="arch" type="xml">
-            <t name="Services" t-name="quote_manage_ui.services_page">
-                <t t-call="website.layout">
-                    <div id="wrap" class="oe_structure oe_empty rw-site">
-                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
-                            <div class="container">
-                                <p class="rw-eyebrow mb-3">What we do</p>
-                                <h1 class="mb-3">Our services.</h1>
-                                <p class="lead">Creativity, integrity, innovation and vision — applied to every refurbishment and partnership.</p>
-                            </div>
-                        </section>
-
-                        <section class="s_rw_service_grid rw-section rw-bg-cream-soft" data-name="Service Grid" data-snippet="s_rw_service_grid">
-                            <div class="container">
-                                <div class="row g-4">
-                                    <div class="col-md-4"><div class="rw-card"><h3>Hardware</h3><p>Devices that fit current needs and grow with you, backed by full support.</p></div></div>
-                                    <div class="col-md-4"><div class="rw-card"><h3>Software</h3><p>Cost-effective solutions that scale as your business evolves.</p></div></div>
-                                    <div class="col-md-4"><div class="rw-card"><h3>Careware</h3><p>The unique ingredient that makes us — and your business — different.</p></div></div>
-                                    <div class="col-md-4"><div class="rw-card"><h3>Re-ware</h3><p>E-waste collection and refurbishment to fight digital poverty across WA.</p><p class="mt-2 mb-0"><a href="/aboutus#reware-project" class="rw-btn-text">Read more</a></p></div></div>
-                                    <div class="col-md-4"><div class="rw-card"><h3>Network security</h3><p>Cybercrime protection is our highest priority in managing your infrastructure.</p></div></div>
-                                    <div class="col-md-4"><div class="rw-card"><h3>IT consulting</h3><p>We understand your business as intimately as you do.</p></div></div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
-                    </div>
-                </t>
-            </t>
-        </field>
-    </record>
-
-    <!-- 7c. About Us -->
+    <!-- 7c. About Us — content mirrors reware-project.com/about -->
     <record id="about_us_page" model="website.page" forcecreate="True">
         <field name="name">About Us</field>
         <field name="url">/aboutus</field>
@@ -334,35 +268,40 @@
             <t name="About Us" t-name="quote_manage_ui.about_us_page">
                 <t t-call="website.layout">
                     <div id="wrap" class="oe_structure oe_empty rw-site">
-                        <section class="s_rw_split rw-section rw-bg-cream" data-name="Who we are" data-snippet="s_rw_split">
+                        <section class="s_rw_about_intro rw-section rw-bg-cream" data-name="Who we are" data-snippet="s_rw_about_intro">
                             <div class="container">
                                 <div class="row align-items-center g-5">
                                     <div class="col-lg-6">
-                                        <h1 class="mb-3">Who we are.</h1>
-                                        <p class="lead mb-4" style="font-size: 1.25rem; color: var(--rw-text);">Two friends, one practical idea — tech that builds community, not landfill.</p>
-                                        <p style="color: var(--rw-text-soft); line-height: 1.65;">Louis and Drew built Re-Ware so everyone can access reliable technology without compromising the planet our kids will inherit.</p>
+                                        <h1 class="mb-3 rw-display">Who we are.</h1>
+                                        <p class="lead mb-4 rw-about-lead">Two friends, one practical idea &#8212; tech that builds community, not landfill.</p>
+                                        <p class="rw-about-body mb-4">From childhood friends to Dads navigating rising costs and a world that feels stretched, Louis and Drew built the Re-Ware Project for one reason &#8212; everyone deserves access to technology, without compromising the planet our kids will inherit.</p>
+                                        <a href="/contactus" class="rw-btn-gold">Let's talk</a>
                                     </div>
                                     <div class="col-lg-6">
-                                        <div class="rw-hero-image rw-hero-image-placeholder" style="min-height: 380px;"/>
+                                        <div class="rw-about-portrait rw-hero-image rw-hero-image-placeholder">
+                                            <span class="rw-about-portrait-caption">Louis &amp; Drew &#8212; Re-Ware Project</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <section id="reware-project" class="s_rw_story rw-section rw-bg-cream-soft" data-name="Our story" data-snippet="s_rw_story">
+                        <section id="reware-project" class="s_rw_about_story rw-section rw-bg-cream-soft" data-name="Our story" data-snippet="s_rw_about_story">
                             <div class="container rw-container-narrow">
-                                <p class="rw-eyebrow mb-2">Our story</p>
-                                <h2 class="mb-4">Tech that respects people and the planet.</h2>
-                                <p style="color: var(--rw-text-soft); line-height: 1.7; font-size: 1.05rem;">Louis runs Co-Creative IT, a family business that has worked across the tech space for years. Drew brings community-focused experience from technical roles across events, AV and installation. Together they created a straightforward way to give reliable devices a second life and donate them to people who need them.</p>
+                                <h2 class="mb-4">Our story.</h2>
+                                <p class="rw-about-body mb-4">Louis and Drew grew up together and have always shared the same values &#8212; helping people and protecting the environment.</p>
+                                <p class="rw-about-body mb-4">Louis runs Co-Creative IT, a generational family business that's worked across the tech space for years. That insight showed him how devices are used throughout their lifespan. When he started seeing perfectly viable tech heading to landfill, the path forward was clear.</p>
+                                <p class="rw-about-body mb-0">Together, they created a system that makes refurbished devices accessible and affordable. Which led them to develop the Re-Ware Project &#8212; a straightforward way to give reliable devices a second life and donate them to people who actually need them rather than sending them to landfill.</p>
                             </div>
                         </section>
 
-                        <section class="s_rw_howwework rw-section rw-bg-cream" data-name="How we work" data-snippet="s_rw_howwework">
+                        <section class="s_rw_about_howwework rw-section rw-bg-cream" data-name="How we work" data-snippet="s_rw_about_howwework">
                             <div class="container rw-container-narrow">
-                                <p class="rw-eyebrow mb-2">How we work</p>
-                                <h2 class="mb-4">Partnerships that keep devices in use.</h2>
-                                <p style="color: var(--rw-text-soft); line-height: 1.7; font-size: 1.05rem;">Re-Ware partners with corporates, not-for-profits and community-minded organisations to build circular solutions. It is not charity and it is not corporate spin — just a better way to use what already exists.</p>
-                                <div class="mt-4"><a href="/contactus" class="rw-btn-gold">Let's talk</a></div>
+                                <h2 class="mb-4">How we work.</h2>
+                                <p class="rw-about-body mb-3">Re-Ware partners with corporates, not-for-profits and community minded organisations to build practical circular solutions that keep devices in use, not waste streams.</p>
+                                <p class="rw-about-body mb-3">We operate simply, building long-term partnerships, clear communication, and solutions designed around real needs.</p>
+                                <p class="rw-about-body mb-4">It's not charity, and it's not corporate spin. It's just a better way to use what already exists and make technology part of community, not landfill. If that approach makes sense to you, we'd love to talk.</p>
+                                <a href="/contactus" class="rw-btn-gold">Let's talk</a>
                             </div>
                         </section>
 
@@ -373,7 +312,26 @@
         </field>
     </record>
 
-    <!-- 7d. Our Why -->
+    <!-- 7d. Our Why — mirrors reware-project.com/why with three stacked
+         sections:
+
+         Section 1 (intro / cream):
+           LEFT  = "Our why." headline + lead + Join us! button
+           RIGHT = "Digital poverty" supporting photograph
+         Section 2 (outcome / cream-soft):
+           LEFT  = gold display headline "Your clean-up done right..."
+           RIGHT = dark body paragraph "We invite you to join us..."
+           BELOW = centered DONATE NOW button
+         Section 3 (pillars / cream-soft):
+           LEFT  = "Digital poverty is growing..." copy
+           RIGHT = 5-item accordion (+ click to expand)
+         Section 4 (outcome / cream):
+           LEFT  = gold "Your clean-up done right..."
+           RIGHT = black "We invite you..." + centered DONATE NOW
+         Section 5 (contact / rw-bg-dark charcoal):
+           LEFT  = "Contact us." + intro copy
+           RIGHT = full form (Name, Email, newsletter checkbox,
+                   enquiry radio options, Message, Submit). -->
     <record id="our_why_page" model="website.page" forcecreate="True">
         <field name="name">Our Why</field>
         <field name="url">/our-why</field>
@@ -384,37 +342,210 @@
             <t name="Our Why" t-name="quote_manage_ui.our_why_page">
                 <t t-call="website.layout">
                     <div id="wrap" class="oe_structure oe_empty rw-site">
-                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
-                            <div class="container">
-                                <p class="rw-eyebrow mb-3">Our why</p>
-                                <h1 class="mb-3">Why it matters.</h1>
-                                <p class="lead">Less waste. Less risk. More responsible use of the tech we already own.</p>
-                            </div>
-                        </section>
-
-                        <section class="s_rw_why_principles rw-section rw-bg-cream-soft" data-name="Why principles" data-snippet="s_rw_why_principles">
+                        <section class="s_rw_why_intro rw-section rw-bg-cream" data-name="Our why intro" data-snippet="s_rw_why_intro">
                             <div class="container">
                                 <div class="row g-5 align-items-center">
-                                    <div class="col-lg-7">
-                                        <h2 class="mb-4">Digital access and environmental responsibility scale together.</h2>
-                                        <p class="mb-3" style="color: var(--rw-text-soft); line-height: 1.65;">The Re-Ware model helps organisations retire equipment securely while extending the lifecycle of suitable devices. Fewer assets sent to waste — more practical support for people who need access.</p>
-                                        <p class="mb-0" style="color: var(--rw-text-soft); line-height: 1.65;">We focus on clear processes, measurable outcomes, and local partnerships that turn surplus hardware into meaningful community impact.</p>
+                                    <div class="col-lg-6">
+                                        <h1 class="mb-3 rw-display">Our why.</h1>
+                                        <p class="lead rw-why-intro-lead mb-4">We believe that together, we can create a more sustainable and digitally inclusive future for all.</p>
+                                        <p class="rw-why-intro-body mb-4">Re-Ware refurbishes suitable devices and donates them to Western Australians experiencing digital poverty &#8212; including lower-income individuals and families, people that are displaced, people with disabilities, justice programs, and to support women and children rebuilding after domestic violence who need safe digital access.</p>
+                                        <a href="#rw-contact" class="rw-btn-gold">Join us!</a>
                                     </div>
-                                    <div class="col-lg-5">
-                                        <div class="rw-card">
-                                            <p class="rw-eyebrow mb-3">Core principles</p>
-                                            <p class="mb-2"><span style="color: var(--rw-gold); font-weight: 700;">REPAIR.</span> <span style="color: var(--rw-text-soft);">Keep devices useful for longer.</span></p>
-                                            <p class="mb-2"><span style="color: var(--rw-gold); font-weight: 700;">REPURPOSE.</span> <span style="color: var(--rw-text-soft);">Match quality hardware to real needs.</span></p>
-                                            <p class="mb-0"><span style="color: var(--rw-gold); font-weight: 700;">REUSE.</span> <span style="color: var(--rw-text-soft);">Reduce waste by design, not by chance.</span></p>
+                                    <div class="col-lg-6">
+                                        <div class="rw-why-photo">
+                                            <img class="img-fluid w-100" alt="Donate devices to help close the digital divide for women and children in Perth" src="/quote_manage_ui/static/src/img/backgrounds/digital-poverty.jpg"/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <t t-call="quote_manage_ui.s_rw_rrr"/>
+                        <section class="s_rw_why_pillars rw-section rw-bg-cream-soft" data-name="Why pillars" data-snippet="s_rw_why_pillars">
+                            <div class="container">
+                                <div class="row g-5 align-items-start">
+                                    <div class="col-lg-5">
+                                        <h2 class="rw-why-pillars-title mb-0">Digital poverty is growing &#8212; but it's preventable. By choosing Re-Ware, you're contributing to:</h2>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <ul class="rw-accordion list-unstyled mb-0">
+                                            <li class="rw-accordion-item">
+                                                <details>
+                                                    <summary>
+                                                        <span class="rw-accordion-title">Community access to education.</span>
+                                                        <span class="rw-accordion-icon" aria-hidden="true">+</span>
+                                                    </summary>
+                                                    <div class="rw-accordion-body">
+                                                        <p>Re-Ware gives tech a second life and provides disadvantaged Western Australians with a first chance at learning. Refurbished devices go straight to schools, students, and community programs, helping those in need get online and reach their full educational potential.</p>
+                                                        <p class="mb-0">We believe access to education should reflect the values of our broader community: looking after each other, regardless of circumstance &#8212; because education shouldn't be determined by privilege.</p>
+                                                    </div>
+                                                </details>
+                                            </li>
+                                            <li class="rw-accordion-item">
+                                                <details>
+                                                    <summary>
+                                                        <span class="rw-accordion-title">Job and training pathways.</span>
+                                                        <span class="rw-accordion-icon" aria-hidden="true">+</span>
+                                                    </summary>
+                                                    <div class="rw-accordion-body">
+                                                        <p>Access to tech, access to opportunity. In today's job market, digital skills and access to technology are essential. Without reliable devices, many people face barriers to finding work, participating in online training, and keeping up with the changing demands of the workplace.</p>
+                                                        <p class="mb-0">By donating refurbished devices and supporting digital confidence, we give people the tools to explore opportunities, complete training, and connect with new career pathways &#8212; helping more Western Australians participate fully in the workforce.</p>
+                                                    </div>
+                                                </details>
+                                            </li>
+                                            <li class="rw-accordion-item">
+                                                <details>
+                                                    <summary>
+                                                        <span class="rw-accordion-title">Access to essential online services.</span>
+                                                        <span class="rw-accordion-icon" aria-hidden="true">+</span>
+                                                    </summary>
+                                                    <div class="rw-accordion-body">
+                                                        <p>Reliable tech isn't just convenient &#8212; it's essential. Without devices and internet access, many Western Australians face challenges managing everyday tasks like food shopping, banking, healthcare, vital services, accessing essential resources, and taking care of important responsibilities.</p>
+                                                        <p class="mb-0">Re-Ware helps bridge that gap. Essential access shouldn't depend on circumstance, so we're working to make it possible for everyone to access what they need, when they need it, and participate fully in daily life.</p>
+                                                    </div>
+                                                </details>
+                                            </li>
+                                            <li class="rw-accordion-item">
+                                                <details>
+                                                    <summary>
+                                                        <span class="rw-accordion-title">Reduced e-waste and stronger ESG.</span>
+                                                        <span class="rw-accordion-icon" aria-hidden="true">+</span>
+                                                    </summary>
+                                                    <div class="rw-accordion-body">
+                                                        <p>Responsibly sustainable. Refurbishing just <strong>two desktop computers</strong> saves <strong>797 kg of CO&#8322;</strong> &#8212; consider it a little boost to your good-karma bank.</p>
+                                                        <p class="mb-2">That's the same as:</p>
+                                                        <ul class="rw-why-stats">
+                                                            <li>Driving a heavy goods vehicle <strong>937 km</strong>.</li>
+                                                            <li>Hauling <strong>50 tonnes</strong> of freight across <strong>1,000 km</strong>.</li>
+                                                            <li><strong>18 nights</strong> stay in a hotel.</li>
+                                                            <li><strong>2,635 km</strong> of business flight travel.</li>
+                                                        </ul>
+                                                        <p class="mb-0"><strong>E-waste reduction:</strong> Re-Ware Project can provide a full history of every device we work on and quantify your CO&#8322; savings annually through our sustainability calculator.</p>
+                                                    </div>
+                                                </details>
+                                            </li>
+                                            <li class="rw-accordion-item">
+                                                <details>
+                                                    <summary>
+                                                        <span class="rw-accordion-title">Connection to others.</span>
+                                                        <span class="rw-accordion-icon" aria-hidden="true">+</span>
+                                                    </summary>
+                                                    <div class="rw-accordion-body">
+                                                        <p>Devices that bring people together. Being able to communicate easily is essential for building relationships, sharing experiences, and feeling part of a community. Without access to technology, many people can feel isolated or cut off from the people and support networks that matter most.</p>
+                                                        <p class="mb-0">With rising rates of mental health challenges and depression in Western Australia, limited access to technology can leave people feeling isolated. Re-Ware Project helps people engage with their communities, join social activities, and strengthen the bonds that make everyday life richer.</p>
+                                                    </div>
+                                                </details>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
 
-                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
+                        <section class="s_rw_why_outcome rw-section rw-bg-cream" data-name="Why outcome" data-snippet="s_rw_why_outcome">
+                            <div class="container">
+                                <div class="row g-5 align-items-start">
+                                    <div class="col-lg-6">
+                                        <h2 class="rw-why-outcome-headline mb-0">Your clean-up done right = a meaningful local outcome.</h2>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <p class="rw-why-outcome-body mb-0">We invite you to join us in making a tangible difference in our community through the Re-Ware Project. As a company dedicated to creativity, innovation, social and environmental responsibility, Co-Creative IT has designed Re-Ware Project to address digital poverty and environmental challenges head-on.</p>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-5">
+                                    <a href="#rw-contact" class="rw-btn-gold">Donate now</a>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="rw-contact" class="s_rw_why_contact rw-section rw-bg-dark" data-name="Contact form" data-snippet="s_rw_why_contact">
+                            <div class="container">
+                                <div class="row g-5 align-items-start">
+                                    <div class="col-lg-5">
+                                        <h2 class="rw-why-contact-title mb-3">Contact us.</h2>
+                                        <p class="rw-why-contact-lead mb-0">Interested in working together? Fill out some info and we will be in touch shortly. We can't wait to hear from you!</p>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <section class="s_website_form rw-form" data-vcss="001" data-snippet="s_website_form">
+                                            <form id="why_contact_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="crm.lead" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                                                <div class="s_website_form_rows row g-3 s_col_no_bgcolor">
+                                                    <div class="col-12">
+                                                        <label class="form-label s_website_form_label rw-why-field-group-label">
+                                                            <span class="s_website_form_label_content">Name</span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="col-md-6 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="why_first_name">
+                                                            <span class="s_website_form_label_content">First Name</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="why_first_name" type="text" class="form-control s_website_form_input" name="contact_name" required="required"/>
+                                                    </div>
+                                                    <div class="col-md-6 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="why_last_name">
+                                                            <span class="s_website_form_label_content">Last Name</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="why_last_name" type="text" class="form-control s_website_form_input" name="partner_name" required="required"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="why_email">
+                                                            <span class="s_website_form_label_content">Email</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="why_email" type="email" class="form-control s_website_form_input" name="email_from" required="required"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_custom" data-type="boolean" data-name="Field">
+                                                        <div class="form-check rw-why-newsletter-check">
+                                                            <input type="checkbox" class="form-check-input s_website_form_input" id="why_newsletter" name="function" value="Newsletter signup"/>
+                                                            <label class="form-check-label" for="why_newsletter">Sign up for news and updates</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="char" data-name="Field">
+                                                        <label class="form-label s_website_form_label d-block mb-2">
+                                                            <span class="s_website_form_label_content">Please let us know what your enquiry relates to?</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <div class="rw-why-enquiry-options">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input s_website_form_input" type="radio" name="name" id="why_enquiry_donation" value="Apply For Donation" required="required"/>
+                                                                <label class="form-check-label" for="why_enquiry_donation">Apply For Donation</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input s_website_form_input" type="radio" name="name" id="why_enquiry_purchases" value="Pre-Loved Device Purchases"/>
+                                                                <label class="form-check-label" for="why_enquiry_purchases">Pre-Loved Device Purchases</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input s_website_form_input" type="radio" name="name" id="why_enquiry_collection" value="Refurb &amp; Repurpose Collection"/>
+                                                                <label class="form-check-label" for="why_enquiry_collection">Refurb &amp; Repurpose Collection</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input s_website_form_input" type="radio" name="name" id="why_enquiry_sanitisation" value="Book Data Sanitisation"/>
+                                                                <label class="form-check-label" for="why_enquiry_sanitisation">Book Data Sanitisation</label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input s_website_form_input" type="radio" name="name" id="why_enquiry_other" value="Other"/>
+                                                                <label class="form-check-label" for="why_enquiry_other">Other</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
+                                                        <label class="form-label s_website_form_label" for="why_message">
+                                                            <span class="s_website_form_label_content">Message</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <textarea id="why_message" class="form-control s_website_form_input" name="description" required="required" rows="5"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_submit pt-2" data-name="Submit Button">
+                                                        <a href="#" role="button" class="rw-btn-gold s_website_form_send">Submit</a>
+                                                        <span id="s_website_form_result"/>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </section>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </t>
             </t>
@@ -482,21 +613,17 @@
 
     </data>
 
-    <!-- 8. Menus (declared AFTER their page records so ref= resolves) -->
-    <record id="menu_services" model="website.menu">
-        <field name="name">Services</field>
-        <field name="url">/services</field>
-        <field name="page_id" ref="quote_manage_ui.services_page"/>
-        <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">3</field>
-    </record>
-
+    <!-- 8. Menus (declared AFTER their page records so ref= resolves).
+         Trade-in / Services / Shop / Partners were dropped from the nav
+         — their page records stay so direct URLs keep working, but they
+         no longer appear in the menu bar. /shop is reachable via the
+         SHOP header button. -->
     <record id="menu_about_us" model="website.menu">
         <field name="name">About.</field>
         <field name="url">/aboutus</field>
         <field name="page_id" ref="quote_manage_ui.about_us_page"/>
         <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">4</field>
+        <field name="sequence" type="int">1</field>
     </record>
 
     <record id="menu_our_why" model="website.menu">
@@ -504,94 +631,119 @@
         <field name="url">/our-why</field>
         <field name="page_id" ref="quote_manage_ui.our_why_page"/>
         <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">5</field>
+        <field name="sequence" type="int">2</field>
     </record>
 
-    <record id="menu_partners" model="website.menu">
-        <field name="name">Partners</field>
-        <field name="url">/partners</field>
-        <field name="page_id" ref="quote_manage_ui.partners_page"/>
-        <field name="parent_id" ref="website.main_menu"/>
-        <field name="sequence" type="int">6</field>
-    </record>
-
-    <!-- 9. Contact Us -->
+    <!-- 9. Contact Us — mirrors reware-project.com/contact (Squarespace
+         near-white background): LEFT column = intro copy + email CTA +
+         Name(First/Last) / Email / Message form + SEND. RIGHT column =
+         community graffiti photo. Charcoal styling stays on the inline
+         contact blocks of other pages (Our Why, homepage newsletter). -->
     <template id="reware_contactus" inherit_id="website.contactus" name="Reware Contact Us" priority="10">
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="oe_structure oe_empty rw-site">
-                <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                <section class="s_rw_contact rw-section rw-bg-light" data-name="Contact us" data-snippet="s_rw_contact">
                     <div class="container">
-                        <p class="rw-eyebrow mb-3">Contact</p>
-                        <h1 class="mb-3">Let's talk.</h1>
-                        <p class="lead">Questions about our services, refurbishment, or the Re-Ware project? We'll get back to you within 24 hours.</p>
-                    </div>
-                </section>
-
-                <section class="s_rw_contact_form rw-section rw-bg-cream-soft" data-name="Contact form" data-snippet="s_rw_contact_form">
-                    <div class="container">
-                        <div class="row g-5">
-                            <div class="col-lg-5">
-                                <p class="rw-eyebrow mb-3">Get in touch</p>
-                                <h2 class="mb-4">We're here to help.</h2>
-                                <div class="mb-4">
-                                    <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--rw-text-muted); margin-bottom: 0.4rem;">Email</h4>
-                                    <p class="mb-0" style="font-size: 1.1rem;"><a href="mailto:re-ware@cocreativeit.com" style="color: var(--rw-text); text-decoration: none; border-bottom: 1px solid var(--rw-gold); padding-bottom: 1px;">re-ware@cocreativeit.com</a></p>
-                                </div>
-                                <div class="mb-4">
-                                    <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--rw-text-muted); margin-bottom: 0.4rem;">Phone</h4>
-                                    <p class="mb-0" style="font-size: 1.1rem;"><a href="tel:0499909302" style="color: var(--rw-text); text-decoration: none;">0499 909 302</a></p>
-                                </div>
-                                <div class="mb-4">
-                                    <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--rw-text-muted); margin-bottom: 0.4rem;">Location</h4>
-                                    <p class="mb-0" style="font-size: 1.1rem;">102 Edward Street, Perth, Western Australia 6000</p>
-                                </div>
-                            </div>
+                        <div class="row g-5 align-items-start">
                             <div class="col-lg-7">
-                                <div class="rw-card rw-form" style="padding: 2.5rem;">
-                                    <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
-                                        <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="crm.lead" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
-                                            <div class="s_website_form_rows row s_col_no_bgcolor">
-                                                <div class="mb-3 col-12 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
-                                                    <label class="form-label s_website_form_label" for="contact1">
-                                                        <span class="s_website_form_label_content">Name</span>
-                                                        <span class="s_website_form_mark"> *</span>
-                                                    </label>
-                                                    <input id="contact1" type="text" class="form-control s_website_form_input" name="contact_name" required="required" data-fill-with="name"/>
-                                                </div>
-                                                <div class="mb-3 col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
-                                                    <label class="form-label s_website_form_label" for="contact3">
-                                                        <span class="s_website_form_label_content">Email</span>
-                                                        <span class="s_website_form_mark"> *</span>
-                                                    </label>
-                                                    <input id="contact3" type="email" class="form-control s_website_form_input" name="email_from" required="required" data-fill-with="email"/>
-                                                </div>
-                                                <div class="mb-3 col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="char" data-name="Field">
-                                                    <label class="form-label s_website_form_label" for="contact5">
-                                                        <span class="s_website_form_label_content">Subject</span>
-                                                        <span class="s_website_form_mark"> *</span>
-                                                    </label>
-                                                    <input id="contact5" type="text" class="form-control s_website_form_input" name="name" required="required"/>
-                                                </div>
-                                                <div class="mb-3 col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
-                                                    <label class="form-label s_website_form_label" for="contact6">
-                                                        <span class="s_website_form_label_content">Message</span>
-                                                        <span class="s_website_form_mark"> *</span>
-                                                    </label>
-                                                    <textarea id="contact6" class="form-control s_website_form_input" name="description" required="required" rows="5"/>
-                                                </div>
-                                                <div class="mb-0 py-2 col-12 s_website_form_submit" data-name="Submit Button">
-                                                    <a href="#" role="button" class="rw-btn-coral s_website_form_send">Send message</a>
-                                                    <span id="s_website_form_result"/>
-                                                </div>
+                                <h1 class="rw-contact-title mb-3 rw-display">Contact us now.</h1>
+                                <p class="rw-contact-lead mb-3">Interested in working together? We collect, wipe, and report corporate devices, repurposing them to W.A. communities in need while diverting e-waste from landfill.</p>
+                                <p class="rw-contact-lead mb-3">Get in touch here to partner with us!</p>
+                                <p class="mb-4">
+                                    <a href="mailto:partnerships@reware-project.com?subject=I'd like to donate!" class="rw-contact-email"><strong>partnerships@reware-project.com</strong></a>
+                                </p>
+
+                                <section class="s_website_form rw-form rw-contact-form" data-vcss="001" data-snippet="s_website_form">
+                                    <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="(required)" data-model_name="crm.lead" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                                        <div class="s_website_form_rows row g-3 s_col_no_bgcolor">
+                                            <div class="col-12">
+                                                <label class="form-label rw-contact-group-label">Name</label>
                                             </div>
-                                        </form>
-                                    </section>
+                                            <div class="col-md-6 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                                                <label class="form-label rw-contact-sub-label" for="contact_first_name">First Name <small class="rw-required-hint">(required)</small></label>
+                                                <input id="contact_first_name" type="text" class="form-control s_website_form_input" name="contact_name" required="required" data-fill-with="name"/>
+                                            </div>
+                                            <div class="col-md-6 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                                                <label class="form-label rw-contact-sub-label" for="contact_last_name">Last Name <small class="rw-required-hint">(required)</small></label>
+                                                <input id="contact_last_name" type="text" class="form-control s_website_form_input" name="partner_name" required="required"/>
+                                            </div>
+                                            <div class="col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
+                                                <label class="form-label rw-contact-group-label" for="contact_email">Email <small class="rw-required-hint">(required)</small></label>
+                                                <input id="contact_email" type="email" class="form-control s_website_form_input" name="email_from" required="required" data-fill-with="email"/>
+                                            </div>
+                                            <div class="col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
+                                                <label class="form-label rw-contact-group-label" for="contact_message">Message <small class="rw-required-hint">(required)</small></label>
+                                                <textarea id="contact_message" class="form-control s_website_form_input" name="description" required="required" rows="5"/>
+                                            </div>
+                                            <input type="hidden" name="name" value="Contact form submission"/>
+                                            <div class="col-12 s_website_form_submit pt-2" data-name="Submit Button">
+                                                <a href="#" role="button" class="rw-btn-gold rw-contact-send s_website_form_send">SEND</a>
+                                                <span id="s_website_form_result"/>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="rw-contact-photo">
+                                    <img class="img-fluid w-100" alt="Black and white graffiti on a wall reads let's love our community with a small heart underneath." src="/quote_manage_ui/static/src/img/backgrounds/contact-community.jpg"/>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
+        </xpath>
+    </template>
+
+    <!-- 9b. Auth — Sign up / Login / Reset password.
+         Wrap the default Odoo form in a centered Re-Ware page-hero so
+         the page picks up our cream palette and gold buttons instead of
+         the stock white-on-gray layout. -->
+    <template id="reware_signup" inherit_id="auth_signup.signup" name="Reware Sign Up" priority="50">
+        <xpath expr="//form[contains(@class,'oe_signup_form')]" position="before">
+            <div class="text-center mb-4">
+                <p class="rw-eyebrow mb-3">Welcome</p>
+                <h1 class="rw-display mb-3">Create your account.</h1>
+                <p class="lead mb-0">Join the Re-Ware community to track your donations and stay close to the project.</p>
+            </div>
+        </xpath>
+        <xpath expr="//form[contains(@class,'oe_signup_form')]" position="attributes">
+            <attribute name="class">oe_signup_form rw-auth-form rw-form</attribute>
+        </xpath>
+        <xpath expr="//button[@type='submit']" position="attributes">
+            <attribute name="class">rw-btn-gold w-100 mt-2</attribute>
+        </xpath>
+    </template>
+
+    <template id="reware_login" inherit_id="web.login" name="Reware Login" priority="50">
+        <xpath expr="//form[contains(@class,'oe_login_form') or contains(@class,'oe_signup_form')]" position="before">
+            <div class="text-center mb-4">
+                <p class="rw-eyebrow mb-3">Welcome back</p>
+                <h1 class="rw-display mb-3">Sign in to Re-Ware.</h1>
+            </div>
+        </xpath>
+        <xpath expr="//form[contains(@class,'oe_login_form') or contains(@class,'oe_signup_form')]" position="attributes">
+            <attribute name="class" add="rw-auth-form rw-form" separator=" "/>
+        </xpath>
+        <xpath expr="//button[@type='submit']" position="attributes">
+            <attribute name="class">rw-btn-gold w-100 mt-2</attribute>
+        </xpath>
+    </template>
+
+    <template id="reware_reset_password" inherit_id="auth_signup.reset_password" name="Reware Reset Password" priority="50">
+        <xpath expr="//form" position="before">
+            <div class="text-center mb-4">
+                <p class="rw-eyebrow mb-3">Need a hand?</p>
+                <h1 class="rw-display mb-3">Reset your password.</h1>
+                <p class="lead mb-0">We'll email you a secure link to choose a new one.</p>
+            </div>
+        </xpath>
+        <xpath expr="//form" position="attributes">
+            <attribute name="class" add="rw-auth-form rw-form" separator=" "/>
+        </xpath>
+        <xpath expr="//button[@type='submit']" position="attributes">
+            <attribute name="class">rw-btn-gold w-100 mt-2</attribute>
         </xpath>
     </template>
 
@@ -607,11 +759,8 @@
                 <t t-call="quote_manage_ui.s_rw_hero"/>
                 <t t-call="quote_manage_ui.s_rw_services"/>
                 <t t-call="quote_manage_ui.s_rw_consultation"/>
-                <t t-call="quote_manage_ui.s_rw_steps"/>
                 <t t-call="quote_manage_ui.s_rw_why"/>
-                <t t-call="quote_manage_ui.s_rw_rrr"/>
                 <t t-call="quote_manage_ui.s_rw_newsletter"/>
-                <t t-call="quote_manage_ui.s_rw_categories"/>
             </div>
         </xpath>
     </template>
