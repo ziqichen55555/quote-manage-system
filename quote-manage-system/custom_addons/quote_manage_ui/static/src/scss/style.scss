@@ -961,7 +961,47 @@ html:has(main .o_wsale_products_page) {
     background: #fff;
     box-shadow: none !important;
     &:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.07) !important; transform: none; border-color: $rw-gold !important; }
-    .oe_product_image { padding: 1rem; background: $rw-cream-soft; }
+
+    // Strict 200x200 white image box, horizontally centered inside
+    // the card. Card lays out vertically (image on top, info below).
+    // Odoo's inner positioning chain (position-absolute + h-100/w-100
+    // + object-fit-contain on <img>) is left intact so the image
+    // renders naturally inside the 200x200 frame, contained — never
+    // cropped, never stretched, regardless of source aspect ratio.
+    .oe_product_image {
+        flex: 0 0 200px !important;
+        width: 200px !important;
+        min-width: 200px !important;
+        max-width: 200px !important;
+        height: 200px !important;
+        min-height: 200px !important;
+        max-height: 200px !important;
+        background: #ffffff !important;
+        padding: 0.5rem !important;
+        position: relative !important;
+        overflow: hidden !important;
+        margin: 0 auto !important;          // center horizontally
+
+        img {
+            object-fit: contain !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+    }
+
+    // Force the card layout to stack vertically (image on top, info
+    // below) and center the image area in the available card width.
+    .oe_product_cart {
+        flex-direction: column !important;
+        align-items: center !important;
+        min-height: 200px;
+    }
+    .o_wsale_product_grid_wrapper {
+        background: #ffffff;
+    }
+    .o_wsale_product_information {
+        width: 100%;
+    }
 }
 
 .products_categories .nav-link {

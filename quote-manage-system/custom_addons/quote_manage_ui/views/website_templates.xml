@@ -51,7 +51,7 @@
                                 <a href="/contactus" class="rw-btn-coral-red">Donate now</a>
                             </li>
                             <li class="nav-item">
-                                <a href="/shop" class="rw-btn-coral-red">Shop</a>
+                                <a href="/shop" class="rw-btn-coral-red" target="_blank" rel="noopener noreferrer">Shop</a>
                             </li>
                             <t t-call="portal.placeholder_user_sign_in">
                                 <t t-set="_link_class" t-valuef="nav-link"/>
@@ -86,7 +86,7 @@
                 <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate now</a>
             </li>
             <li class="nav-item w-100">
-                <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block">Shop</a>
+                <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block" target="_blank" rel="noopener noreferrer">Shop</a>
             </li>
         </xpath>
     </template>
