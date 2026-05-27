@@ -278,8 +278,8 @@
                                         <a href="/contactus" class="rw-btn-gold">Let's talk</a>
                                     </div>
                                     <div class="col-lg-6">
-                                        <div class="rw-about-portrait rw-hero-image rw-hero-image-placeholder">
-                                            <span class="rw-about-portrait-caption">Louis &amp; Drew &#8212; Re-Ware Project</span>
+                                        <div class="rw-about-portrait rw-about-portrait--photo">
+                                            <img src="/quote_manage_ui/static/src/img/team/louis-and-drew.png" alt="Louis and Drew &#8212; Re-Ware Project" class="img-fluid"/>
                                         </div>
                                     </div>
                                 </div>
