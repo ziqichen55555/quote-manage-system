@@ -108,14 +108,13 @@ $white:               #ffffff;
 // ---------- 2. Google Fonts (loaded on every page via @import; Odoo strips
 // <link> we add in QWeb headers on COW copies, @import inside the bundled
 // stylesheet survives that) -----------------------------------------------------
-// Re-Ware uses Manrope (500/700) for display + Nunito Sans (400/700, italic)
-// for body copy — same combo as reware-project.com.
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500%3B600%3B700%3B800&family=Nunito+Sans:ital,wght@0,300%3B0,400%3B0,600%3B0,700%3B1,400%3B1,700&display=swap');
+// Open Sans (300/400/600/700, italic) for body + display across the site.
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300%3B0,400%3B0,600%3B0,700%3B1,400%3B1,700&display=swap');
 
 // ---------- 3. Base typography ------------------------------------------------
-$rw-font-body:    'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-$rw-font-display: 'Manrope', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-// Legacy alias kept for older rules; both now point at Manrope.
+$rw-font-body:    'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$rw-font-display: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+// Legacy alias kept for older rules.
 $rw-font-sans:    $rw-font-display;
 
 body {
@@ -146,7 +145,7 @@ h4 { font-size: clamp(1rem, 1.4vw, 1.2rem); }
 h5 { font-size: clamp(0.95rem, 1.2vw, 1.05rem); }
 h6 { font-size: clamp(0.85rem, 1.1vw, 0.95rem); }
 
-// Display headlines (Manrope, used on hero / sub-hero titles) — opt-in via .rw-display
+// Display headlines (Open Sans, used on hero / sub-hero titles) — opt-in via .rw-display
 .rw-display {
     font-family: $rw-font-display;
     font-weight: 700;
@@ -260,7 +259,7 @@ h6 { font-size: clamp(0.85rem, 1.1vw, 0.95rem); }
         line-height: 1.65;
         font-size: clamp(0.9rem, 1.1vw, 0.98rem);
     }
-    // Re-Ware why card: RRR lines use the same body face (Nunito Sans) as the
+    // Re-Ware why card: RRR lines use the same body face (Open Sans) as the
     // "Re-Ware refurbishes…" paragraph — one size step up, bold, modest tracking.
     .rw-why-rrr-line {
         font-family: $rw-font-body;
