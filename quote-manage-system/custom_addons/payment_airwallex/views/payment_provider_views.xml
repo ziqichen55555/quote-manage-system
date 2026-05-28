@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Inject the Airwallex credential fields into the standard
+        payment.provider form. Visibility is gated on ``code == 'airwallex'``
+        so other providers' forms stay clean.
+    -->
+    <record id="payment_provider_form" model="ir.ui.view">
+        <field name="name">payment.provider.form.airwallex</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <group name="provider_credentials" position="inside">
+                <group invisible="code != 'airwallex'">
+                    <field name="airwallex_client_id"
+                           required="code == 'airwallex' and state != 'disabled'"
+                           password="True"/>
+                    <field name="airwallex_api_key"
+                           required="code == 'airwallex' and state != 'disabled'"
+                           password="True"/>
+                    <field name="airwallex_webhook_secret"
+                           password="True"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>
