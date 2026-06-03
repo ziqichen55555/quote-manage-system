@@ -1,9 +1,14 @@
 # sphinx build directories
 _build/
 
+# cloudflared (legacy tunnel - replaced by Caddy + DuckDNS)
+cloudflared-*.log
+cloudflared.exe
+
 # dotfiles
 .*
 !.gitignore
+!.gitattributes
 !.github
 !.devcontainer
 !.mailmap
@@ -42,6 +47,16 @@ tsconfig.json
 package-lock.json
 package.json
 .husky
+
+# local migration / secrets (never commit)
+scripts/_do_migration/
+scripts/_product_images_tmp/
+scripts/_proposal_assets/
+*.dump
+*.tar.gz
+DO_DB_PASSWORD.txt
+.env
+!.env.prod.example
 
 # various virtualenv
 /bin/

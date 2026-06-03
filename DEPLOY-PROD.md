@@ -153,9 +153,21 @@ docker compose -f docker-compose.prod.yml logs -f caddy
 
 # 升级 quote_manage_ui 模块（改完代码后）
 git pull
+
+# 推荐：一键脚本（含 DB 备份 + 升级 + sync 锁定模板 + 重启）
+chmod +x scripts/deploy-prod.sh
+./scripts/deploy-prod.sh
+
+# 或手动四步（缺一不可）：
+# 1) 升级模块
 docker compose -f docker-compose.prod.yml --env-file .env run --rm web odoo \
   -c /etc/odoo/odoo.conf -d cocreativeit-quote \
   -u quote_manage_ui --stop-after-init
+# 2) 同步 Website Builder 锁定的模板（header / 页面 arch 等）
+docker compose -f docker-compose.prod.yml --env-file .env run --rm -T web odoo shell \
+  -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init \
+  < scripts/sync_rw_templates.py
+# 3) 重启
 docker compose -f docker-compose.prod.yml --env-file .env restart web caddy
 
 # 停止
@@ -235,6 +247,47 @@ docker compose -f docker-compose.prod.yml logs -f caddy
 ```
 
 完成。**无需重新部署、无需停机超过 10 秒**。
+
+---
+
+## 10. GitHub Actions（CI/CD）
+
+仓库已包含两个 workflow：
+
+| Workflow | 触发 | 作用 |
+|---|---|---|
+| `.github/workflows/ci-quote-manage-ui.yml` | 开 PR 且改了 `custom_addons` / `scripts` | 校验 XML + 在临时库试装 `quote_manage_ui` |
+| `.github/workflows/deploy-prod.yml` | push 到 `main` 且改了模块/脚本/配置 | SSH 登录生产机 → `git pull` → `scripts/deploy-prod.sh` |
+
+### 10.1 一次性配置 GitHub Secrets
+
+在 GitHub 仓库 **Settings → Secrets and variables → Actions → New repository secret**：
+
+| Secret | 示例值 | 说明 |
+|---|---|---|
+| `PROD_SSH_HOST` | `123.45.67.89` 或 `reware-app.duckdns.org` | Oracle VM 公网地址 |
+| `PROD_SSH_USER` | `ubuntu` | SSH 用户名 |
+| `PROD_SSH_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | 登录 VM 的私钥全文 |
+| `PROD_APP_DIR` | `/home/ubuntu/quote-manage-system` | 服务器上仓库路径 |
+
+### 10.2 服务器端准备（只需一次）
+
+```bash
+# 确保 deploy 脚本能执行
+chmod +x ~/quote-manage-system/scripts/deploy-prod.sh
+
+# 若用 GitHub Actions 拉代码，确保 ubuntu 用户能 git pull（HTTPS 或 deploy key）
+cd ~/quote-manage-system
+git remote -v
+```
+
+### 10.3 日常开发流程
+
+1. 开分支改代码 → 提 PR → CI 自动跑校验
+2. 合并到 `main` → CD 自动 SSH 部署（约 2–5 分钟）
+3. 也可手动 SSH 部署：`./scripts/deploy-prod.sh`
+
+> **注意**：`-u quote_manage_ui`  alone 不会刷新 Website Builder 锁定的视图；`deploy-prod.sh` 已包含 `sync_rw_templates.py` 步骤。
 
 ---
 

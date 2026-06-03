@@ -1,0 +1,60 @@
+# Push to main -> upload custom_addons to DO server, upgrade Odoo module.
+#
+# Production layout: /root/reware (no git clone). Secrets:
+#   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_KEY, PROD_APP_DIR (/root/reware)
+name: Deploy production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'quote-manage-system/custom_addons/**'
+      - 'quote-manage-system/addons/**'
+      - 'scripts/**'
+      - 'config/**'
+      - 'docker-compose.prod.yml'
+      - 'Caddyfile'
+      - '.github/workflows/deploy-prod.yml'
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload custom_addons
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: "quote-manage-system/custom_addons/*"
+          target: "${{ secrets.PROD_APP_DIR }}/custom_addons"
+          overwrite: true
+
+      - name: Upload deploy scripts
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: "scripts/deploy-reware-remote.sh,scripts/sync_rw_templates.py"
+          target: "/tmp"
+
+      - name: Upgrade module on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            chmod +x /tmp/deploy-reware-remote.sh
+            APP_DIR="${{ secrets.PROD_APP_DIR }}" SYNC_SCRIPT=/tmp/sync_rw_templates.py \
+              /tmp/deploy-reware-remote.sh

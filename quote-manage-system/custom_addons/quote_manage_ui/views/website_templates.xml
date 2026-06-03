@@ -89,6 +89,12 @@
                 <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block" target="_blank" rel="noopener noreferrer">Shop</a>
             </li>
         </xpath>
+        <!-- Drop the stock Odoo placeholders (demo phone "+1 555-555-5556",
+             social links, search box) so the mobile drawer matches the
+             curated desktop nav instead of showing fake contact info. -->
+        <xpath expr="//t[@t-call='website.placeholder_header_text_element']" position="replace"/>
+        <xpath expr="//t[@t-call='website.placeholder_header_social_links']" position="replace"/>
+        <xpath expr="//t[@t-call='website.placeholder_header_search_box']" position="replace"/>
     </template>
 
     <!-- 4. Footer — single reusable QWeb t-call, also replaces website.layout's footer -->

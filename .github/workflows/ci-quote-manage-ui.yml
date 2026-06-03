@@ -1,0 +1,27 @@
+# Pull request -> validate XML + install quote_manage_ui on a temporary database.
+name: CI quote_manage_ui
+
+on:
+  pull_request:
+    paths:
+      - 'quote-manage-system/custom_addons/**'
+      - 'scripts/**'
+      - 'docker-compose.yml'
+      - 'config/**'
+      - '.github/workflows/ci-quote-manage-ui.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Normalize shell scripts (CRLF -> LF)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dos2unix
+          dos2unix scripts/*.sh
+
+      - name: Validate module XML and install on throwaway DB
+        run: bash scripts/validate-quote-manage-ui.sh
