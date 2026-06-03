@@ -55,6 +55,6 @@ jobs:
           command_timeout: 30m
           script: |
             set -euo pipefail
-            chmod +x /tmp/deploy-reware-remote.sh
-            APP_DIR="${{ secrets.PROD_APP_DIR }}" SYNC_SCRIPT=/tmp/sync_rw_templates.py \
-              /tmp/deploy-reware-remote.sh
+            chmod +x /tmp/scripts/deploy-reware-remote.sh
+            APP_DIR="${{ secrets.PROD_APP_DIR }}" SYNC_SCRIPT=/tmp/scripts/sync_rw_templates.py \
+              /tmp/scripts/deploy-reware-remote.sh
