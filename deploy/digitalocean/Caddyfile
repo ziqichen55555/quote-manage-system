@@ -1,0 +1,21 @@
+# DigitalOcean production (/root/reware)
+# Canonical site: https://www.reware-project.com
+#
+# DNS (Squarespace Custom records):
+#   www  A  134.199.145.67
+#   app  A  134.199.145.67  (optional; remove when no longer needed)
+#   @    A  134.199.145.67  (apex → server; then Caddy redirects to www)
+
+reware-project.com {
+	redir https://www.reware-project.com{uri} permanent
+}
+
+www.reware-project.com, app.reware-project.com {
+	encode gzip zstd
+
+	# Odoo websocket / longpolling runs on the gevent port 8072
+	@ws path /websocket /websocket/*
+	reverse_proxy @ws web:8072
+
+	reverse_proxy web:8069
+}

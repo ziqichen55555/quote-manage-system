@@ -42,4 +42,4 @@ fi
 
 log "Restarting web + caddy..."
 "${COMPOSE[@]}" restart web caddy
-log "Done. Verify: https://app.reware-project.com"
+log "Done. Verify: https://www.reware-project.com"
