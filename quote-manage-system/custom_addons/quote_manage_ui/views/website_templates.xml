@@ -67,9 +67,15 @@
         </xpath>
     </template>
 
-    <!-- 3b. Mobile header — same nav filter + DONATE / SHOP buttons -->
+    <!-- 3b. Mobile header — brand + Home link, same nav filter + DONATE / SHOP -->
     <template id="template_header_mobile_force" inherit_id="website.template_header_mobile" name="Reware Header Mobile" priority="99">
+        <xpath expr="//t[@t-call='website.placeholder_header_brand']" position="replace">
+            <a href="/" class="rw-brand">Re-Ware Project</a>
+        </xpath>
         <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="replace">
+            <li class="nav-item">
+                <a href="/" class="nav-link">Home.</a>
+            </li>
             <t t-foreach="website.menu_id.child_id.exists()" t-as="submenu">
                 <t t-if="submenu.url not in ('/shop', '/partners', '/partners-10', '/trade-in', '/services')">
                     <t t-call="website.submenu">
