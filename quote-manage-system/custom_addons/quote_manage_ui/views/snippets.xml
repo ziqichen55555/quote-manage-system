@@ -23,7 +23,7 @@
                             <a href="/contactus" class="rw-btn-outline-light">Donate now</a>
                         </div>
                     </div>
-                    <div class="col-lg-6 d-none d-lg-block">
+                    <div class="col-lg-6">
                         <div class="rw-hero-image rw-hero-carousel">
                             <t t-set="uniq" t-value="datetime.datetime.now().microsecond"/>
                             <div t-attf-id="rwHeroCarousel{{uniq}}" class="s_carousel carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
