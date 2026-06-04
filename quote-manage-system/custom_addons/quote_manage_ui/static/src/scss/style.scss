@@ -573,26 +573,17 @@ html:has(main .o_wsale_products_page) {
     }
 }
 
-// Make the homepage "Services we offer" trio larger and more prominent
-// (bigger padding, headings, body copy and imagery) without touching the
-// smaller cards reused elsewhere (steps, etc.).
+// Homepage "Services we offer" trio: keep the text scale, but widen the
+// section so the three cards occupy more horizontal space and give each
+// card a taller image. Fonts stay at the shared .rw-card scale.
 .s_rw_services {
-    .rw-card {
-        padding: clamp(1.75rem, 3vw, 2.5rem);
-        gap: 1.1rem;
+    .container {
+        max-width: 1320px;   // wider than Bootstrap's default ~1140px
+    }
+    .rw-card-image {
+        height: 300px;
 
-        h3 {
-            font-size: clamp(1.3rem, 2vw, 1.6rem);
-        }
-        p {
-            font-size: clamp(0.95rem, 1.2vw, 1.1rem);
-            line-height: 1.6;
-        }
-        .rw-card-image {
-            height: 240px;
-
-            @media (max-width: 575.98px) { height: 220px; }
-        }
+        @media (max-width: 575.98px) { height: 220px; }
     }
 }
 
