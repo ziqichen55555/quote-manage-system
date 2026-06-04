@@ -34,6 +34,10 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           source: "quote-manage-system/custom_addons/*"
           target: "${{ secrets.PROD_APP_DIR }}/custom_addons"
+          # strip "quote-manage-system/custom_addons/" so files land directly
+          # under <APP_DIR>/custom_addons/<module> (Odoo's mounted addons path),
+          # not in a nested quote-manage-system/custom_addons/ subtree.
+          strip_components: 2
           overwrite: true
 
       - name: Upload deploy scripts
