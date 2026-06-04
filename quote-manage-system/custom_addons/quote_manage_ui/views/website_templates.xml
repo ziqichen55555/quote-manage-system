@@ -6,14 +6,8 @@
          Design system lives in: static/src/scss/style.scss (.rw-* classes)
          ============================================================ -->
 
-    <!-- 1. Global layout: inject announcement bar + Re-Ware body class -->
+    <!-- 1. Global layout: Re-Ware body class on wrapwrap -->
     <template id="global_style_overrides" inherit_id="website.layout" name="Reware Global Styles">
-        <xpath expr="//div[@id='wrapwrap']" position="before">
-            <div class="rw-announcement" id="rw-announcement">
-                <a href="/contactus">Book your data erasure now</a>
-                <button type="button" class="rw-announcement-close" aria-label="Close" onclick="document.body.classList.add('rw-announcement-hidden')">&#215;</button>
-            </div>
-        </xpath>
         <xpath expr="//div[@id='wrapwrap']" position="attributes">
             <attribute name="class" add="rw-site" separator=" "/>
         </xpath>

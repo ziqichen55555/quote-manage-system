@@ -363,40 +363,7 @@ h6 { font-size: clamp(0.85rem, 1.1vw, 0.95rem); }
     &:hover { color: $rw-gold; text-decoration: none; }
 }
 
-// ---------- 6. Announcement bar ---------------------------------------------
-.rw-announcement {
-    background: $rw-dark;
-    color: $rw-text-onDark;
-    font-size: 0.82rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0.55rem 1rem;
-    text-align: center;
-    position: relative;
-    a {
-        color: $rw-gold;
-        font-weight: 600;
-        text-decoration: none;
-        &:hover { color: $rw-gold-hover; text-decoration: underline; }
-    }
-    .rw-announcement-close {
-        position: absolute;
-        right: 0.75rem;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        border: 0;
-        color: $rw-text-onDark;
-        opacity: 0.6;
-        padding: 0 0.4rem;
-        font-size: 1rem;
-        cursor: pointer;
-        &:hover { opacity: 1; }
-    }
-}
-body.rw-announcement-hidden .rw-announcement { display: none; }
-
-// ---------- 7. Header / Navigation -------------------------------------------
+// ---------- 6. Header / Navigation -------------------------------------------
 // Mobile header keeps Odoo defaults (navbar-light + o_cc + menu-gradient).
 // Desktop .rw-navbar gets the same classes in XML — do NOT override backgrounds
 // here or mobile will diverge.
@@ -436,9 +403,8 @@ header#top {
     }
 }
 
-// Shop pages: hide the entire site header (announcement strip + navbar)
-// so the catalogue/cart/checkout chrome reads as a standalone shopping
-// surface. Footer stays visible.
+// Shop pages: hide the site header so the catalogue/cart/checkout chrome
+// reads as a standalone shopping surface. Footer stays visible.
 //
 // IMPORTANT: do NOT use `.o_wsale_my_cart` here — that class is the cart
 // icon rendered inside the header on EVERY page, so it would hide the
@@ -446,9 +412,7 @@ header#top {
 // `.o_wsale_products_page` (catalogue listing) are shop-only markers.
 html:has(main .oe_website_sale),
 html:has(main .o_wsale_products_page) {
-    header#top,
-    .rw-announcement,
-    #rw-announcement {
+    header#top {
         display: none !important;
     }
     body {
