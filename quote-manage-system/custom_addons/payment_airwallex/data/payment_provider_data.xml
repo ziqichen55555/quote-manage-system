@@ -5,27 +5,18 @@
         Seed the Airwallex provider row.
 
         ``noupdate="1"`` so a future ``-u payment_airwallex`` does NOT clobber
-        admin-edited fields (state, credentials, support_*). We treat XML as a
-        first-install seed only, in line with the editor-first policy used by
-        the sibling ``quote_manage_ui`` module.
+        admin-edited fields (state, credentials). XML is a first-install seed
+        only, in line with the editor-first policy used by ``quote_manage_ui``.
     -->
     <record id="payment_provider_airwallex" model="payment.provider">
         <field name="name">Airwallex</field>
         <field name="code">airwallex</field>
         <field name="state">disabled</field>
-        <field name="display_as">Airwallex</field>
-        <!--
-            Drop ``static/description/icon.png`` (96x96, official Airwallex
-            logo from https://www.airwallex.com/press/) into this module to
-            replace the default Odoo grey square in the provider list.
-            Re-enable the field below once the file exists.
-        -->
-        <!-- <field name="image_128" type="base64" file="payment_airwallex/static/description/icon.png"/> -->
-        <field name="payment_method_ids" eval="[(6, 0, [ref('payment.payment_method_card').id])]"/>
-        <field name="support_refund">full_only</field>
-        <field name="support_tokenization">False</field>
-        <field name="support_express_checkout">False</field>
-        <field name="redirect_form_view_id" ref="payment.redirect_form"/>
+        <field name="module_id" ref="base.module_payment_airwallex"/>
+        <field name="image_128" type="base64" file="payment_airwallex/static/description/icon.png"/>
+        <field name="payment_method_ids"
+               eval="[Command.set([ref('payment.payment_method_card')])]"/>
+        <field name="redirect_form_view_id" ref="payment_airwallex.redirect_form"/>
     </record>
 
 </odoo>

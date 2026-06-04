@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Minimal redirect form required by the payment framework.
+
+        Airwallex HPP is reached via ``payment_form.js`` (SDK
+        ``redirectToCheckout``), not by submitting this form. The template
+        exists so ``redirect_form_view_id`` resolves and Odoo's redirect flow
+        can start.
+    -->
+    <template id="redirect_form">
+        <form t-att-action="api_url" method="get" class="d-none">
+            <input type="hidden" name="reference" t-att-value="reference"/>
+        </form>
+    </template>
+
+</odoo>

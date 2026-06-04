@@ -162,9 +162,47 @@ the module calls `POST /pa/refunds/create` then writes back the new tx as
 
 ## TODO before go-live
 
-- [ ] Replace placeholder `static/description/icon.png` with the Airwallex
-      logo (96×96 PNG).
 - [ ] Configure live API keys + webhook secret in production.
 - [ ] Run an end-to-end sandbox test with a real (test) AUD amount.
 - [ ] Audit `__system_email_addresses__` of Airwallex notifications -> make
-      sure they go to `intern@cocreativeit.com`.
+      sure they go to `re-ware@cocreativeit.com`.
+
+---
+
+## Refreshing the brand icon
+
+`data/payment_provider_data.xml` is wrapped with `<odoo noupdate="1">`, so a
+plain `-u payment_airwallex` will **skip** the seed record entirely (Odoo
+short-circuits noupdate=True records during update). Two ways to refresh
+the icon after editing `static/description/icon.png`:
+
+**A. Direct ORM write (fast, what we used the first time):**
+
+```bash
+docker compose exec -T web python3 - <<'PY'
+import base64, odoo
+from odoo.api import Environment
+from odoo.modules.registry import Registry
+from odoo import SUPERUSER_ID
+odoo.tools.config.parse_config(['-c', '/etc/odoo/odoo.conf'])
+with Registry('cocreativeit-quote').cursor() as cr:
+    env = Environment(cr, SUPERUSER_ID, {})
+    with open('/mnt/custom-addons/payment_airwallex/static/description/icon.png', 'rb') as f:
+        b64 = base64.b64encode(f.read())
+    env['payment.provider'].search([('code','=','airwallex')]).write({'image_128': b64})
+    cr.commit()
+PY
+```
+
+**B. Force re-seed via XML (only when you also want other field defaults
+reset, e.g. `state` or `payment_method_ids`):**
+
+```bash
+docker compose exec -T db psql -U odoo -d cocreativeit-quote -c \
+  "UPDATE ir_model_data SET noupdate=false WHERE module='payment_airwallex' AND name='payment_provider_airwallex';"
+docker compose exec web odoo -c /etc/odoo/odoo.conf -d cocreativeit-quote --no-http -u payment_airwallex --stop-after-init
+docker compose exec -T db psql -U odoo -d cocreativeit-quote -c \
+  "UPDATE ir_model_data SET noupdate=true WHERE module='payment_airwallex' AND name='payment_provider_airwallex';"
+```
+
+Method A is preferred because it does not stomp on admin-edited fields.

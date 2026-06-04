@@ -39,6 +39,7 @@ Odoo Apps Store.
         'payment',
     ],
     'data': [
+        'views/payment_airwallex_templates.xml',
         'views/payment_provider_views.xml',
         'data/payment_provider_data.xml',
     ],
