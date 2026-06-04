@@ -58,6 +58,15 @@ DO_DB_PASSWORD.txt
 .env
 !.env.prod.example
 
+# local tooling / scratch (not part of the deployed app)
+scripts/stripe-cli/
+scripts/stripe-webhook-local.ps1
+scripts/do-droplet-healthcheck.sh
+scripts/generate_xero_proposal.py
+scripts/sync_product_images.py
+Re-Ware-Financial-Architecture-Proposal.docx
+prod_home.html
+
 # various virtualenv
 /bin/
 /build/
