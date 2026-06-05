@@ -410,18 +410,15 @@ header#top {
     }
 }
 
-// Shop pages: hide the site header so the catalogue/cart/checkout chrome
-// reads as a standalone shopping surface. Footer stays visible.
+// Shop pages: keep the site header visible (same Re-Ware nav as the rest of
+// the site) while giving the catalogue/cart/checkout a clean white surface.
 //
 // IMPORTANT: do NOT use `.o_wsale_my_cart` here — that class is the cart
-// icon rendered inside the header on EVERY page, so it would hide the
-// header globally. Only `.oe_website_sale` (shop content container) and
-// `.o_wsale_products_page` (catalogue listing) are shop-only markers.
+// icon rendered inside the header on EVERY page. Only `.oe_website_sale`
+// (shop content container) and `.o_wsale_products_page` (catalogue listing)
+// are shop-only markers.
 html:has(main .oe_website_sale),
 html:has(main .o_wsale_products_page) {
-    header#top {
-        display: none !important;
-    }
     body {
         background-color: #ffffff !important;
     }
