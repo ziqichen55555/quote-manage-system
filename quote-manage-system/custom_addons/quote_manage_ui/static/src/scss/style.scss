@@ -387,6 +387,13 @@ header#top {
         &:hover { color: $rw-gold-hover !important; }
     }
 
+    .rw-brand-mark {
+        height: 2em;
+        width: auto;
+        display: inline-block;
+        flex: 0 0 auto;
+    }
+
     .nav-link {
         color: $rw-dark !important;
         font-weight: 500;

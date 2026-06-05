@@ -17,7 +17,7 @@ TEMP_PASSWORD = os.environ.get("TEMP_PASSWORD") or "ReWare-2026!"
 COMPANY = {
     "name": "Re-Ware",
     "email": "re-ware@cocreativeit.com",
-    "phone": "0499 909 302",
+    "phone": "0411 882 377",
     "street": "102 Edward St",
     "city": "Perth",
     "state_name": "Western Australia",

@@ -20,7 +20,7 @@
                         <p class="rw-hero-sub">Your secure, compliant way to clear out old devices and help close the digital divide.</p>
                         <div class="d-flex flex-wrap gap-3">
                             <a href="#rw-services" class="rw-btn-coral">Learn more</a>
-                            <a href="/contactus" class="rw-btn-outline-light">Donate now</a>
+                            <a href="/contactus" class="rw-btn-outline-light">Donate</a>
                         </div>
                     </div>
                     <div class="col-lg-6">
@@ -32,13 +32,19 @@
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-team-workshop.jpg" data-name="Image" alt="Re-Ware team with a refurbished laptop in the workshop"/>
                                     </div>
                                     <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-handover.jpg" data-name="Image" alt="Re-Ware handing over a refurbished laptop at Grandcarers WA"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-laptop-gift.jpg" data-name="Image" alt="A Grandcarers WA community member with their refurbished Re-Ware laptop"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-recipient.jpg" data-name="Image" alt="A Grandcarers WA recipient holding a refurbished Re-Ware laptop"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-setup.jpg" data-name="Image" alt="Setting up refurbished laptops with the community at Grandcarers WA"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
-                                    </div>
-                                    <div class="carousel-item" data-name="Slide">
-                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-laptop-inspect.jpg" data-name="Image" alt="Inspecting a device before donation to the community"/>
-                                    </div>
-                                    <div class="carousel-item" data-name="Slide">
-                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-ccit-card.png" data-name="Image" alt="Co-Creative IT — Creative Technology Solutions"/>
                                     </div>
                                 </div>
                                 <ol class="carousel-indicators">
@@ -46,6 +52,8 @@
                                     <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="1"/>
                                     <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="2"/>
                                     <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="3"/>
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="4"/>
+                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="5"/>
                                 </ol>
                                 <a class="carousel-control-prev o_we_no_overlay o_not_editable" t-attf-href="#rwHeroCarousel{{uniq}}" data-bs-slide="prev" aria-label="Previous" title="Previous">
                                     <span class="oi oi-chevron-left fa-2x"/>
@@ -119,7 +127,7 @@
                 <h2 class="rw-consultation-title mb-3 text-center">Reserve your complimentary consultation.</h2>
                 <p class="mb-4 rw-consultation-lead text-center">Need a hand? We'll guide you through the process, answer your questions, and show how your old tech can make a real difference to help WA communities doing it tough.</p>
                 <div class="text-center mb-5 mb-lg-6">
-                    <a href="/contactus" class="rw-btn-gold">Donate now</a>
+                    <a href="/contactus" class="rw-btn-gold">Donate</a>
                 </div>
                 <h2 class="rw-consultation-steps-title mb-4 text-center">One click, three steps, genuine impact!</h2>
                 <div class="rw-consultation-steps text-start">

@@ -25,7 +25,10 @@
         <xpath expr="//t[@t-call='website.navbar']" position="replace">
             <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg d-none d-lg-block shadow-sm navbar-light o_colored_level o_cc rw-navbar">
                 <div class="container">
-                    <a href="/" class="rw-brand me-auto">Re-Ware Project</a>
+                    <a href="/" class="rw-brand me-auto d-inline-flex align-items-center gap-2">
+                        <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="" class="rw-brand-mark"/>
+                        <span>Re-Ware Project</span>
+                    </a>
 
                     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#top_menu_collapse">
                         <span class="navbar-toggler-icon"/>
@@ -42,7 +45,7 @@
                                 </t>
                             </t>
                             <li class="nav-item ms-lg-2">
-                                <a href="/contactus" class="rw-btn-coral-red">Donate now</a>
+                                <a href="/contactus" class="rw-btn-coral-red">Donate</a>
                             </li>
                             <li class="nav-item">
                                 <a href="/shop" class="rw-btn-coral-red" target="_blank" rel="noopener noreferrer">Shop</a>
@@ -64,7 +67,10 @@
     <!-- 3b. Mobile header — brand + Home link, same nav filter + DONATE / SHOP -->
     <template id="template_header_mobile_force" inherit_id="website.template_header_mobile" name="Reware Header Mobile" priority="99">
         <xpath expr="//t[@t-call='website.placeholder_header_brand']" position="replace">
-            <a href="/" class="rw-brand">Re-Ware Project</a>
+            <a href="/" class="rw-brand d-inline-flex align-items-center gap-2">
+                <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="" class="rw-brand-mark"/>
+                <span>Re-Ware Project</span>
+            </a>
         </xpath>
         <xpath expr="//t[@t-foreach='website.menu_id.child_id']" position="replace">
             <li class="nav-item">
@@ -83,7 +89,7 @@
         </xpath>
         <xpath expr="//t[@t-call='website.header_call_to_action_large']" position="replace">
             <li class="nav-item w-100">
-                <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate now</a>
+                <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate</a>
             </li>
             <li class="nav-item w-100">
                 <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block" target="_blank" rel="noopener noreferrer">Shop</a>
@@ -106,7 +112,7 @@
                     <div class="col-md-4 order-2 order-md-1">
                         <h4>Contact</h4>
                         <p class="mb-1"><a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a></p>
-                        <p class="mb-0"><a href="tel:0499909302">0499 909 302</a></p>
+                        <p class="mb-0"><a href="tel:0411882377">0411 882 377</a></p>
                     </div>
                     <div class="col-md-4 order-1 order-md-2">
                         <div class="rw-footer-logo">
@@ -119,6 +125,8 @@
                     </div>
                 </div>
                 <div class="rw-footer-bottom text-center">
+                    <a href="/returns">Returns &amp; warranty</a>
+                    <span class="mx-2">·</span>
                     <a href="https://www.cocreativeit.com/" target="_blank" rel="noopener noreferrer">Co-Creative IT</a>
                 </div>
             </div>
@@ -167,7 +175,7 @@
                                 <ul class="list-unstyled qm-comsol-value-list mb-0 small">
                                     <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 flex-shrink-0"/><span>End-to-end quality workflow from intake to shipment</span></li>
                                     <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 flex-shrink-0"/><span>Transparent grades and functional checks</span></li>
-                                    <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 flex-shrink-0"/><span>12-month warranty and easy returns</span></li>
+                                    <li class="d-flex mb-2"><span class="qm-comsol-bullet me-2 flex-shrink-0"/><span>3-month warranty and easy returns</span></li>
                                     <li class="d-flex"><span class="qm-comsol-bullet me-2 flex-shrink-0"/><span>Fast, tracked logistics</span></li>
                                 </ul>
                             </div>
@@ -239,7 +247,7 @@
                 <p class="rw-eyebrow mb-2">Purchase confidence</p>
                 <h6 class="fw-bold mb-3">Included with every certified device</h6>
                 <div class="row g-3 small">
-                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>12-month limited warranty</span></div>
+                    <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>3-month limited warranty</span></div>
                     <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>30-day returns where applicable</span></div>
                     <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Professional refurbishment and grading</span></div>
                     <div class="col-sm-6 d-flex align-items-start"><span class="qm-comsol-bullet me-2 mt-1 flex-shrink-0"/><span>Lower environmental impact</span></div>
@@ -458,7 +466,7 @@
                                     </div>
                                 </div>
                                 <div class="text-center mt-5">
-                                    <a href="#rw-contact" class="rw-btn-gold">Donate now</a>
+                                    <a href="#rw-contact" class="rw-btn-gold">Donate</a>
                                 </div>
                             </div>
                         </section>
@@ -611,6 +619,54 @@
                                 <a href="/contactus" class="rw-btn-coral">Become a partner</a>
                             </div>
                         </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 7f. Returns & Warranty — DRAFT skeleton. Terms in [square brackets]
+         are placeholders for Re-Ware to fill in via the Website Builder. -->
+    <record id="returns_policy_page" model="website.page" forcecreate="True">
+        <field name="name">Returns &amp; Warranty</field>
+        <field name="url">/returns</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.returns_policy_page</field>
+        <field name="arch" type="xml">
+            <t name="Returns &amp; Warranty" t-name="quote_manage_ui.returns_policy_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                            <div class="container">
+                                <p class="rw-eyebrow mb-3">Customer care</p>
+                                <h1 class="mb-3">Returns &amp; warranty.</h1>
+                                <p class="lead">Every Re-Ware device is professionally refurbished, tested and graded. Here's how warranty and returns work.</p>
+                            </div>
+                        </section>
+
+                        <section class="s_rw_returns rw-section rw-bg-cream" data-name="Returns policy" data-snippet="s_rw_returns">
+                            <div class="container rw-container-narrow">
+                                <h2 class="mb-3">Warranty.</h2>
+                                <p class="rw-about-body mb-4">All certified devices include a <strong>3-month limited warranty</strong> covering faults that aren't caused by accidental damage, misuse or normal wear. If a covered fault appears within the warranty period, we'll repair, replace or refund the device.</p>
+
+                                <h2 class="mb-3">Easy returns.</h2>
+                                <p class="rw-about-body mb-3">If something isn't right, get in touch and we'll make it easy.</p>
+                                <ul class="rw-about-body mb-4">
+                                    <li><strong>Change of mind:</strong> [Define your change-of-mind window, e.g. return within 14 days, item unused and in original condition.]</li>
+                                    <li><strong>Faulty or not as described:</strong> [Covered under the 3-month warranty and your rights under Australian Consumer Law.]</li>
+                                    <li><strong>Return postage:</strong> [State who pays return shipping for change-of-mind vs faulty items.]</li>
+                                    <li><strong>Refund method &amp; timing:</strong> [e.g. refunded to the original payment method within 5 business days of receiving the return.]</li>
+                                </ul>
+
+                                <h2 class="mb-3">How to start a return.</h2>
+                                <p class="rw-about-body mb-4">Email <a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a> or call <a href="tel:0411882377">0411 882 377</a> with your order number and a short description of the issue, and we'll guide you through the next steps.</p>
+
+                                <p class="small" style="color: var(--rw-text-muted);">[This page is a draft. Replace the bracketed placeholders with your final policy before publishing widely.]</p>
+                            </div>
+                        </section>
+
+                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
                     </div>
                 </t>
             </t>

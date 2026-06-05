@@ -352,6 +352,7 @@ class WebsitePage(models.Model):
             'about_us_page',
             'our_why_page',
             'partners_page',
+            'returns_policy_page',
         )
         View = self.env['ir.ui.view'].sudo().with_context(active_test=False, no_cow=True)
         for rid in record_xmlids:
