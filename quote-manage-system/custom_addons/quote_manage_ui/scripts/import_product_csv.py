@@ -593,7 +593,10 @@ def run_import(env):
         std_price = cost_avg if cost_avg is not None else 0.0
 
         brand_txt = a["brands"][-1] if a["brands"] else ""
-        desc_sale = f"{brand_txt} · {code}".strip(" ·") if brand_txt else code
+        # Sales Description is appended after the auto "[code] name" prefix on
+        # SO/invoice lines; including the SKU here would print the code twice,
+        # so keep it empty.
+        desc_sale = ""
 
         tmpl = PT.search([("default_code", "=", code)], limit=1)
         # Determine tracking based on unit_identifiers

@@ -13,7 +13,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="180.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 11DT006GAU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Refurbished Lenovo M70qGen 1 i7-10700T, 512Gb, 16Gb</p>
             </field>
@@ -29,7 +28,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="393.14"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 11T300A1AU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Refurbished - Lenovo ThinkCentre M70q Gen 3 11T300A1AU Desktop Computer - Intel Core i7 12th Gen i7-12700T - 16 GB - 512 GB SSD - Tiny - Black</p>
             </field>
@@ -45,7 +43,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="109.1"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 16Gb Ram</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>16Gb RDIMM RAM Upgrade</p>
             </field>
@@ -61,7 +58,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="100.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 20L8SDCE00</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo T480s</p>
             </field>
@@ -77,7 +73,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="102.37"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 22C450</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>dual 24&quot; Samsung S22c450 monitor bundle with HP G4 Dock</p>
             </field>
@@ -93,7 +88,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="118.18"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 30B4S3WF00</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo Thinkstation P510 16Gb</p>
             </field>
@@ -109,7 +103,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="281.82"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 30BFS6AQ00</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Lenovo P520 Workstation</p>
             </field>
@@ -125,7 +118,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="314.64"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 30DES2W700</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-Ware Refurbished Lenovo P340 Tiny Desktop</p>
             </field>
@@ -141,7 +133,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="136.36"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 328B1</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>PHILIPS 32&quot; (16:9) UHD LED, HDMI(2), DP, USB(4), H/ADJ, SPKR, 4YR</p>
             </field>
@@ -157,7 +148,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="159.09"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 329P1H</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>PHILIPS 32&quot; (16:9) UHD IPS LED75HZ, HDMI, DP, USB-C DOCK, RJ45, WEBCAM, SPKR, H/ADJ, 4YR</p>
             </field>
@@ -173,7 +163,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="45.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 40AF0135AU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo THINKPAD HYBRID USB-C WITH USB-A DOCK (3XUSB3.0/2XUSB2.0/1XUSB-C/2XDP/2XHDMI) DOCK</p>
             </field>
@@ -189,7 +178,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="40.17"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 40AF0135AU -2</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Lenovo Hybrid USB-C Dock USB, USB 3.1 Type C, USB Type C</p>
             </field>
@@ -205,7 +193,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="20.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 40AJ0135AU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Refurbished Lenovo Ultra Docking Station</p>
             </field>
@@ -221,7 +208,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="150.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 8GB 3200</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Toughbook Ram upgrade</p>
             </field>
@@ -237,7 +223,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="107.88"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU 970 EVO Plus</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Samsung 970 EVO Plus 500GB</p>
             </field>
@@ -252,7 +237,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="50.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU CCIT0001</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Service - 1 Hour</p>
             </field>
@@ -268,7 +252,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="25.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU CCITREWAREBAG</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Co-Creative IT &amp; Re-Ware Lenovo backpack</p>
             </field>
@@ -284,7 +267,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="600.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU CF 54 Mk 3</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>re-ware Panasonic Toughbook CF54-3</p>
             </field>
@@ -300,7 +282,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="14.54"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU COMSPEAKERS</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Computer speakers</p>
             </field>
@@ -316,7 +297,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="180.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU EPEBW53</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Epson EB-W53 WXGA 3LCD Projector</p>
             </field>
@@ -332,7 +312,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="477.98"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Elite Mini 600 G9</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>HP Elite Mini 600 G9 512GB SSD, i7-12700T, 16GB RAM</p>
             </field>
@@ -348,7 +327,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="460.41"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Elite Mini 600 G9 Desktop PC</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware - HP Elite Mini 600 G9 Desktop PC</p>
             </field>
@@ -364,7 +342,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="154.55"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU F24T</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Dual screen bundle Samsung F24T with Thinkpad dock</p>
             </field>
@@ -380,7 +357,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="50.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU F24T450FQEXXY</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Samsung 24&quot; F24T450FQ USB hub 1080P WIFI, 2 x HDMI, Display port</p>
             </field>
@@ -396,7 +372,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="48.53"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU G5</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>HP USB-C Dock G5</p>
             </field>
@@ -412,7 +387,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="20.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Hybrid USB C dock</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo/Dell Dock Upgrade</p>
             </field>
@@ -428,7 +402,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="18.17"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Hybrid USB-C</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>dock upgrade - Lenovo</p>
             </field>
@@ -444,7 +417,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="148.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Optiplex 3070</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Dell Optiplex 3070 Micro I5-9500</p>
             </field>
@@ -460,7 +432,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="900.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU P1</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo P1 Gen 3 512Gb, 2 x Samsung HDMI Moniotrs and Lenovo Hybrid Dock Bundle</p>
             </field>
@@ -476,7 +447,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="200.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU P330</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo P330 Tiny Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz, 16, 256</p>
             </field>
@@ -492,7 +462,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="200.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU P340</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo P340 Tiny 10th Gen i7-10700, 256Gb 16Gb 8 cores @ 2.9Ghz</p>
             </field>
@@ -508,7 +477,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="90.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU PB278QR</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>27&quot; Asus PB278QR</p>
             </field>
@@ -524,7 +492,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="163.64"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Pro desk 600 G6</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>HP Prodesk 600 G6 i5-10500T CPU @ 2.30GHz, 14Gb, 16Gb</p>
             </field>
@@ -540,7 +507,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="262.5"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU RW-20WN0025AU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>ThinkPad T14s Gen 2i, 11th Gen Intel(R) Core(TM) i5-1145G7 @ 2.60GHz, 256GB, 16GB</p>
             </field>
@@ -556,7 +522,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="298.73"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU RW-20WNA07YAU</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Refurbished - Lenovo T14s Gen 2i, i5-1135G7 @ 2.40GHz, 16Gb, 256Gb</p>
             </field>
@@ -572,7 +537,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="70.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU RW-32UN550-W</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>LG 32&quot; 4K LED Monitor</p>
             </field>
@@ -588,7 +552,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="110.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU S24E450</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Dual 24 Monitor Bundle 2 x Samsung S24e450 24&quot; monitors, HP G4 D USB-C dock, all cables</p>
             </field>
@@ -604,7 +567,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="163.64"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU SBKPF</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>HP 400 Pro desk G6 mini i5-10500T CPU @ 2.30GHz, 256 +14Gb ssds, 8Gb</p>
             </field>
@@ -620,7 +582,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="5.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU ThinkPad USB-C Wired Compact Mouse</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>wired mouse</p>
             </field>
@@ -636,7 +597,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="20.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU Ultra Dock 40A8</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Lenovo ThinkPad USB 3.0 Ultra Dock 40A8 DisplayPort HDMI Ethernet</p>
             </field>
@@ -652,7 +612,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="68.18"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU bravia</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Sony Bravia 55&quot; TV</p>
             </field>
@@ -668,7 +627,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="136.36"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU f240</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Dual monitor dock bundle with screen upgrade</p>
             </field>
@@ -684,7 +642,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="26.36"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU hybrid USB-C dock</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>lenovo dock upgrade</p>
             </field>
@@ -700,7 +657,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="5.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU mouse</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware wired mouse</p>
             </field>
@@ -716,7 +672,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="5.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU mtm7654</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Re-ware Wired keyboard</p>
             </field>
@@ -732,7 +687,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="168.0"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU optiplex 3080 Micro</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Dell optiplex 3080 Micro I5 i5-10500</p>
             </field>
@@ -748,7 +702,6 @@
             <field name="website_published">True</field>
             <field name="list_price" eval="113.41"/>
             <field name="standard_price" eval="0.0"/>
-            <field name="description_sale">Imported sheet · SKU sa1450</field>
             <field name="description" type="html">
                 <p><strong>Original title</strong><br/>Samsung dual 22&quot; Monitors Bundle</p>
             </field>
