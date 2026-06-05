@@ -41,6 +41,12 @@
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-team-workshop.jpg" data-name="Image" alt="Re-Ware team with a refurbished laptop in the workshop"/>
                                     </div>
                                     <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-laptop-inspect.jpg" data-name="Image" alt="Inspecting a device before donation to the community"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
+                                    </div>
+                                    <div class="carousel-item" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-handover.jpg" data-name="Image" alt="Re-Ware handing over a refurbished laptop at Grandcarers WA"/>
                                     </div>
                                     <div class="carousel-item" data-name="Slide">
@@ -52,9 +58,6 @@
                                     <div class="carousel-item" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-setup.jpg" data-name="Image" alt="Setting up refurbished laptops with the community at Grandcarers WA"/>
                                     </div>
-                                    <div class="carousel-item" data-name="Slide">
-                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
-                                    </div>
                                 </div>
                                 <ol class="carousel-indicators">
                                     <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="0" class="active"/>
@@ -63,6 +66,7 @@
                                     <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="3"/>
                                     <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="4"/>
                                     <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="5"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="6"/>
                                 </ol>
                                 <a class="carousel-control-prev o_we_no_overlay o_not_editable" href="#rwHeroCarousel" data-bs-slide="prev" aria-label="Previous" title="Previous">
                                     <span class="oi oi-chevron-left fa-2x"/>

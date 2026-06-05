@@ -1,46 +1,34 @@
 /** @odoo-module **/
 
 /**
- * Re-Ware hero carousel — public-site driver + crash guard.
+ * Re-Ware hero carousel — bypass Bootstrap auto-ride on the public site.
  *
- * Two problems this solves:
+ * Bootstrap's ``_setActiveIndicatorElement`` crashes when indicator ``.active``
+ * is missing (common after Odoo editor saves or when slide/indicator counts
+ * diverge). Odoo's stock ``.carousel`` public widget also initialises every
+ * carousel and can fight with a second Bootstrap instance.
  *
- * 1. Bootstrap's Carousel._setActiveIndicatorElement() throws
- *    "Cannot read properties of null (reading 'classList')" when, at slide
- *    time, the .carousel-indicators block has no `.active` child or the
- *    indicator count is out of sync with the slides. Odoo's editor also
- *    strips `data-bs-slide-to` from indicators in edit mode, which makes a
- *    natively auto-riding carousel crash. So the snippet no longer sets
- *    `data-bs-ride="carousel"`.
- *
- * 2. Without `data-bs-ride`, the carousel no longer autoplays. We start the
- *    cycle ourselves on the PUBLIC site only (never in the Website Builder,
- *    where Odoo pauses carousels and manages slides manually).
- *
- * Before starting, we rebuild the indicators to exactly match the slides and
- * guarantee a single active slide/indicator, so Bootstrap can never read a
- * null indicator.
+ * This module:
+ *   1. Skips the stock Odoo slider widget on ``#rwHeroCarousel``.
+ *   2. Rebuilds indicators to match slide count, then autoplay via a simple
+ *      active-class rotation (Bootstrap fade CSS still applies).
+ *   3. Never uses ``data-bs-ride`` or ``ride: 'carousel'`` (those call
+ *      ``nextWhenVisible`` and trigger the crash).
  */
 
-function isEditMode() {
-    // Website Builder adds `editor_enable` to <body> (and the page runs inside
-    // the editor iframe). Never drive autoplay there — let Odoo handle it.
-    return !!(
-        document.body &&
-        (document.body.classList.contains("editor_enable") ||
-            document.body.classList.contains("editor_has_snippets"))
-    );
+import publicWidget from "@web/legacy/js/public/public_widget";
+
+function isRwHeroCarousel(el) {
+    return el && (el.id === "rwHeroCarousel" || !!el.closest(".s_rw_hero"));
 }
 
 function normaliseCarousel(carousel) {
-    const inner = carousel.querySelector(".carousel-inner");
     const items = Array.from(carousel.querySelectorAll(".carousel-item"));
-    if (!inner || !items.length) {
-        return -1;
+    if (!items.length) {
+        return 0;
     }
 
-    // Exactly one active slide (keep the first active, else default to first).
-    const activeItems = items.filter((el) => el.classList.contains("active"));
+    let activeItems = items.filter((el) => el.classList.contains("active"));
     if (activeItems.length === 0) {
         items[0].classList.add("active");
     } else if (activeItems.length > 1) {
@@ -51,7 +39,6 @@ function normaliseCarousel(carousel) {
         items.findIndex((el) => el.classList.contains("active"))
     );
 
-    // Rebuild indicators to match the slide count exactly.
     const indicators = carousel.querySelector(".carousel-indicators");
     if (indicators) {
         const carouselId = carousel.getAttribute("id");
@@ -72,34 +59,82 @@ function normaliseCarousel(carousel) {
     return activeIndex;
 }
 
-function startAutoplay(carousel) {
+function disposeBootstrapCarousel(carousel) {
     const jq = window.jQuery || window.$;
     if (!jq || typeof jq.fn.carousel !== "function") {
-        return; // bootstrap jQuery bridge unavailable; carousel stays manual
-    }
-    const interval = parseInt(carousel.getAttribute("data-bs-interval"), 10);
-    jq(carousel).carousel({
-        interval: Number.isFinite(interval) && interval > 0 ? interval : 4000,
-        ride: "carousel",
-        pause: "hover",
-    });
-}
-
-function initHeroCarousels(root) {
-    if (isEditMode()) {
         return;
     }
-    const scope = root || document;
-    scope
-        .querySelectorAll("#rwHeroCarousel, .s_rw_hero .carousel")
-        .forEach((carousel) => {
-            normaliseCarousel(carousel);
-            startAutoplay(carousel);
-        });
+    try {
+        jq(carousel).carousel("pause");
+    } catch (_e) {
+        /* not initialised */
+    }
+    try {
+        jq(carousel).carousel("dispose");
+    } catch (_e) {
+        /* BS5 dispose may be unavailable */
+    }
+    carousel.removeAttribute("data-bs-ride");
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => initHeroCarousels());
-} else {
-    initHeroCarousels();
+function advanceSlide(carousel) {
+    const items = Array.from(carousel.querySelectorAll(".carousel-item"));
+    const dots = Array.from(
+        carousel.querySelectorAll(".carousel-indicators > li")
+    );
+    if (items.length < 2) {
+        return;
+    }
+    let idx = items.findIndex((el) => el.classList.contains("active"));
+    if (idx < 0) {
+        idx = 0;
+    }
+    items[idx].classList.remove("active");
+    if (dots[idx]) {
+        dots[idx].classList.remove("active");
+        dots[idx].removeAttribute("aria-current");
+    }
+    idx = (idx + 1) % items.length;
+    items[idx].classList.add("active");
+    if (dots[idx]) {
+        dots[idx].classList.add("active");
+        dots[idx].setAttribute("aria-current", "true");
+    }
 }
+
+// Do not let Odoo's stock slider widget touch the hero (it starts Bootstrap
+// cycle and breaks indicators in edit mode).
+const StockSlider = publicWidget.registry.slider;
+
+publicWidget.registry.slider = StockSlider.extend({
+    start() {
+        if (isRwHeroCarousel(this.el)) {
+            return Promise.resolve();
+        }
+        return this._super(...arguments);
+    },
+});
+
+publicWidget.registry.RwHeroCarousel = publicWidget.Widget.extend({
+    selector: "#rwHeroCarousel, .s_rw_hero .carousel",
+
+    start() {
+        disposeBootstrapCarousel(this.el);
+        normaliseCarousel(this.el);
+
+        if (!this.editableMode) {
+            const ms = parseInt(this.el.getAttribute("data-bs-interval"), 10);
+            const interval = Number.isFinite(ms) && ms > 0 ? ms : 4000;
+            this._rwTimer = setInterval(() => advanceSlide(this.el), interval);
+        }
+        return this._super(...arguments);
+    },
+
+    destroy() {
+        if (this._rwTimer) {
+            clearInterval(this._rwTimer);
+            this._rwTimer = null;
+        }
+        return this._super(...arguments);
+    },
+});
