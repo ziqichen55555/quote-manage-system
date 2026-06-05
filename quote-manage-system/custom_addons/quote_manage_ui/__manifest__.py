@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.72',
+    'version': '1.0.73',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -41,6 +41,7 @@
         'web.assets_frontend': [
             'quote_manage_ui/static/src/scss/style.scss',
             'quote_manage_ui/static/src/js/newsletter.js',
+            'quote_manage_ui/static/src/js/hero_carousel.js',
         ],
     },
     'installable': True,
