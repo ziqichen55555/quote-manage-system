@@ -25,8 +25,11 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="rw-hero-image rw-hero-carousel">
-                            <t t-set="uniq" t-value="datetime.datetime.now().microsecond"/>
-                            <div t-attf-id="rwHeroCarousel{{uniq}}" class="s_carousel carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
+                            <!-- Fixed id (not datetime-based): Odoo Website Editor's
+                                 Carousel "Add slide" needs a stable #id; a new id on
+                                 every page render breaks Bootstrap and leaves Add slide
+                                 spinning forever. -->
+                            <div id="rwHeroCarousel" class="s_carousel s_carousel_default carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
                                 <div class="carousel-inner">
                                     <div class="carousel-item active" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-team-workshop.jpg" data-name="Image" alt="Re-Ware team with a refurbished laptop in the workshop"/>
@@ -48,18 +51,18 @@
                                     </div>
                                 </div>
                                 <ol class="carousel-indicators">
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="0" class="active"/>
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="1"/>
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="2"/>
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="3"/>
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="4"/>
-                                    <li t-attf-data-bs-target="#rwHeroCarousel{{uniq}}" data-bs-slide-to="5"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="0" class="active"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="1"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="2"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="3"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="4"/>
+                                    <li data-bs-target="#rwHeroCarousel" data-bs-slide-to="5"/>
                                 </ol>
-                                <a class="carousel-control-prev o_we_no_overlay o_not_editable" t-attf-href="#rwHeroCarousel{{uniq}}" data-bs-slide="prev" aria-label="Previous" title="Previous">
+                                <a class="carousel-control-prev o_we_no_overlay o_not_editable" href="#rwHeroCarousel" data-bs-slide="prev" aria-label="Previous" title="Previous">
                                     <span class="oi oi-chevron-left fa-2x"/>
                                     <span class="visually-hidden">Previous</span>
                                 </a>
-                                <a class="carousel-control-next o_we_no_overlay o_not_editable" t-attf-href="#rwHeroCarousel{{uniq}}" data-bs-slide="next" aria-label="Next" title="Next">
+                                <a class="carousel-control-next o_we_no_overlay o_not_editable" href="#rwHeroCarousel" data-bs-slide="next" aria-label="Next" title="Next">
                                     <span class="oi oi-chevron-right fa-2x"/>
                                     <span class="visually-hidden">Next</span>
                                 </a>
@@ -306,6 +309,25 @@
          ============================================================ -->
     <template id="rw_snippets_options" inherit_id="website.snippet_options" name="Re-Ware Snippet Options">
         <xpath expr="." position="inside">
+            <!-- Hero carousel sits inside .container/.row, not as a direct child of
+                 <section>. Stock Odoo Carousel options use section > .carousel, so
+                 Add slide never binds and spins forever. Target the nested carousel. -->
+            <div data-js="Carousel"
+                 data-selector="section.s_rw_hero"
+                 data-target=".s_carousel.carousel">
+                <we-row string="Slide">
+                    <we-button data-add-slide="true" data-no-preview="true" class="o_we_bg_brand_primary">Add Slide</we-button>
+                </we-row>
+                <we-select string="Transition">
+                    <we-button data-select-class="slide">Slide</we-button>
+                    <we-button data-select-class="carousel-fade slide">Fade</we-button>
+                    <we-divider/>
+                    <we-button data-select-class="">None</we-button>
+                </we-select>
+                <we-input string="Speed"
+                          data-select-data-attribute="0s" data-attribute-name="bsInterval"
+                          data-unit="s" data-save-unit="ms" data-step="0.1"/>
+            </div>
             <div data-selector="section[data-snippet^='s_rw_']">
                 <we-select string="Re-Ware background">
                     <we-button data-select-class="">Default</we-button>

@@ -10,25 +10,16 @@ Stakeholder feedback round:
   (watermarked with the re-ware logo).
 * Shop warranty wording changed from 12-month to 3-month.
 
-Because the module is "editor-first" (layout records are locked noupdate=True
-after first load), a plain `-u` won't rewrite the stored arch_db. We reuse the
-module's own sync helpers to push both the module <template> archs (header,
-footer, snippets/carousel, shop) and the inline website.page archs (Our Why),
-then drop the compiled frontend asset bundles so the new SCSS + images load.
+Does NOT bulk-sync template archs onto Website Builder COW copies — that
+would wipe in-editor homepage/header edits. To redeploy copy from XML once,
+set system parameter ``quote_manage_ui.sync_inline_page_arch_from_xml`` to
+``true`` before ``-u``. Carousel editor fix ships in 1.0.72.
 """
 from odoo import api, SUPERUSER_ID
 
 
 def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
-
-    View = env['ir.ui.view']
-    if hasattr(View, '_quote_manage_ui_sync_module_templates_from_xml'):
-        View._quote_manage_ui_sync_module_templates_from_xml()
-
-    Page = env['website.page']
-    if hasattr(Page, '_quote_manage_ui_sync_inline_page_archs_from_module_xml'):
-        Page._quote_manage_ui_sync_inline_page_archs_from_module_xml()
 
     # Rebuild frontend bundles so the new brand-mark SCSS + carousel images
     # are served instead of the cached assets.

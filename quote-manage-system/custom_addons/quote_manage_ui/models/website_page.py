@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from xml.etree import ElementTree as ET
 
 from odoo import api, models
@@ -75,6 +76,42 @@ class IrUiView(models.Model):
                     return f'<data {" ".join(attrs)}>{inner}</data>'
                 return inner
         return None
+
+    @api.model
+    def _quote_manage_ui_fix_hero_carousel_arch(self, arch_db):
+        """Normalise hero carousel ids for Website Editor (stable #rwHeroCarousel).
+
+        Older builds used ``rwHeroCarousel{microsecond}`` which changed on every
+        page render and broke Bootstrap + the Carousel "Add slide" action.
+        """
+        if not arch_db or 'rwHeroCarousel' not in arch_db:
+            return None
+        new_arch = re.sub(r'\bid="rwHeroCarousel\d+"', 'id="rwHeroCarousel"', arch_db)
+        new_arch = re.sub(r'#rwHeroCarousel\d+', '#rwHeroCarousel', new_arch)
+        new_arch = re.sub(
+            r'href="#rwHeroCarousel\d+"', 'href="#rwHeroCarousel"', new_arch)
+        return new_arch if new_arch != arch_db else None
+
+    @api.model
+    def _quote_manage_ui_fix_hero_carousel_in_views(self):
+        """Patch every stored view that still has a dynamic hero carousel id."""
+        View = self.sudo().with_context(active_test=False, no_cow=True)
+        for view in View.search([('arch_db', 'ilike', 'rwHeroCarousel')]):
+            new_arch = self._quote_manage_ui_fix_hero_carousel_arch(view.arch_db)
+            if new_arch:
+                view.write({'arch_db': new_arch})
+
+    @api.model
+    def _quote_manage_ui_sync_single_template_from_xml(self, template_id):
+        """Push one module ``<template id=…>`` onto all views with that key."""
+        arch_db = self._quote_manage_ui_read_template_arch_from_xml(template_id)
+        if not arch_db:
+            return
+        view_key = f'quote_manage_ui.{template_id}'
+        for view in self.sudo().with_context(active_test=False).search([
+            ('key', '=', view_key),
+        ]):
+            view.write({'arch_db': arch_db})
 
     @api.model
     def _quote_manage_ui_sync_module_templates_from_xml(self):
