@@ -79,10 +79,15 @@ class IrUiView(models.Model):
 
     @api.model
     def _quote_manage_ui_fix_hero_carousel_arch(self, arch_db):
-        """Normalise hero carousel ids for Website Editor (stable #rwHeroCarousel).
+        """Normalise the hero carousel markup in a stored view arch.
 
-        Older builds used ``rwHeroCarousel{microsecond}`` which changed on every
-        page render and broke Bootstrap + the Carousel "Add slide" action.
+        * Stabilise the id (older builds used ``rwHeroCarousel{microsecond}``
+          which changed on every render and broke Bootstrap + "Add slide").
+        * Strip ``data-bs-ride="carousel"`` from the hero: Odoo's editor pauses
+          carousels and strips indicator ``data-bs-slide-to`` in edit mode, but
+          Bootstrap's native auto-ride ignores that and crashes
+          (``_setActiveIndicatorElement`` on a null indicator). Autoplay is
+          driven on the public site by ``hero_carousel.js`` instead.
         """
         if not arch_db or 'rwHeroCarousel' not in arch_db:
             return None
@@ -90,6 +95,14 @@ class IrUiView(models.Model):
         new_arch = re.sub(r'#rwHeroCarousel\d+', '#rwHeroCarousel', new_arch)
         new_arch = re.sub(
             r'href="#rwHeroCarousel\d+"', 'href="#rwHeroCarousel"', new_arch)
+        # Remove data-bs-ride only from the hero <div> tag (scoped to the tag
+        # that carries id="rwHeroCarousel" so other carousels keep autoplay).
+        # Match the whole opening tag so attribute order doesn't matter.
+        def _strip_ride(match):
+            return re.sub(r'\s*data-bs-ride="carousel"', '', match.group(0))
+
+        new_arch = re.sub(
+            r'<div[^>]*id="rwHeroCarousel"[^>]*>', _strip_ride, new_arch)
         return new_arch if new_arch != arch_db else None
 
     @api.model
