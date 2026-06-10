@@ -9,6 +9,7 @@
         'stock',
         'website',
         'website_sale',
+        'website_sale_stock',
         'website_blog',
         'website_crm',
         'product_images',

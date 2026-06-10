@@ -31,9 +31,17 @@ def migrate(cr, version):
     ]).unlink()
 
     # 2. Block over-selling on every existing storable product (skip services).
-    products = env['product.template'].sudo().search([('type', '=', 'product')])
-    if products:
-        products.write({
-            'allow_out_of_stock_order': False,
-            'show_availability': True,
-        })
+    #    allow_out_of_stock_order / show_availability come from website_sale_stock
+    #    (now a declared dependency); guard the write so a missing field can never
+    #    abort the upgrade again.
+    PT = env['product.template']
+    stock_fields = {'allow_out_of_stock_order', 'show_availability'} & set(PT._fields)
+    if stock_fields:
+        vals = {}
+        if 'allow_out_of_stock_order' in stock_fields:
+            vals['allow_out_of_stock_order'] = False
+        if 'show_availability' in stock_fields:
+            vals['show_availability'] = True
+        products = PT.sudo().search([('type', '=', 'product')])
+        if products:
+            products.write(vals)
