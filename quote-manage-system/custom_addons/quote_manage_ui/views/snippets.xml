@@ -35,7 +35,7 @@
                                  pause and crashes (_setActiveIndicatorElement on
                                  a null indicator). Autoplay is started on the
                                  public site by hero_carousel.js instead. -->
-                            <div id="rwHeroCarousel" class="s_carousel s_carousel_default carousel slide carousel-fade" data-bs-interval="2000">
+                            <div id="rwHeroCarousel" class="s_carousel s_carousel_default carousel slide carousel-fade" data-bs-interval="3000">
                                 <div class="carousel-inner">
                                     <div class="carousel-item active" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-team-workshop-v2.jpg" data-name="Image" alt="Re-Ware team with a refurbished laptop in the workshop"/>
@@ -44,7 +44,7 @@
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-laptop-inspect-v2.jpg" data-name="Image" alt="Inspecting a device before donation to the community"/>
                                     </div>
                                     <div class="carousel-item" data-name="Slide">
-                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
+                                        <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-grandcarers-v2.png" data-name="Image" alt="Partnering to make a difference — Co-Creative IT &amp; Grandcarers WA"/>
                                     </div>
                                     <div class="carousel-item" data-name="Slide">
                                         <img class="img-fluid d-block w-100" src="/quote_manage_ui/static/src/img/hero/hero-gc-handover.jpg" data-name="Image" alt="Re-Ware handing over a refurbished laptop at Grandcarers WA"/>
