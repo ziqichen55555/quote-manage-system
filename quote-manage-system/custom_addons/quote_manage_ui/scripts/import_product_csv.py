@@ -617,6 +617,10 @@ def run_import(env):
             "website_published": True,
             "sale_ok": True,
             "description_sale": desc_sale[:500],
+            # Storable products: block the shop from ordering more than what's
+            # in stock (Odoo defaults this to True = keep selling out-of-stock).
+            "allow_out_of_stock_order": ptype != "product",
+            "show_availability": ptype == "product",
         }
         if desc_html:
             vals["description"] = desc_html
