@@ -208,8 +208,16 @@
                                                 <img t-attf-src="/web/image/product.public.category/#{t_cat.id}/image_128" class="img-fluid mb-1" style="max-height: 40px; width: auto;"/>
                                             </t>
                                             <t t-else="">
-                                                <i t-if="t_cat.name == 'Laptops'" class="fa fa-laptop fs-3 mb-1" style="color: var(--rw-gold);"/>
-                                                <i t-else="" class="fa fa-tag fs-3 mb-1" style="color: var(--rw-gold);"/>
+                                                <t t-set="_rw_cat_icons" t-value="{
+                                                    'Laptops': 'fa-laptop',
+                                                    'Monitors &amp; Displays': 'fa-television',
+                                                    'Docks': 'fa-plug',
+                                                    'Accessories': 'fa-keyboard-o',
+                                                    'Desktops &amp; Mini PCs': 'fa-desktop',
+                                                    'Projectors &amp; AV': 'fa-video-camera',
+                                                    'Services': 'fa-wrench',
+                                                }"/>
+                                                <i t-attf-class="fa #{_rw_cat_icons.get(t_cat.name, 'fa-tag')} fs-3 mb-1" style="color: var(--rw-gold);"/>
                                             </t>
                                             <div class="small fw-bold mt-auto text-center" t-field="t_cat.name"/>
                                             <div class="small" style="color: var(--rw-text-muted);"><t t-esc="_cat_cnt"/> in stock</div>
