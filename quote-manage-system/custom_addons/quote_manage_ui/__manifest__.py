@@ -5,6 +5,7 @@
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
         'account',
+        'delivery',
         'l10n_au',
         'web',
         'sale',
@@ -21,6 +22,7 @@
         'data/quote_refurb_product_category.xml',
         'data/quote_refurb_product_tags.xml',
         'data/quote_refurb_product_attributes.xml',
+        'data/delivery_shipping_rules.xml',
         # Product rows are imported via scripts/import_products_to_odoo.sh;
         # loading them on every -u hits duplicate barcode errors.
         'data/quote_manage_ui_arch_sync_policy.xml',
