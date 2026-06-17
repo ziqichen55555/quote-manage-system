@@ -887,7 +887,16 @@ class ProductCsvImporter(models.AbstractModel):
             if len(templates) < 2:
                 continue
             group = [self._template_to_merge_unit(t) for t in templates]
-            c, u, a, s = self._import_merged_series(series_name, group, sections)
+            try:
+                c, u, a, s = self._import_merged_series(series_name, group, sections)
+            except Exception as exc:
+                _logger.warning(
+                    "Series merge skipped for %s (%s templates): %s",
+                    series_name,
+                    len(templates),
+                    exc,
+                )
+                continue
             created += c
             updated += u
             archived += a
@@ -986,15 +995,102 @@ class ProductCsvImporter(models.AbstractModel):
 
     @api.model
     def _migrate_variant_stock(self, old_variant, new_variant):
+        """Move on-hand stock from old variant to new variant after a Series merge.
+
+        Serial/lot rows cannot have ``product_id`` rewritten once stock moves
+        exist (Odoo blocks it). Copy quantity onto the target variant via
+        inventory adjustment and zero the source instead.
+        """
         if not old_variant or not new_variant or old_variant.id == new_variant.id:
             return 0
         Quant = self.env["stock.quant"].sudo()
         Lot = self.env["stock.lot"].sudo()
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not wh:
+            return 0
+
         count = 0
-        for lot in Lot.search([("product_id", "=", old_variant.id)]):
-            lot.product_id = new_variant.id
-        for quant in Quant.search([("product_id", "=", old_variant.id)]):
-            quant.product_id = new_variant.id
+        quants = Quant.search(
+            [
+                ("product_id", "=", old_variant.id),
+                ("location_id", "child_of", wh.lot_stock_id.id),
+                ("quantity", ">", 0),
+            ]
+        )
+        for quant in quants:
+            qty = quant.quantity
+            if qty <= 0:
+                continue
+            location = quant.location_id
+            if quant.lot_id:
+                new_lot = Lot.search(
+                    [
+                        ("product_id", "=", new_variant.id),
+                        ("name", "=", quant.lot_id.name),
+                        ("company_id", "=", self.env.company.id),
+                    ],
+                    limit=1,
+                )
+                if not new_lot:
+                    new_lot = Lot.create(
+                        {
+                            "product_id": new_variant.id,
+                            "name": quant.lot_id.name,
+                            "company_id": self.env.company.id,
+                        }
+                    )
+                dest = Quant.search(
+                    [
+                        ("product_id", "=", new_variant.id),
+                        ("location_id", "=", location.id),
+                        ("lot_id", "=", new_lot.id),
+                    ],
+                    limit=1,
+                )
+                if dest:
+                    dest.with_context(inventory_mode=True).write(
+                        {"inventory_quantity_auto_apply": dest.quantity + qty}
+                    )
+                else:
+                    Quant.with_context(inventory_mode=True).create(
+                        {
+                            "product_id": new_variant.id,
+                            "location_id": location.id,
+                            "lot_id": new_lot.id,
+                            "inventory_quantity_auto_apply": qty,
+                        }
+                    )
+            else:
+                dest = Quant.search(
+                    [
+                        ("product_id", "=", new_variant.id),
+                        ("location_id", "=", location.id),
+                        ("lot_id", "=", False),
+                    ],
+                    limit=1,
+                )
+                if dest:
+                    dest.with_context(inventory_mode=True).write(
+                        {"inventory_quantity_auto_apply": dest.quantity + qty}
+                    )
+                else:
+                    try:
+                        quant.product_id = new_variant.id
+                        count += 1
+                        continue
+                    except Exception:
+                        Quant.with_context(inventory_mode=True).create(
+                            {
+                                "product_id": new_variant.id,
+                                "location_id": location.id,
+                                "inventory_quantity_auto_apply": qty,
+                            }
+                        )
+            quant.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 0.0}
+            )
             count += 1
         return count
 
