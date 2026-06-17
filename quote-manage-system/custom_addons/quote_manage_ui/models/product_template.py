@@ -116,3 +116,37 @@ class ProductTemplate(models.Model):
                     exc,
                 )
         return {"updated": updated, "skipped": skipped, "errors": errors}
+
+    def _rw_website_available_qty(self):
+        """Sellable quantity for the current website warehouse (variant-aware)."""
+        self.ensure_one()
+        website = self.env["website"].get_current_website()
+        if not website:
+            return int(round(self.sudo().qty_available))
+        wh = website._get_warehouse_available()
+        return sum(
+            int(v.with_context(warehouse=wh).free_qty)
+            for v in self.sudo().product_variant_ids
+        )
+
+    def _rw_single_saleable_variant(self):
+        """The lone purchasable variant, when this template has exactly one."""
+        self.ensure_one()
+        variants = self.product_variant_ids.filtered(lambda v: v.active and v.sale_ok)
+        return variants if len(variants) == 1 else self.env["product.product"]
+
+    def _get_variant_for_combination(self, combination):
+        single = self._rw_single_saleable_variant()
+        if single:
+            return single
+        return super()._get_variant_for_combination(combination)
+
+    def _is_combination_possible(self, combination, parent_combination=None, ignore_no_variant=False):
+        single = self._rw_single_saleable_variant()
+        if single:
+            return True
+        return super()._is_combination_possible(
+            combination=combination,
+            parent_combination=parent_combination,
+            ignore_no_variant=ignore_no_variant,
+        )

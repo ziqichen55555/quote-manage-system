@@ -240,7 +240,7 @@
                 </t>
             </div>
             <div class="qm-shop-stock small mb-1" t-if="product.type == 'product'">
-                <span class="fw-semibold">Stock: </span><t t-esc="int(round(product.sudo().qty_available))"/>
+                <span class="fw-semibold">Stock: </span><t t-esc="product.sudo()._rw_website_available_qty()"/>
             </div>
         </xpath>
         <xpath expr="//div[hasclass('product_price')]" position="inside">
@@ -254,7 +254,7 @@
     <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="10">
         <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
             <p class="small mb-2 o_not_editable" style="color: var(--rw-text-muted);" t-if="product.type == 'product'">
-                <span class="fw-semibold" style="color: var(--rw-text);">Stock on hand: </span><t t-esc="int(round(product.sudo().qty_available))"/>
+                <span class="fw-semibold" style="color: var(--rw-text);">Stock on hand: </span><t t-esc="product.sudo()._rw_website_available_qty()"/>
             </p>
         </xpath>
         <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
