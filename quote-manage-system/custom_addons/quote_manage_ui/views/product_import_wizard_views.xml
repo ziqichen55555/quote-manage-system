@@ -1,5 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="product_merge_wizard_form" model="ir.ui.view">
+        <field name="name">product.merge.wizard.form</field>
+        <field name="model">product.merge.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Merge existing products">
+                <div class="alert alert-info" role="alert">
+                    <p class="mb-2"><strong>No CSV upload — works on products already in Odoo.</strong></p>
+                    <p class="mb-1">This will:</p>
+                    <ul class="mb-0">
+                        <li>Find products that share the same <strong>Series</strong> attribute</li>
+                        <li>Combine them into <strong>one shop product</strong> with a <strong>Configuration</strong> dropdown</li>
+                        <li><strong>Keep your images</strong> and move stock to the right variant</li>
+                        <li><strong>Archive</strong> the old duplicate SKU products (not deleted)</li>
+                    </ul>
+                </div>
+                <group invisible="not result_message">
+                    <field name="result_message" nolabel="1"/>
+                </group>
+                <footer>
+                    <button name="action_merge" string="Merge existing products" type="object" class="btn-primary" confirm="Merge products with the same Series? Images and stock are kept; old SKU products are archived."/>
+                    <button string="Close" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_product_merge_wizard" model="ir.actions.act_window">
+        <field name="name">Merge existing products</field>
+        <field name="res_model">product.merge.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_product_merge_wizard"
+              name="Merge existing products"
+              parent="stock.menu_stock_inventory_control"
+              action="action_product_merge_wizard"
+              sequence="24"
+              groups="stock.group_stock_user"/>
+
     <record id="product_import_wizard_form" model="ir.ui.view">
         <field name="name">product.import.wizard.form</field>
         <field name="model">product.import.wizard</field>
@@ -50,10 +90,16 @@
         <field name="inherit_id" ref="product.product_template_tree_view"/>
         <field name="arch" type="xml">
             <xpath expr="//tree/header" position="inside">
+                    <button name="%(action_product_merge_wizard)d"
+                            string="Merge existing products"
+                            type="action"
+                            class="btn-primary"
+                            display="always"
+                            groups="stock.group_stock_user"/>
                     <button name="%(action_product_import_wizard)d"
                             string="Upload inventory CSV"
                             type="action"
-                            class="btn-primary"
+                            class="btn-secondary"
                             display="always"
                             groups="stock.group_stock_user"/>
             </xpath>

@@ -191,10 +191,20 @@ class ProductCsvImporter(models.AbstractModel):
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
         tmpl = self._find_merged_template(series_name, series_code, config_attr)
 
-        sec_key = (group[0]["sections"][-1] if group[0]["sections"] else "accessories").lower()
+        sec_key = (group[0]["sections"][-1] if group[0].get("sections") else "accessories").lower()
         if sec_key not in sections:
             sec_key = "accessories"
         categ_id, public_cmds, tag_cmds, ptype = sections[sec_key]
+
+        # When merging existing DB products, keep their categories from source rows.
+        source_ids = [u["_source_tmpl_id"] for u in group if u.get("_source_tmpl_id")]
+        if source_ids:
+            sources = PT.browse(source_ids).exists()
+            if sources:
+                categ_id = sources[0].categ_id.id
+                public_ids = list(set(sources.mapped("public_categ_ids").ids))
+                public_cmds = [(6, 0, public_ids)] if public_ids else [(5, 0, 0)]
+                ptype = sources[0].type or "product"
 
         prices = [u["price"] for u in group]
         base_price = min(prices) if prices else 0.0
@@ -245,19 +255,39 @@ class ProductCsvImporter(models.AbstractModel):
             variant.write({"default_code": unit["code"]})
             ptav = ptavs[0]
             ptav.price_extra = unit["price"] - base_price
-            stock_batches += self._apply_stock(variant, unit)
+            if unit.get("_source_tmpl_id"):
+                old_tmpl = PT.browse(unit["_source_tmpl_id"])
+                if (
+                    old_tmpl.exists()
+                    and old_tmpl.id != tmpl.id
+                    and old_tmpl.product_variant_count == 1
+                ):
+                    stock_batches += self._migrate_variant_stock(
+                        old_tmpl.product_variant_id, variant
+                    )
+            else:
+                stock_batches += self._apply_stock(variant, unit)
+
+        source_tmps = PT.browse(
+            [u["_source_tmpl_id"] for u in group if u.get("_source_tmpl_id")]
+        ).exists()
+        if source_tmps:
+            self._preserve_images(tmpl, source_tmps)
 
         for unit in group:
             code = unit["code"]
-            old = PT.search(
-                [("default_code", "=", code), ("id", "!=", tmpl.id)], limit=1
-            )
-            if old and old.active:
+            old = PT.browse(unit["_source_tmpl_id"]) if unit.get("_source_tmpl_id") else PT.browse()
+            if not old:
+                old = PT.search(
+                    [("default_code", "=", code), ("id", "!=", tmpl.id)], limit=1
+                )
+            if old and old.id != tmpl.id and old.active:
                 old.write({"active": False, "website_published": False, "sale_ok": False})
                 archived += 1
 
         try:
-            self._sync_product_images(tmpl, series_name)
+            if not source_tmps:
+                self._sync_product_images(tmpl, series_name)
         except Exception as exc:
             _logger.warning("Image sync failed for %s: %s", series_name, exc)
 
@@ -791,6 +821,157 @@ class ProductCsvImporter(models.AbstractModel):
         if specs.get("wan"):
             add_line("quote_manage_ui.attr_wan", "Enabled")
         return specs.get("series")
+
+    # ------------------------------------------- merge existing DB products
+    @api.model
+    def merge_existing_catalog(self):
+        """Merge already-imported products by Series (no CSV re-upload).
+
+        Keeps images and stock from each source product; archives duplicate SKUs.
+        Safe to run more than once — already-merged groups are skipped.
+        """
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        series_attr = self.env.ref("quote_manage_ui.attr_series")
+
+        candidates = PT.search(
+            [
+                ("active", "=", True),
+                ("sale_ok", "=", True),
+                ("type", "=", "product"),
+            ]
+        )
+        candidates = candidates.filtered(
+            lambda t: not self._is_configuration_only_product(t, config_attr)
+        )
+
+        by_series = defaultdict(list)
+        for tmpl in candidates:
+            series_line = tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == series_attr.id
+            )
+            if not series_line or not series_line.value_ids:
+                continue
+            series_name = series_line.value_ids[0].name
+            by_series[series_name].append(tmpl)
+
+        sections = self._section_maps()
+        created = updated = merged_groups = archived = stock_batches = 0
+
+        for series_name, templates in sorted(by_series.items()):
+            if len(templates) < 2:
+                continue
+            group = [self._template_to_merge_unit(t) for t in templates]
+            c, u, a, s = self._import_merged_series(series_name, group, sections)
+            created += c
+            updated += u
+            archived += a
+            stock_batches += s
+            merged_groups += 1
+
+        self.env.cr.commit()
+        return {
+            "merged_series": merged_groups,
+            "created": created,
+            "updated": updated,
+            "archived_skus": archived,
+            "stock_migrations": stock_batches,
+        }
+
+    @api.model
+    def _is_configuration_only_product(self, tmpl, config_attr):
+        lines = tmpl.attribute_line_ids
+        if not lines:
+            return False
+        has_config = bool(lines.filtered(lambda l: l.attribute_id.id == config_attr.id))
+        has_series = bool(
+            lines.filtered(
+                lambda l: l.attribute_id.id
+                == self.env.ref("quote_manage_ui.attr_series").id
+            )
+        )
+        return has_config and not has_series
+
+    @api.model
+    def _template_to_merge_unit(self, tmpl):
+        specs = self._specs_from_template(tmpl)
+        code = tmpl.default_code or f"TMPL-{tmpl.id}"
+        return {
+            "code": code,
+            "service": False,
+            "qty": max(int(tmpl.qty_available), 1) if tmpl.qty_available else 0,
+            "price": tmpl.list_price,
+            "titles": [tmpl.name or code],
+            "brand": specs.get("brand", ""),
+            "sections": [],
+            "conditions": [],
+            "unit_ids": [],
+            "notes": [],
+            "series_key": specs.get("series"),
+            "specs": specs,
+            "config_label": self._build_config_label(specs, code),
+            "_source_tmpl_id": tmpl.id,
+        }
+
+    @api.model
+    def _specs_from_template(self, tmpl):
+        mapping = {
+            "Brand": "brand",
+            "Series": "series",
+            "CPU": "cpu",
+            "RAM": "ram",
+            "Storage": "storage",
+            "Touchscreen": "touch",
+            "WAN": "wan",
+        }
+        specs = {}
+        for line in tmpl.attribute_line_ids:
+            key = mapping.get(line.attribute_id.name)
+            if key and line.value_ids:
+                specs[key] = line.value_ids[0].name
+        if specs.get("touch") == "Yes":
+            specs["touch"] = "Yes"
+        if specs.get("wan") in ("Enabled", "Yes"):
+            specs["wan"] = "Yes"
+        return specs
+
+    @api.model
+    def _preserve_images(self, merged_tmpl, source_templates):
+        """Copy main + gallery images from source products (lowest price wins main)."""
+        sources = source_templates.filtered("image_1920").sorted("list_price")
+        if sources and not merged_tmpl.image_1920:
+            merged_tmpl.image_1920 = sources[0].image_1920
+        elif sources:
+            merged_tmpl.image_1920 = sources[0].image_1920
+
+        Image = self.env["product.image"].sudo()
+        seen = set(merged_tmpl.product_template_image_ids.mapped("name"))
+        for src in source_templates:
+            for img in src.product_template_image_ids:
+                if img.name in seen:
+                    continue
+                Image.create(
+                    {
+                        "name": img.name,
+                        "product_tmpl_id": merged_tmpl.id,
+                        "image_1920": img.image_1920,
+                    }
+                )
+                seen.add(img.name)
+
+    @api.model
+    def _migrate_variant_stock(self, old_variant, new_variant):
+        if not old_variant or not new_variant or old_variant.id == new_variant.id:
+            return 0
+        Quant = self.env["stock.quant"].sudo()
+        Lot = self.env["stock.lot"].sudo()
+        count = 0
+        for lot in Lot.search([("product_id", "=", old_variant.id)]):
+            lot.product_id = new_variant.id
+        for quant in Quant.search([("product_id", "=", old_variant.id)]):
+            quant.product_id = new_variant.id
+            count += 1
+        return count
 
     @api.model
     def _sync_product_images(self, tmpl, title):
