@@ -24,6 +24,7 @@ def _quote_manage_ui_template_xml_paths():
     """
     paths = []
     for rel in ('quote_manage_ui/views/website_templates.xml',
+                'quote_manage_ui/views/website_legal_pages.xml',
                 'quote_manage_ui/views/snippets.xml'):
         try:
             paths.append(file_path(rel))
@@ -350,31 +351,33 @@ class WebsitePage(models.Model):
     @api.model
     def _quote_manage_ui_read_page_record_xml(self, record_id, root=None):
         """Return ``(key, arch_db)`` for a ``<record model='website.page' id=…>`` in module XML."""
-        if root is None:
-            path = _quote_manage_ui_website_templates_xml_path()
-            if not path or not os.path.isfile(path):
-                return None, None
-            try:
-                root = ET.parse(path).getroot()
-            except ET.ParseError:
-                return None, None
-        for record in root.findall('.//record'):
-            if record.get('id') != record_id:
-                continue
-            if record.get('model') != 'website.page':
-                continue
-            page_key = None
-            arch_db = None
-            for field in record.findall('field'):
-                fname = field.get('name')
-                if fname == 'key':
-                    if field.text and field.text.strip():
-                        page_key = field.text.strip()
-                elif fname == 'arch':
-                    arch_db = ''.join(
-                        ET.tostring(child, encoding='unicode') for child in list(field)
-                    ).strip()
-            return page_key, arch_db
+        roots = [root] if root is not None else []
+        if not roots:
+            for path in _quote_manage_ui_template_xml_paths():
+                if not path or not os.path.isfile(path):
+                    continue
+                try:
+                    roots.append(ET.parse(path).getroot())
+                except ET.ParseError:
+                    continue
+        for r in roots:
+            for record in r.findall('.//record'):
+                if record.get('id') != record_id:
+                    continue
+                if record.get('model') != 'website.page':
+                    continue
+                page_key = None
+                arch_db = None
+                for field in record.findall('field'):
+                    fname = field.get('name')
+                    if fname == 'key':
+                        if field.text and field.text.strip():
+                            page_key = field.text.strip()
+                    elif fname == 'arch':
+                        arch_db = ''.join(
+                            ET.tostring(child, encoding='unicode') for child in list(field)
+                        ).strip()
+                return page_key, arch_db
         return None, None
 
     @api.model
@@ -384,29 +387,25 @@ class WebsitePage(models.Model):
 
     @api.model
     def _quote_manage_ui_sync_inline_page_archs_from_module_xml(self):
-        """Copy ``website.page`` arch from ``website_templates.xml`` onto DB views.
+        """Copy ``website.page`` arch from module XML onto DB views.
 
         Writes ``arch_db`` to every ``ir.ui.view`` with the page ``key`` (type
         qweb), including **website COW copies**, not only the generic
         ``page.view_id``. Otherwise the live site keeps rendering an empty
         website-specific view after edits in the Website Builder.
         """
-        path = _quote_manage_ui_website_templates_xml_path()
-        if not path or not os.path.isfile(path):
-            return
-        try:
-            root = ET.parse(path).getroot()
-        except ET.ParseError:
-            return
         record_xmlids = (
             'about_us_page',
             'our_why_page',
             'partners_page',
             'returns_policy_page',
+            'terms_of_service_page',
+            'privacy_policy_page',
+            'refund_policy_page',
         )
         View = self.env['ir.ui.view'].sudo().with_context(active_test=False, no_cow=True)
         for rid in record_xmlids:
-            page_key, arch_db = self._quote_manage_ui_read_page_record_xml(rid, root=root)
+            page_key, arch_db = self._quote_manage_ui_read_page_record_xml(rid)
             if not page_key or not arch_db:
                 continue
             for v in View.search([('key', '=', page_key), ('type', '=', 'qweb')]):

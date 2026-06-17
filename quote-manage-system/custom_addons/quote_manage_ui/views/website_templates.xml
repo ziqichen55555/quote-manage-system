@@ -132,6 +132,12 @@
                     </div>
                 </div>
                 <div class="rw-footer-bottom text-center">
+                    <a href="/terms">Terms</a>
+                    <span class="mx-2">·</span>
+                    <a href="/privacy">Privacy</a>
+                    <span class="mx-2">·</span>
+                    <a href="/refund">Refund</a>
+                    <span class="mx-2">·</span>
                     <a href="/returns">Returns &amp; warranty</a>
                     <span class="mx-2">·</span>
                     <a href="https://www.cocreativeit.com/" target="_blank" rel="noopener noreferrer">Co-Creative IT</a>
@@ -677,7 +683,7 @@
                                 <h2 class="mb-3">How to start a return.</h2>
                                 <p class="rw-about-body mb-4">Email <a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a> or call <a href="tel:0411882377">0411 882 377</a> with your order number and a short description of the issue, and we'll guide you through the next steps.</p>
 
-                                <p class="small" style="color: var(--rw-text-muted);">[This page is a draft. Replace the bracketed placeholders with your final policy before publishing widely.]</p>
+                                <p class="rw-about-body mb-0">See also our <a href="/terms">Terms of Service</a>, <a href="/refund">Refund Policy</a> and <a href="/privacy">Privacy Policy</a>.</p>
                             </div>
                         </section>
 

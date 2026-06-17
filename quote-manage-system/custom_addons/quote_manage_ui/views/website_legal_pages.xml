@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+    <!-- Shared legal page shell (hero + narrow prose column) -->
+    <template id="rw_legal_page_shell" name="Reware Legal Page Shell">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty rw-site">
+                <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero">
+                    <div class="container">
+                        <p class="rw-eyebrow mb-3">Legal</p>
+                        <h1 class="mb-3" t-esc="title"/>
+                        <p class="lead mb-0" t-if="subtitle" t-esc="subtitle"/>
+                    </div>
+                </section>
+                <section class="rw-section rw-bg-cream">
+                    <div class="container rw-container-narrow rw-legal-prose pb-5">
+                        <t t-out="0"/>
+                    </div>
+                </section>
+                <t t-call="quote_manage_ui.s_rw_newsletter"/>
+            </div>
+        </t>
+    </template>
+
+    <record id="terms_of_service_page" model="website.page" forcecreate="True">
+        <field name="name">Terms of Service</field>
+        <field name="url">/terms</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.terms_of_service_page</field>
+        <field name="arch" type="xml">
+            <t name="Terms of Service" t-name="quote_manage_ui.terms_of_service_page">
+                <t t-set="title">Terms of Service</t>
+                <t t-set="subtitle">Terms and conditions for using this website and purchasing from Co-Creative IT.</t>
+                <t t-call="quote_manage_ui.rw_legal_page_shell">
+                    <p>This website is operated by Co-Creative IT (ABN 70 472 250 654). Throughout the site, the terms &quot;we&quot;, &quot;us&quot; and &quot;our&quot; refer to Co-Creative IT. Co-Creative IT offers this website, including all information, tools and services available from this site to you, the user (customer), conditioned upon your acceptance of all terms, conditions, policies and notices stated here.</p>
+                    <p>By visiting our site and/or purchasing something from us, you engage in our &quot;Service&quot; and agree to be bound by the following terms and conditions (&quot;Terms of Service&quot;, &quot;Terms&quot;), including those additional terms and conditions and policies referenced herein and/or available by hyperlink. These Terms of Service apply to all users of the site, including without limitation users who are browsers, vendors, customers, merchants, and/or contributors of content. The Customer acknowledges agreement with these Terms and Conditions by the placement of an order to purchase products from Co-Creative IT.</p>
+                    <p>All goods are supplied on these terms and conditions only and no person in the employment or otherwise as agent for Co-Creative IT has any authority to supply goods on any other terms and conditions or to vary these terms and conditions in any way whatsoever. Previous dealings shall not vary or negate these terms and conditions in any respect.</p>
+
+                    <h2>Pricing</h2>
+                    <p>Unless specifically advertised, all prices on this website are quoted excluding tax. Tax will be added upon ordering goods and must be paid.</p>
+                    <p>Prices promoted on the Purchasing Portal are at list price until you log in to obtain the discounted pricing as arranged with Co-Creative IT. Discounts will be automatically applied for online orders. Note some special bid items and some licensing may not be available for online ordering. Please contact your account manager or call <a href="tel:0499909302">0499 909 302</a> or email <a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a> to order items unavailable online.</p>
+
+                    <h2>Warranty Information</h2>
+                    <p>In addition to the Consumer Guarantees, all products sold by Co-Creative IT are covered by the manufacturers&apos; warranty that accompanies the product. Co-Creative IT makes no additional or independent warranty in addition to the Consumer Guarantees or those offered by the manufacturer of a product. If the product is refurbished and sold under the Re-Ware branding then the item has a 90-day return policy for exchange of the same or similar item if the item is faulty. To return a faulty item it is at the cost of the customer, but the shipping of the replacement items is at the cost of Co-Creative IT.</p>
+
+                    <h2>Delivery of Goods</h2>
+                    <p>We place great importance on the fast and reliable delivery of Customers orders, however please note that delivery times are estimates only and Co-Creative IT shall not be liable for delays.</p>
+                    <p>If the Customer fails or refuses to take delivery of the goods, then in addition to all other rights and remedies of Co-Creative IT, the Customer shall be liable for all loss and damage (including consequential loss and damage) suffered or incurred by Co-Creative IT as a result thereof and Co-Creative IT, at its discretion may charge a restocking fee.</p>
+                    <p>If Authority to Leave is selected at checkout, you must specify where you would like the goods left (at the front door, next to the garage, etc). Co-Creative IT and our couriers cannot be held responsible for goods being left unattended that go missing if an order has been authorised to leave. Couriers may not leave goods at the door, and will leave a card instead so that you can pick up your order at the nearest post office/depot if selected.</p>
+
+                    <h2>Title of Goods</h2>
+                    <p>The goods shall be at the Customers risk at the point of delivery. The Customer, upon taking delivery of the goods, shall immediately examine the goods and give written notice to Co-Creative IT of any defect within five (5) days of such date, failing which the goods shall be deemed to have been delivered in good order and condition and accepted by the Customer.</p>
+
+                    <h2>Payment</h2>
+                    <p>The price shall be paid by the Customer in full without any deduction in respect of any claimed set-off or counterclaim (including any such set-off or counterclaim on account of any delay on the part of Co-Creative IT in delivering any part of the goods) on or before the payment date. In addition to any other rights or remedies of Co-Creative IT in the event of the Customer&apos;s default hereunder, Co-Creative IT shall be entitled:</p>
+                    <ul>
+                        <li>To charge and recover costs incurred for the collection of payment (such as but not limited to collection agency fees and legal costs), cheque dishonour fees, interest at the current bank overdraft rate plus two per cent per annum from the due date for payment until payment in full;</li>
+                        <li>To immediately and without notice retake possession of the goods (and for such purpose the Customer irrevocably licenses Co-Creative IT, its employees, contractors, servants or agents to enter upon the premises at which the goods are located to so retake possession) and resell the goods after seven (7) days written notice to the Customer and thereafter recover from the Customer any amount by which the resale price is less than the price agreed to be paid by the Customer, together with all costs and expenses suffered or incurred by Co-Creative IT as a result of the Customer&apos;s default;</li>
+                        <li>At the sole discretion of Co-Creative IT to charge a restocking fee of up to 25% of the purchase price.</li>
+                    </ul>
+
+                    <h2>Errors and Omissions</h2>
+                    <p>At Co-Creative IT, we work hard to offer you the most competitive pricing and accurate product information. Because of the dynamic nature of this industry (e.g. vendor price changes and other variables beyond our control), prices, promotions, versions and availability advertised are subject to change without prior notice. All images are for illustrative purposes only. Actual product may differ. Please be assured of our every effort to ensure the accuracy of information; however, the documents and graphics published may contain technical inaccuracies or typographical errors. Co-Creative IT makes no representations about the suitability of this information; it is provided &quot;as is&quot; without warranty of any kind. If an error is made or a product is listed at an incorrect price, Co-Creative IT shall maintain the right to refuse or cancel any orders placed. If the order has been confirmed and charged to your account or credit card, Co-Creative IT shall immediately issue a credit or refund.</p>
+
+                    <h2>Limitation of Liability</h2>
+                    <p>Co-Creative IT shall under no circumstances, except where the consumer guarantees apply, be liable for special, incidental, or consequential damages including loss of profit or opportunity, even if it has been advised of the possibility of such damages; the maximum liability for all direct damages, if any, arising out of any action shall be limited to an amount not to exceed the purchase price of the product.</p>
+
+                    <h2>Governing Law</h2>
+                    <p>All sales shall be deemed made in the state of WA, regardless of the location of the Customer. The Customer agrees that any dispute with Co-Creative IT shall be governed by the WA law and the Customer irrevocably submits to the exclusive jurisdiction of WA courts and courts hearing appeals from those courts.</p>
+
+                    <h2>Order Cancellation Policy</h2>
+                    <p>If you would like to cancel a back order simply use our online form or notify us on <a href="tel:0499909302">0499 909 302</a>. Other than &quot;special orders&quot; (an order where goods ordered are especially ordered to meet specific customer requirements or cannot be refunded by Co-Creative IT to its supplier), an order may be cancelled before it has left our warehouse with no cancellation fee. If the order has left our warehouse, a fee may apply to cover courier and restocking costs.</p>
+
+                    <h2>Vouchers &amp; Certificates</h2>
+                    <ul>
+                        <li>Co-Creative IT Gift Vouchers entitle the holder to goods/services equal to the value displayed on the card or remaining after partial redemption.</li>
+                        <li>Gift Vouchers are only redeemable online with Co-Creative IT.</li>
+                        <li>Gift Vouchers cannot be exchanged (wholly or partly) for cash.</li>
+                        <li>Multiple Vouchers can be used per purchase/transaction.</li>
+                        <li>Maximum of 10 Vouchers per Customer.</li>
+                        <li>Value shown on this voucher is inclusive of tax.</li>
+                        <li>Gift Vouchers are partially redeemable and any unused balance will remain on the card and cannot be redeemed for cash.</li>
+                        <li>If order exceeds value of Gift Voucher, the holder will be required to pay the difference in price between the value of Gift Voucher and price of the goods/services.</li>
+                        <li>Gift Vouchers valid for 12 months from issue date.</li>
+                        <li>Should Co-Creative IT suspect any fraud relating to a Gift Voucher, Co-Creative IT may refuse to redeem the Voucher until Co-Creative IT is satisfied that no fraud has occurred.</li>
+                        <li>Co-Creative IT is not liable for any lost/stolen Gift Vouchers. Please contact Co-Creative IT immediately if your Voucher has been lost/stolen. Lost/stolen Vouchers can only be replaced if satisfactory proof of purchase is provided and the Voucher has not been redeemed.</li>
+                    </ul>
+
+                    <h2>General</h2>
+                    <p>To the extent any section or portion of a section of these Terms and Conditions of Sale are deemed unlawful or unenforceable, that section or portion of a section shall as far as practicable be read down or stricken from the Terms and Conditions of Sale, so that the remaining terms can continue in full force and effect.</p>
+
+                    <h2>Changes to this policy</h2>
+                    <p>We reserve the right to modify these terms at any time, so please review them frequently. Changes and clarifications will take effect immediately upon their posting on the website. It is the responsibility of the customer to read and understand these terms and conditions each time an order is placed.</p>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="privacy_policy_page" model="website.page" forcecreate="True">
+        <field name="name">Privacy Policy</field>
+        <field name="url">/privacy</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.privacy_policy_page</field>
+        <field name="arch" type="xml">
+            <t name="Privacy Policy" t-name="quote_manage_ui.privacy_policy_page">
+                <t t-set="title">Privacy Policy</t>
+                <t t-set="subtitle">How Co-Creative IT collects, uses and protects your personal information.</t>
+                <t t-call="quote_manage_ui.rw_legal_page_shell">
+                    <p>Co-Creative IT respects your individual privacy. This Privacy Policy (&quot;Policy&quot;) embodies our commitment to its protection through adherence to fair electronic information practices. This Policy puts you, the individual, in control of how your personal information is processed. You have our promise that we will not electronically process your personal information in any way that is incompatible with this Policy. If you have questions or concerns regarding this statement, you should first contact Co-Creative IT using the online form or call us on <a href="tel:0499909302">0499 909 302</a>.</p>
+                    <p>This Privacy Policy protects your privacy by informing you about:</p>
+                    <ul>
+                        <li>The types of personal information Co-Creative IT collects about you through its websites;</li>
+                        <li>How it collects that information;</li>
+                        <li>The general purposes for which it collects such information.</li>
+                    </ul>
+                    <p>Co-Creative IT assures you that it takes reasonable precautions to protect personal information from loss, misuse, unauthorised access, disclosure, alteration or destruction; implements reasonable policies and procedures to ensure that personal information is kept only for the purposes for which it has been gathered; uses reasonable measures to ensure that we have accurately and completely recorded the personal information you have provided; and provides you reasonable access to your personal information as well as procedures for correcting or modifying that information where appropriate, ensuring accountability to individuals who believe that Co-Creative IT has not complied with these privacy principles.</p>
+
+                    <h2>Getting to Know Our Customers</h2>
+                    <p>Co-Creative IT is in the business of supplying goods and services to our customers. That requires more than simply offering innovative technical services. It also requires that we understand you, our customer, and your needs.</p>
+                    <p>We get to know you primarily through the information you provide to us when you contact us to use one or more of our services. The information you provide ranges from basic contact information to payment information. All of the information we request from you when purchasing our goods and/or services is obligatory. When you purchase our goods and/or services, you agree to provide us with complete and current information.</p>
+                    <p>After you have purchased any of our goods and/or services, we may communicate with you about your account, answer questions you may have about what we provided you, or any other relevant matter. Those communications are essential to our relationship with you and to our ability to provide you with quality service that is responsive to your needs. At the same time, those communications give us helpful insights about you, your preferences and the ways in which we might improve our services. We therefore may maintain this information for future use by Co-Creative IT.</p>
+                    <p>The information we receive from or about you is stored on systems designed to prevent the loss, misuse, unauthorised access, disclosure, alteration or destruction of that information. We also encrypt your transmission of sensitive information to us (e.g., credit card numbers, account passwords) in the interest of heightened privacy protection and information integrity.</p>
+
+                    <h2>Third Party Advertising and Cookies</h2>
+                    <p>We use links to some of our suppliers on our website. In the course of providing these links, some of these companies may place or recognise a unique &quot;cookie&quot; on your browser, and may use information (not including your name, address, e-mail address, or telephone number) about your visits to their and other websites in order to measure advertising effectiveness and to provide advertisements about goods and services of interest to you. Please also examine the Privacy Policies of these companies.</p>
+
+                    <h2>Information Corrections or Changes</h2>
+                    <p>You have the ability to correct or change certain information in our records, such as your address and contact information. The process for changing your information begins on the Your Account page. You may change this information at any time and as often as necessary. If you need assistance or have questions about correcting information, you can contact us by using our online form or by calling us on <a href="tel:0499909302">0499 909 302</a>.</p>
+
+                    <h2>How We Put Information to Good Use</h2>
+                    <p>We use any information about you for purposes of monitoring and improving our internal operations, as well as to ensure we bill you properly, administer your account in accordance with good and proper accounting practices, and properly supply the goods and/or services you have requested.</p>
+                    <p>We also use the information we collect to monitor and improve our internal operations. For example, we may correlate website traffic information with data about individual users. This data helps us to determine how much our customers use parts of the site, allowing us to enhance it to fit the needs of as many of our customers as possible. We may also break down overall usage statistics according to customers&apos; domain names, browser types, and MIME types by reading this information from the browser string (information contained in every user&apos;s browser).</p>
+                    <p>Another example of our use of information to enhance the experience of users in our network of sites is our reliance on cookie files. We use cookie files to make it easier for users to access our site or services. A cookie file is a small data file that certain websites write to your hard drive when you visit them. A cookie file can contain information such as a user ID that the site uses to track the pages you have visited. However, the only personal information a cookie can contain is information you supply yourself. A cookie cannot read data off your hard disk or read cookie files created by other sites. We use cookies to track user traffic patterns (as described above) when you register for Co-Creative IT services. When you register, we may use a cookie to store a unique, random user ID. We use this ID to identify you anonymously in our database and to track the pages you visit on our site. If you have set your browser to warn you before accepting cookies, you will receive the warning message with each cookie. You may refuse cookies by turning them off in your browser.</p>
+                    <p>Finally, we use the information we collect to direct important notices and information affecting your account or services, as well as to provide general information that may be of interest to you, including newsletters, surveys, and information about our services or product offerings. You may opt-out of receiving information from us simply by notifying us of your desire in accordance with the opt-out instructions contained in any information message you receive from us. Note, however, that in order to fulfil our service obligations to you, we must continue sending you notices and other important information affecting your account or services.</p>
+
+                    <h2>With Whom We May Share Information</h2>
+                    <p>We value you as our own customer and we do not share or disclose any information about you to any external company or organization. The information that you supply to us is used to conduct business transactions with you and to enable us to better meet your needs and requirements. Your information is not sold or given to any other organization.</p>
+                    <p>When you supply us with a credit card number that is used to make a payment to us we securely transmit this to our bank where the credit card transaction is either accepted or declined by the bank. We do not store your credit card details on any of our sites or systems. The bank stores any necessary details about our transaction/s with you; we store a payment authorisation reference number associated with your transaction/s. It is not possible for this reference number to be used for any other purpose other than recording the fact that we conducted a credit card transaction with you.</p>
+
+                    <h2>Our Accountability to You</h2>
+                    <p>By purchasing our goods and/or services, you obtain the protections of, and consent to the data processing practices described in, this Privacy Policy. When you purchase our services, you also represent to us that you have provided notice to, and obtained consent from, any third party individuals whose personal data you supply to us with regard to: the purposes for which such third party&apos;s personal data have been collected; the intended recipients or categories of recipients of the third party&apos;s personal data; which of the third party&apos;s data are obligatory and which data, if any, are voluntary; and how the third party can access and, if necessary, rectify the data held about them.</p>
+                    <p>In addition to the privacy protections that we provide, our employees, agents and business partners are independently responsible for ensuring compliance with this Privacy Policy, as described below.</p>
+
+                    <h2>Employee Accountability</h2>
+                    <p>Only those Co-Creative IT employees that have a legitimate business purpose for accessing and handling information obtained by us are given authorization to do so. The unauthorised access or use of such information by a Co-Creative IT employee is prohibited and constitutes grounds for disciplinary action. Additionally, our information management systems are configured in such a way as to block or inhibit employees from accessing information that they have no authority to access.</p>
+
+                    <h2>Security</h2>
+                    <p>This website takes every precaution to protect our users&apos; information. When users submit sensitive information via the website, their information is protected both online and off-line. When our registration/order form asks users to enter sensitive information (such as credit card number), it is encrypted and protected with SSL encryption. While on a secure page, such as our order form, the lock icon on the bottom of web browsers such as Google Chrome and Microsoft Internet Explorer becomes locked, as opposed to un-locked, or open, when you are just surfing.</p>
+                    <p>While we use SSL encryption to protect sensitive information online, users&apos; information is restricted in our offices and is only accessible by certain authorised staff. Furthermore, ALL employees are kept up-to-date on our security and privacy practices. Every quarter, as well as any time new policies are added, employees are notified and/or reminded about the importance we place on privacy, and what they can do to ensure our customers&apos; information is protected.</p>
+
+                    <h2>Changes to this policy</h2>
+                    <p>We reserve the right to modify this privacy policy at any time, so please review it frequently. Changes and clarifications will take effect immediately upon their posting on the website. If we make material changes to this policy, we will notify you here that it has been updated, so that you are aware of what information we collect, how we use it, and under what circumstances, if any, we use and/or disclose it.</p>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="refund_policy_page" model="website.page" forcecreate="True">
+        <field name="name">Refund Policy</field>
+        <field name="url">/refund</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.refund_policy_page</field>
+        <field name="arch" type="xml">
+            <t name="Refund Policy" t-name="quote_manage_ui.refund_policy_page">
+                <t t-set="title">Refund Policy</t>
+                <t t-set="subtitle">Your rights under Australian Consumer Law and our refund procedures.</t>
+                <t t-call="quote_manage_ui.rw_legal_page_shell">
+                    <p>Our Refund Policy includes, and does not seek to exclude or limit, the rights you have under Consumer Law. Our goods come with guarantees that cannot be excluded under the Consumer Law.</p>
+                    <p>In the event that any products or services purchased from us do not meet the Consumer Guarantees, we will gladly meet our obligations to provide a refund, repair or replacement at our own expense.</p>
+                    <p>We may at our absolute discretion choose to refund, credit, replace or repair goods returned within a reasonable time (generally 14 days) for any reason other than breach of the Consumer Guarantees, provided the goods are in original condition, current version and not a special order, hardware, peripheral or clearance item. In these circumstances, we may make our best effort to arrange exchange with the manufacturer or accept the goods back for resale. In this case, if the return is authorised by Co-Creative IT, a restocking fee may apply.</p>
+                    <p>Please note that except in the case where a Consumer Guarantee is breached, where the plastic seal or shrink wrap of a license agreement is broken, the return or exchange cannot be accepted due to copyright and licensing restrictions. In this case we will help the Customer obtain a working copy. Also &quot;special order&quot; goods are goods that are not in stock at the time of an order and therefore especially ordered to meet a client order.</p>
+                    <p>Exchange of computer hardware and peripherals is sometimes not possible due to third party constraints on Co-Creative IT. In the event of a breach of the Consumer Guarantees, we will however gladly provide a refund.</p>
+                    <p>Unless there is a breach of the Consumer Guarantees, the right to refuse the return or exchange of products is at the discretion of Co-Creative IT and a restocking fee may apply to returned goods.</p>
+                    <p>For Re-Ware refurbished devices, please also see our <a href="/returns">Returns &amp; warranty</a> page or contact <a href="mailto:re-ware@cocreativeit.com">re-ware@cocreativeit.com</a>.</p>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    </data>
+</odoo>

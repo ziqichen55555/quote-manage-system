@@ -1096,6 +1096,35 @@ html:has(main .o_wsale_products_page) {
     line-height: 1.7;
 }
 
+.rw-legal-prose {
+    color: $rw-text-soft;
+    font-size: clamp(0.9rem, 1.1vw, 0.98rem);
+    line-height: 1.75;
+
+    h2 {
+        font-family: $rw-font-display;
+        color: $rw-text;
+        font-size: clamp(1.15rem, 2vw, 1.35rem);
+        font-weight: 700;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    p, ul, ol {
+        margin-bottom: 1rem;
+    }
+
+    ul, ol {
+        padding-left: 1.25rem;
+    }
+
+    a {
+        color: $rw-gold;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}
+
 // ---------- 15c. Our Why page -------------------------------------------------
 // Two-column desktop layout mirroring the Squarespace fluid grid: left
 // column gets the headline + lead (top-aligned), right column gets the
