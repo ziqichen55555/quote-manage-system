@@ -50,6 +50,13 @@
                             <li class="nav-item">
                                 <a href="/shop" class="rw-btn-coral-red" target="_blank" rel="noopener noreferrer">Shop</a>
                             </li>
+                            <t t-call="website_sale.header_cart_link">
+                                <t t-set="_icon" t-value="True"/>
+                                <t t-set="_item_class" t-valuef="nav-item"/>
+                                <t t-set="_link_class" t-valuef="nav-link rw-header-cart-link"/>
+                                <t t-set="_icon_wrap_class" t-valuef="position-relative d-inline-flex align-items-center"/>
+                                <t t-set="_badge_class" t-valuef="position-absolute top-0 start-100 translate-middle rounded-pill"/>
+                            </t>
                             <t t-call="portal.placeholder_user_sign_in">
                                 <t t-set="_link_class" t-valuef="nav-link"/>
                             </t>
@@ -101,23 +108,6 @@
         <xpath expr="//t[@t-call='website.placeholder_header_text_element']" position="replace"/>
         <xpath expr="//t[@t-call='website.placeholder_header_social_links']" position="replace"/>
         <xpath expr="//t[@t-call='website.placeholder_header_search_box']" position="replace"/>
-    </template>
-
-    <!-- 3c. Cart entry inside the "My Account" dropdown.
-         The Re-Ware navbar (3 / 3b) fully replaces website.navbar, which drops
-         the cart link that website_sale normally injects. Re-add it here as a
-         dropdown-item so it shows up in the user menu (desktop + mobile, both
-         t-call portal.user_dropdown). Anchored before the logout divider to
-         match the official portal.my_account_link pattern. -->
-    <template id="rw_user_dropdown_cart" name="Reware Cart in User Dropdown" inherit_id="portal.user_dropdown">
-        <xpath expr="//*[@id='o_logout_divider']" position="before">
-            <t t-set="rw_cart_qty" t-value="request.session['website_sale_cart_quantity'] if 'website_sale_cart_quantity' in request.session else website.sale_get_order().cart_quantity or 0"/>
-            <a href="/shop/cart" role="menuitem" class="dropdown-item ps-3 d-flex align-items-center" id="o_cart_dropdown_link" aria-label="eCommerce cart">
-                <i class="fa fa-fw fa-shopping-cart me-1 small text-primary"/>
-                <span>Cart</span>
-                <sup t-attf-class="my_cart_quantity badge text-bg-primary ms-2 #{'d-none' if (rw_cart_qty == 0) else ''}" t-esc="rw_cart_qty" t-att-data-order-id="request.session.get('sale_order_id', '')"/>
-            </a>
-        </xpath>
     </template>
 
     <!-- 4. Footer — single reusable QWeb t-call, also replaces website.layout's footer -->
