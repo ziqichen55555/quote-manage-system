@@ -1,9 +1,11 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.80',
+    'version': '1.0.81',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
+        'account',
+        'l10n_au',
         'web',
         'sale',
         'stock',
@@ -26,6 +28,7 @@
         # <t t-call="quote_manage_ui.s_rw_*"/> references inside page archs
         # resolve cleanly during the same data-load.
         'views/snippets.xml',
+        'views/report_invoice_templates.xml',
         'views/website_templates.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',

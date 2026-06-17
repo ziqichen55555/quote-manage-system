@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Append Co-Creative IT payment details (bank / BSB / account) to customer invoices.
+         Data comes from the invoice Recipient Bank, or the company's first bank account. -->
+    <template id="report_invoice_document_payment_details"
+              inherit_id="account.report_invoice_document"
+              name="Quote Manage UI Invoice Payment Details">
+        <xpath expr="//div[@name='comment']" position="before">
+            <t t-set="company_bank" t-value="o.partner_bank_id or o.company_id.bank_ids[:1]"/>
+            <div class="mb-3"
+                 t-if="o.move_type == 'out_invoice' and company_bank"
+                 name="quote_manage_ui_payment_details">
+                <strong>Payment Details</strong>
+                <div t-if="company_bank.bank_id">
+                    <span t-field="company_bank.bank_id.name"/>
+                </div>
+                <div t-if="company_bank.acc_holder_name">
+                    Account Name: <span t-field="company_bank.acc_holder_name"/>
+                </div>
+                <div t-if="company_bank.aba_bsb">
+                    BSB: <span t-field="company_bank.aba_bsb"/>
+                </div>
+                <div t-if="company_bank.acc_number">
+                    Account Number: <span t-field="company_bank.acc_number"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
