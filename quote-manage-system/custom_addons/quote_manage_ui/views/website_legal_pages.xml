@@ -25,7 +25,7 @@
 
     <record id="terms_of_service_page" model="website.page" forcecreate="True">
         <field name="name">Terms of Service</field>
-        <field name="url">/terms</field>
+        <field name="url">/terms-of-service</field>
         <field name="type">qweb</field>
         <field name="is_published">True</field>
         <field name="key">quote_manage_ui.terms_of_service_page</field>

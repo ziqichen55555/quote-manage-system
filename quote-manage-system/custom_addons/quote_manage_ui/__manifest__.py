@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.88',
+    'version': '1.0.89',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
