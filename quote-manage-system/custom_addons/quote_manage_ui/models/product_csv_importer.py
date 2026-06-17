@@ -716,11 +716,15 @@ class ProductCsvImporter(models.AbstractModel):
             specs["series"] = f"Optiplex {m.group(1) if m else 'Optiplex'}"
         elif "TOUGHBOOK" in t_up or "FZ55" in t_up or "CF-54" in t_up or "CF 54" in t_up:
             specs["series"] = "Toughbook"
-        elif "M910" in t_up or "SFF" in t_up:
-            specs["series"] = "Lenovo"
+        elif re.search(r"M70Q|M70\s*Q", t_up) or "11T300A1AU" in t_up:
+            specs["series"] = "ThinkCentre M70q"
+        elif "M910" in t_up or "THINKCENTRE M910" in t_up or "10MLS" in t_up:
+            specs["series"] = "ThinkCentre M910s"
 
         if re.search(r"I5[-\s]?10210U|102IOU", t_up):
             specs["cpu"] = "i5-10210U"
+        elif re.search(r"I5[-\s]?6500|6500", t_up) and "I7" not in t_up:
+            specs["cpu"] = "i5-6500"
         elif "1135G7" in t_up or "1145G7" in t_up:
             specs["cpu"] = "11th Gen i5/i7"
         elif "7300U" in t_up:
@@ -762,6 +766,27 @@ class ProductCsvImporter(models.AbstractModel):
             specs["wan"] = "Yes"
 
         return specs
+
+    @api.model
+    def fix_thinkcentre_m910_series(self):
+        """Re-apply Series=ThinkCentre M910s on existing M910 SKU rows (pre-merge fix)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        fixed = 0
+        for tmpl in PT.search([("sale_ok", "=", True), ("type", "=", "product")]):
+            if self._is_configuration_only_product(tmpl, config_attr):
+                continue
+            haystack = " ".join(
+                x for x in (tmpl.name, tmpl.default_code, tmpl.description_sale) if x
+            ).upper()
+            if "M910" not in haystack and "10MLS" not in haystack:
+                continue
+            titles = [tmpl.description_sale or tmpl.name or tmpl.default_code or ""]
+            self._sync_template_attributes(
+                tmpl, brand="Lenovo", titles=titles, ptype="product"
+            )
+            fixed += 1
+        return fixed
 
     @api.model
     def _sync_template_attributes(self, tmpl, *, brand, titles, ptype):

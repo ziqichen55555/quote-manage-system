@@ -64,6 +64,14 @@
             <field name="name">ThinkPad P1</field>
             <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
         </record>
+        <record id="attr_val_series_thinkcentre_m910s" model="product.attribute.value">
+            <field name="name">ThinkCentre M910s</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
+        <record id="attr_val_series_thinkcentre_m70q" model="product.attribute.value">
+            <field name="name">ThinkCentre M70q</field>
+            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
+        </record>
 
         <record id="attr_val_cpu_i5_10210u" model="product.attribute.value">
             <field name="name">i5-10210U @ 1.6GHz</field>
