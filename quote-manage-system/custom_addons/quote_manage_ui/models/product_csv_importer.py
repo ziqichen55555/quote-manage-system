@@ -18,6 +18,8 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 CONFIG_ATTR_XMLID = "quote_manage_ui.attr_configuration"
+# Refurb computers imported via CSV — always serial-tracked.
+SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 
 
 class ProductCsvImporter(models.AbstractModel):
@@ -213,6 +215,7 @@ class ProductCsvImporter(models.AbstractModel):
         config_vals = self._get_or_create_config_values(config_attr, labels)
         label_to_unit = {u["_final_config_label"]: u for u in group}
 
+        all_unit_ids = [uid for u in group for uid in u.get("unit_ids", [])]
         vals = {
             "name": series_name,
             "default_code": series_code,
@@ -220,6 +223,9 @@ class ProductCsvImporter(models.AbstractModel):
             "public_categ_ids": public_cmds,
             "product_tag_ids": [(5, 0, 0)],
             "type": ptype,
+            "tracking": self._resolve_tracking(
+                ptype, sec_key, all_unit_ids, categ_id=categ_id
+            ),
             "list_price": base_price,
             "standard_price": base_price,
             "website_published": True,
@@ -311,9 +317,9 @@ class ProductCsvImporter(models.AbstractModel):
         name = self._clean_title(titles[0], code)
         brand = unit["brand"]
         desc_html = self._build_unit_description(unit)
-        uids_raw = " ".join(unit["unit_ids"])
-        has_sn = "|" in uids_raw or "/" in uids_raw
-        tracking = "serial" if (ptype == "product" and has_sn) else "none"
+        tracking = self._resolve_tracking(
+            ptype, sec_key, unit["unit_ids"], categ_id=categ_id
+        )
 
         PT = self.env["product.template"].sudo()
         tmpl = PT.search([("default_code", "=", code)], limit=1)
@@ -359,6 +365,48 @@ class ProductCsvImporter(models.AbstractModel):
         return created, updated, stock_batches
 
     # ------------------------------------------------------------- helpers
+    @api.model
+    def _serial_tracking_categ_ids(self):
+        return {
+            self.env.ref("quote_manage_ui.product_category_computer_systems_refurb").id,
+            self.env.ref("quote_manage_ui.product_category_workstations").id,
+        }
+
+    @api.model
+    def _has_unit_serial(self, unit_ids):
+        return bool("".join(unit_ids or []).strip())
+
+    @api.model
+    def _resolve_tracking(self, ptype, sec_key, unit_ids, categ_id=None):
+        """Serial for refurb computers; accessories/docks only when CSV has unit IDs."""
+        if ptype != "product":
+            return "none"
+        key = (sec_key or "").lower()
+        if key in SERIAL_TRACK_SECTIONS:
+            return "serial"
+        if self._has_unit_serial(unit_ids):
+            return "serial"
+        if categ_id and categ_id in self._serial_tracking_categ_ids():
+            return "serial"
+        return "none"
+
+    @api.model
+    def fix_product_serial_tracking(self):
+        """Repair laptop/desktop and merged-series products set to No Tracking."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        serial_categ_ids = self._serial_tracking_categ_ids()
+        fixed = 0
+        for tmpl in PT.search(
+            [("type", "=", "product"), ("tracking", "!=", "serial"), ("active", "=", True)]
+        ):
+            if tmpl.categ_id.id in serial_categ_ids or self._is_configuration_only_product(
+                tmpl, config_attr
+            ):
+                tmpl.tracking = "serial"
+                fixed += 1
+        return fixed
+
     @api.model
     def _default_sale_tax_ids(self):
         tax = self.env.company.account_sale_tax_id
@@ -465,10 +513,15 @@ class ProductCsvImporter(models.AbstractModel):
         if not wh:
             return 0
         tmpl = variant.product_tmpl_id
+        sec_key = (unit["sections"][-1] if unit.get("sections") else "accessories").lower()
+        want_serial = self._resolve_tracking(
+            tmpl.type,
+            sec_key,
+            unit.get("unit_ids", []),
+            categ_id=tmpl.categ_id.id,
+        )
         tracking = tmpl.tracking
-        uids_raw = " ".join(unit["unit_ids"])
-        has_sn = "|" in uids_raw or "/" in uids_raw
-        if has_sn and tracking != "serial":
+        if want_serial == "serial" and tracking != "serial":
             tmpl.tracking = "serial"
             tracking = "serial"
 
