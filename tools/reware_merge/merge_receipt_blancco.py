@@ -140,26 +140,22 @@ def _looks_like_valid_family_label(text: str) -> bool:
         )
     )
 
-def derive_series_label(system_version: str, model_name: str, mtm: str) -> str:
-    """Product family for grouping: e.g. ThinkPad T14s Gen 1 vs Gen 2i (never lumped)."""
-    gen = parse_generation_from_system_version(system_version)
-    base = ""
+def derive_product_name(
+    system_version: str, model_name: str, mtm: str, generation: str = ""
+) -> str:
+    """Shop product name = Blancco System version when available (e.g. ThinkPad T14s Gen 2i)."""
     sv = str(system_version or "").strip()
     if sv and _looks_like_valid_family_label(sv):
+        return sv
+    gen = (generation or "").strip() or parse_generation_from_system_version(sv)
+    if model_name and _looks_like_valid_family_label(model_name):
         base = re.sub(
-            r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", sv, flags=re.I
-        ).strip()
-    if not base and model_name:
-        mn = re.sub(
             r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", str(model_name).strip(), flags=re.I
         ).strip()
-        if _looks_like_valid_family_label(mn):
-            base = mn
-    if not base:
-        base = mtm
-    if gen:
-        return f"{base} Gen {gen}"
-    return base
+        if gen:
+            return f"{base} Gen {gen}"
+        return base
+    return mtm
 
 _FILE_DIALOG_TYPES = [
     ("CSV files", "*.csv"),
@@ -608,7 +604,7 @@ def merge_data(
         gen = parse_generation_from_system_version(system_version)
         if not gen and lut_row is not None:
             gen = str(lut_row.get("generation", "") or "").strip()
-        series = derive_series_label(system_version, model_name, mtm)
+        series = derive_product_name(system_version, model_name, mtm, gen)
         manufacturer = infer_manufacturer(mtm, model_name or str(wd_row.get("mtm_raw", "") or ""))
 
         ssd_type = str(bl.get("ssd_type", "") if bl is not None else "")

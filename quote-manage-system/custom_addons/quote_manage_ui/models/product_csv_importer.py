@@ -176,6 +176,75 @@ class ProductCsvImporter(models.AbstractModel):
         return s
 
     @api.model
+    def _normalize_product_name(self, name):
+        s = (name or "").strip()
+        s = re.sub(r"\bThinkpad\b", "ThinkPad", s, flags=re.I)
+        s = re.sub(r"\bThinkcentre\b", "ThinkCentre", s, flags=re.I)
+        return s
+
+    @api.model
+    def _is_valid_product_name(self, name):
+        return self._is_valid_series_name(name)
+
+    @api.model
+    def _resolve_product_key(
+        self,
+        system_version="",
+        series="",
+        brand="",
+        model_name="",
+        mtm="",
+        generation="",
+        titles=None,
+    ):
+        """Shop product = Blancco System version (e.g. ThinkPad T14s Gen 2i ≠ Gen 1)."""
+        sv = (system_version or "").strip()
+        if self._is_valid_product_name(sv):
+            return self._normalize_product_name(sv)
+        if self._is_valid_product_name(series):
+            return self._normalize_product_name(series)
+        return self._resolve_series_key(
+            series=series,
+            brand=brand,
+            model_name=model_name,
+            mtm=mtm,
+            generation=generation,
+            titles=titles,
+        )
+
+    @api.model
+    def _short_cpu_label(self, cpu_raw):
+        s = (cpu_raw or "").strip()
+        if not s:
+            return ""
+        m = re.search(r"\bi[3579]-[\w]+", s, re.I)
+        if m:
+            return m.group(0)
+        m = re.search(r"(\d{4}G\d)", s, re.I)
+        if m:
+            prefix = "i5" if "i5" in s.lower() else "i7" if "i7" in s.lower() else "CPU"
+            return f"{prefix}-{m.group(1)}"
+        return s[:64]
+
+    @api.model
+    def _merged_specs_from_fields(self, brand, mtm, cpu_raw, ram_gb, ssd_gb, touch, wan):
+        specs = {"brand": brand, "mtm": (mtm or "").upper()}
+        cpu = self._short_cpu_label(cpu_raw)
+        if cpu:
+            specs["cpu"] = cpu
+        ram = self._merged_int_gb(ram_gb)
+        if ram != "0":
+            specs["ram"] = f"{ram}GB"
+        ssd = self._merged_int_gb(ssd_gb)
+        if ssd != "0":
+            specs["storage"] = f"{ssd}GB SSD"
+        if (touch or "").strip().lower() == "yes":
+            specs["touch"] = "Yes"
+        if (wan or "").strip().lower() == "yes":
+            specs["wan"] = "Yes"
+        return specs
+
+    @api.model
     def _resolve_series_key(
         self, series="", brand="", model_name="", mtm="", generation="", titles=None
     ):
@@ -273,7 +342,9 @@ class ProductCsvImporter(models.AbstractModel):
             price = self._merged_str(sample, "Price")
             brand = self._merged_brand(self._merged_str(sample, "Manufacturer"))
             title = self._merged_title(sample)
-            series = self._resolve_series_key(
+            system_version = self._merged_str(sample, "System version")
+            product_key = self._resolve_product_key(
+                system_version=system_version,
                 series=self._merged_str(sample, "Series"),
                 brand=brand,
                 model_name=model_name,
@@ -281,14 +352,22 @@ class ProductCsvImporter(models.AbstractModel):
                 generation=gen,
                 titles=[title],
             )
-            if series and series.lower() not in title.lower():
-                title = f"Re-Ware {series}, {title.replace('Re-Ware ', '', 1)}"
+            if product_key and product_key.lower() not in title.lower():
+                title = f"Re-Ware {product_key}, {title.replace('Re-Ware ', '', 1)}"
             out.append({
                 "section": self._merged_section(model_name, mtm),
                 "default_code": code,
                 "title_raw": title,
                 "brand": brand,
-                "series": series,
+                "series": product_key,
+                "product_key": product_key,
+                "system_version": system_version,
+                "mtm_code": mtm,
+                "cpu_raw": self._merged_str(sample, "CPU"),
+                "ram_gb": self._merged_str(sample, "RAM (GB)", "RAM"),
+                "ssd_gb": self._merged_str(sample, "SSD size (GB)", "SSD size"),
+                "touch_val": self._merged_str(sample, "Touch"),
+                "wan_val": self._merged_str(sample, "WAN"),
                 "quantity": str(len(serials)),
                 "cost_ex": price,
                 "condition_note": self._merged_str(sample, "Mobo status"),
@@ -373,6 +452,8 @@ class ProductCsvImporter(models.AbstractModel):
                 "units": [],
                 "notes": [],
                 "series_keys": [],
+                "product_keys": [],
+                "merged_fields": [],
             }
         )
         for r in rows:
@@ -398,9 +479,22 @@ class ProductCsvImporter(models.AbstractModel):
             brand = (r.get("brand") or "").strip()
             if brand:
                 a["brands"].append(brand)
-            series = (r.get("series") or "").strip()
+            series = (r.get("series") or r.get("product_key") or "").strip()
             if series:
                 a["series_keys"].append(series)
+            product_key = (r.get("product_key") or r.get("system_version") or series).strip()
+            if product_key:
+                a["product_keys"].append(product_key)
+            if (r.get("row_note") or "").strip() == "merged_blancco":
+                a["merged_fields"].append({
+                    "brand": (r.get("brand") or "").strip(),
+                    "mtm": (r.get("mtm_code") or "").strip(),
+                    "cpu_raw": (r.get("cpu_raw") or "").strip(),
+                    "ram_gb": (r.get("ram_gb") or "").strip(),
+                    "ssd_gb": (r.get("ssd_gb") or "").strip(),
+                    "touch": (r.get("touch_val") or "").strip(),
+                    "wan": (r.get("wan_val") or "").strip(),
+                })
             for key, col in (
                 ("conditions", "condition_note"),
                 ("units", "unit_identifiers"),
@@ -419,10 +513,28 @@ class ProductCsvImporter(models.AbstractModel):
                 cost_avg = a["cost_num"]
             titles = a["titles"] or [code]
             brand = a["brands"][-1] if a["brands"] else ""
-            specs = self._parse_specs(brand, titles)
-            series_key = a["series_keys"][0] if a["series_keys"] else specs.get("series")
+            if a["merged_fields"]:
+                mf = a["merged_fields"][-1]
+                specs = self._merged_specs_from_fields(
+                    mf["brand"] or brand,
+                    mf["mtm"] or code,
+                    mf["cpu_raw"],
+                    mf["ram_gb"],
+                    mf["ssd_gb"],
+                    mf["touch"],
+                    mf["wan"],
+                )
+            else:
+                specs = self._parse_specs(brand, titles)
+            series_key = ""
+            if a["product_keys"]:
+                series_key = self._normalize_product_name(a["product_keys"][0])
+            elif a["series_keys"]:
+                series_key = self._normalize_product_name(a["series_keys"][0])
+            if not series_key:
+                series_key = specs.get("series")
             if series_key:
-                series_key = self._canonical_series_name(series_key)
+                specs["series"] = series_key
             out.append(
                 {
                     "code": code,
@@ -738,6 +850,8 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _build_config_label(self, specs, code):
         parts = []
+        if specs.get("mtm"):
+            parts.append(specs["mtm"])
         if specs.get("cpu"):
             parts.append(specs["cpu"])
         if specs.get("ram"):
