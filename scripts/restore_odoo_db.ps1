@@ -1,5 +1,6 @@
 # Restore Odoo DB from a gzip pg_dump created by backup_odoo_db.ps1
 # WARNING: OVERWRITES the target database. Stop web first on production.
+# Uses gzip inside the db container (no Windows gzip required).
 # Usage:
 #   .\scripts\restore_odoo_db.ps1 -BackupFile backups\db-before-merged-import-20260618.sql.gz
 param(
@@ -12,6 +13,7 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 
+$BackupFile = (Resolve-Path $BackupFile).Path
 if (-not (Test-Path $BackupFile)) {
     throw "Backup file not found: $BackupFile"
 }
@@ -24,6 +26,8 @@ if ($confirm -ne "RESTORE") {
     exit 1
 }
 
+$ContainerPath = "/tmp/odoo-restore.sql.gz"
+
 Write-Host "[restore] Stopping web container..."
 docker compose stop web 2>$null
 
@@ -33,8 +37,16 @@ docker compose exec -T db psql -U odoo -d postgres -c "DROP DATABASE IF EXISTS `
 docker compose exec -T db psql -U odoo -d postgres -c "CREATE DATABASE `"$Database`" OWNER odoo;"
 
 Write-Host "[restore] Loading dump..."
-if ($BackupFile.EndsWith(".gz")) {
-    gzip -dc $BackupFile | docker compose exec -T db psql -U odoo -d $Database
+if ($BackupFile -match '\.gz$') {
+    docker compose cp $BackupFile "db:$ContainerPath"
+    if ($LASTEXITCODE -ne 0) { throw "docker compose cp failed" }
+    docker compose exec -T db sh -c "gunzip -c '$ContainerPath' | psql -U odoo -d '$Database'"
+    if ($LASTEXITCODE -ne 0) { throw "pg_restore via psql failed" }
+    docker compose exec -T db rm -f $ContainerPath | Out-Null
+} elseif ($BackupFile -match '\.dump$') {
+    docker compose cp $BackupFile "db:$ContainerPath"
+    docker compose exec -T db pg_restore -U odoo -d $Database --no-owner --clean --if-exists $ContainerPath
+    docker compose exec -T db rm -f $ContainerPath | Out-Null
 } else {
     Get-Content $BackupFile -Raw | docker compose exec -T db psql -U odoo -d $Database
 }

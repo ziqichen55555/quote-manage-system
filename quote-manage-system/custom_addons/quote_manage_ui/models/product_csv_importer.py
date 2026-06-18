@@ -29,12 +29,13 @@ class ProductCsvImporter(models.AbstractModel):
     # ------------------------------------------------------------------ API
     @api.model
     def import_from_path(self, path):
-        with open(path, encoding="utf-8") as handle:
+        with open(path, encoding="utf-8-sig") as handle:
             return self.import_from_text(handle.read(), filename=path)
 
     @api.model
     def import_from_text(self, text, filename=None):
-        if not (text or "").strip():
+        text = (text or "").lstrip("\ufeff")
+        if not text.strip():
             raise UserError(_("The file is empty."))
         reader = csv.DictReader(io.StringIO(text))
         if not reader.fieldnames:
