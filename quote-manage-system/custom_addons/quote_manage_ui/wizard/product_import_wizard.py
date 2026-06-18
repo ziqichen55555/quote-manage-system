@@ -25,11 +25,11 @@ class ProductImportWizard(models.TransientModel):
             "• Products updated: %(updated)s\n"
             "• Series merged (Configuration dropdown): %(merged_series)s\n"
             "• Old duplicate SKUs archived: %(archived_skus)s\n"
-            "• Stock lines applied: %(stock_batches)s\n\n"
-            "The shop will show one product per Series with a Configuration "
-            "dropdown (lowest price on the catalogue). Re-upload the same CSV "
-            "any time to refresh prices and stock."
-        ) % result
+            "• Stock lines applied: %(stock_batches)s\n"
+            "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
+            "MERGED device CSV imports are additive: existing products and "
+            "serials are kept; only new SKUs/serials are added."
+        ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
         self.result_message = msg
         return {
             "type": "ir.actions.client",

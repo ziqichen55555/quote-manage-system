@@ -44,6 +44,7 @@ class ProductCsvImporter(models.AbstractModel):
         rows = list(reader)
         if self._is_merged_device_export(headers):
             rows = self._merged_device_rows_to_import_rows(rows)
+            return self._run_import(rows, additive=True)
         else:
             required = {"section", "default_code", "title_raw", "cost_ex"}
             missing = required - headers
@@ -223,7 +224,7 @@ class ProductCsvImporter(models.AbstractModel):
 
     # -------------------------------------------------------------- pipeline
     @api.model
-    def _run_import(self, rows):
+    def _run_import(self, rows, additive=False):
         sections = self._section_maps()
         units = self._aggregate_rows(rows)
         by_series = defaultdict(list)
@@ -234,12 +235,12 @@ class ProductCsvImporter(models.AbstractModel):
                 singles.append(unit)
                 continue
             series = unit.get("series_key")
-            if series:
+            if series and not additive:
                 by_series[series].append(unit)
             else:
                 singles.append(unit)
 
-        created = updated = merged_groups = archived = stock_batches = 0
+        created = updated = merged_groups = archived = stock_batches = skipped_serials = 0
 
         for series_name, group in sorted(by_series.items()):
             if len(group) >= 2:
@@ -253,10 +254,11 @@ class ProductCsvImporter(models.AbstractModel):
                 singles.extend(group)
 
         for unit in singles:
-            c, u, s = self._import_single_unit(unit, sections)
+            c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
             stock_batches += s
+            skipped_serials += sk
 
         self.env.cr.commit()
         return {
@@ -265,6 +267,7 @@ class ProductCsvImporter(models.AbstractModel):
             "merged_series": merged_groups,
             "archived_skus": archived,
             "stock_batches": stock_batches,
+            "skipped_serials": skipped_serials,
             "sku_count": len(units),
         }
 
@@ -440,7 +443,8 @@ class ProductCsvImporter(models.AbstractModel):
                         old_tmpl.product_variant_id, variant
                     )
             else:
-                stock_batches += self._apply_stock(variant, unit)
+                applied, _skipped = self._apply_stock(variant, unit)
+                stock_batches += applied
 
         source_tmps = PT.browse(
             [u["_source_tmpl_id"] for u in group if u.get("_source_tmpl_id")]
@@ -468,8 +472,8 @@ class ProductCsvImporter(models.AbstractModel):
         return created, updated, archived, stock_batches
 
     @api.model
-    def _import_single_unit(self, unit, sections):
-        created = updated = stock_batches = 0
+    def _import_single_unit(self, unit, sections, additive=False):
+        created = updated = stock_batches = skipped_serials = 0
         code = unit["code"]
         sec_key = (unit["sections"][-1] if unit["sections"] else "accessories").lower()
         if sec_key not in sections:
@@ -491,6 +495,18 @@ class ProductCsvImporter(models.AbstractModel):
 
         PT = self.env["product.template"].sudo()
         tmpl = PT.search([("default_code", "=", code)], limit=1)
+
+        if tmpl and additive:
+            if ptype == "product" and tracking == "serial" and tmpl.tracking != "serial":
+                tmpl.tracking = "serial"
+            if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
+                applied, skipped = self._apply_stock(
+                    tmpl.product_variant_id, unit, additive=True
+                )
+                stock_batches += applied
+                skipped_serials += skipped
+            return created, updated, stock_batches, skipped_serials
+
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         vals = {
             "name": name,
@@ -536,9 +552,11 @@ class ProductCsvImporter(models.AbstractModel):
             _logger.warning("Image sync failed for %s: %s", tmpl.name, exc)
 
         if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
-            stock_batches += self._apply_stock(tmpl.product_variant_id, unit)
+            applied, skipped = self._apply_stock(tmpl.product_variant_id, unit)
+            stock_batches += applied
+            skipped_serials += skipped
 
-        return created, updated, stock_batches
+        return created, updated, stock_batches, skipped_serials
 
     # ------------------------------------------------------------- helpers
     @api.model
@@ -680,14 +698,14 @@ class ProductCsvImporter(models.AbstractModel):
         ).unlink()
 
     @api.model
-    def _apply_stock(self, variant, unit):
+    def _apply_stock(self, variant, unit, additive=False):
         if "stock.quant" not in self.env or unit["qty"] <= 0:
-            return 0
+            return 0, 0
         wh = self.env["stock.warehouse"].search(
             [("company_id", "=", self.env.company.id)], limit=1
         )
         if not wh:
-            return 0
+            return 0, 0
         tmpl = variant.product_tmpl_id
         sec_key = (unit["sections"][-1] if unit.get("sections") else "accessories").lower()
         want_serial = self._resolve_tracking(
@@ -701,6 +719,8 @@ class ProductCsvImporter(models.AbstractModel):
             tmpl.tracking = "serial"
             tracking = "serial"
 
+        applied = skipped = 0
+        Lot = self.env["stock.lot"].sudo()
         if tracking == "serial":
             units = []
             for u_str in unit["unit_ids"]:
@@ -709,7 +729,15 @@ class ProductCsvImporter(models.AbstractModel):
                 )
             for i in range(int(unit["qty"])):
                 lot_name = units[i] if i < len(units) else f"S/N-{unit['code']}-{i+1:03d}"
-                lot = self.env["stock.lot"].sudo().search(
+                if additive:
+                    existing = Lot.search(
+                        [("name", "=", lot_name), ("company_id", "=", self.env.company.id)],
+                        limit=1,
+                    )
+                    if existing:
+                        skipped += 1
+                        continue
+                lot = Lot.search(
                     [
                         ("product_id", "=", variant.id),
                         ("name", "=", lot_name),
@@ -718,7 +746,7 @@ class ProductCsvImporter(models.AbstractModel):
                     limit=1,
                 )
                 if not lot:
-                    lot = self.env["stock.lot"].sudo().create(
+                    lot = Lot.create(
                         {
                             "product_id": variant.id,
                             "name": lot_name,
@@ -733,6 +761,9 @@ class ProductCsvImporter(models.AbstractModel):
                     ],
                     limit=1,
                 )
+                if sq and sq.quantity > 0:
+                    skipped += 1
+                    continue
                 if sq:
                     sq.with_context(inventory_mode=True).write(
                         {"inventory_quantity_auto_apply": 1.0}
@@ -748,6 +779,7 @@ class ProductCsvImporter(models.AbstractModel):
                             "inventory_quantity_auto_apply": 1.0,
                         }
                     )
+                applied += 1
         else:
             sq = self.env["stock.quant"].sudo().search(
                 [
@@ -770,7 +802,8 @@ class ProductCsvImporter(models.AbstractModel):
                         "inventory_quantity_auto_apply": target,
                     }
                 )
-        return 1
+            applied = 1
+        return applied, skipped
 
     @api.model
     def _build_group_description(self, group):
