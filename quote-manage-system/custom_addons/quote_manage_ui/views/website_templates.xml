@@ -259,8 +259,11 @@
 
     <template id="reware_product_detail" inherit_id="website_sale.product" name="Reware Product Detail" priority="10">
         <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
-            <p class="small mb-2 o_not_editable" style="color: var(--rw-text-muted);" t-if="product.type == 'product'">
-                <span class="fw-semibold" style="color: var(--rw-text);">Stock on hand: </span><t t-esc="product.sudo()._rw_website_available_qty()"/>
+            <p class="small mb-2 o_not_editable rw-stock-on-hand" style="color: var(--rw-text-muted);" t-if="product.type == 'product'">
+                <span class="fw-semibold" style="color: var(--rw-text);">Stock on hand: </span>
+                <span class="rw-stock-on-hand-qty">
+                    <t t-esc="int(combination_info.get('free_qty', product.sudo()._rw_website_available_qty()))"/>
+                </span>
             </p>
         </xpath>
         <xpath expr="//div[@id='add_to_cart_wrap']" position="after">

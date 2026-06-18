@@ -117,13 +117,19 @@ class ProductTemplate(models.Model):
                 )
         return {"updated": updated, "skipped": skipped, "errors": errors}
 
-    def _rw_website_available_qty(self):
-        """Sellable quantity for the current website warehouse (variant-aware)."""
+    def _rw_website_available_qty(self, variant=None):
+        """Sellable quantity for the website warehouse.
+
+        * With ``variant``: that configuration only (product detail page).
+        * Without ``variant``: sum across all variants (shop list / series total).
+        """
         self.ensure_one()
         website = self.env["website"].get_current_website()
         if not website:
             return int(round(self.sudo().qty_available))
         wh = website._get_warehouse_available()
+        if variant:
+            return int(variant.sudo().with_context(warehouse=wh).free_qty)
         return sum(
             int(v.with_context(warehouse=wh).free_qty)
             for v in self.sudo().product_variant_ids
