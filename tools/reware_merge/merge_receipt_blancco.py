@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Re-Ware: merge wp DELIVERY RECEIPT (Sheet1 master) + Blancco export.
+Re-Ware: merge stocktake / delivery receipt (master) + Blancco export.
+Master priority: latest STOCKTAKE*.csv, else wp DELIVERY RECEIPT.xlsx.
 Double-click run_merge.bat in the folder that contains the input files.
 """
 from __future__ import annotations
@@ -16,9 +17,11 @@ from openpyxl.styles import Font, PatternFill
 
 # --- Config (edit prefixes here if filenames change) ---
 SCRIPT_DIR = Path(__file__).resolve().parent
+STOCKTAKE_PREFIXES = ("stocktake",)
 RECEIPT_PREFIX = "wp DELIVERY RECEIPT"
 BLANCCO_PREFIXES = ("reports blannco", "reports blancco")
 RECEIPT_EXTENSIONS = (".xlsx",)
+STOCKTAKE_EXTENSIONS = (".csv",)
 BLANCCO_EXTENSIONS = (".csv", ".xlsx")
 MTM_LUT_FILE = SCRIPT_DIR / "mtm_lookup.csv"
 OUTPUT_PREFIX = "MERGED import-ready"
@@ -68,6 +71,23 @@ def normalize_mtm(value) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return ""
     return str(value).strip().upper()
+
+def infer_manufacturer(mtm: str, model_hint: str = "") -> str:
+    """Guess manufacturer from MTM / model text for Odoo import."""
+    mtm_u = (mtm or "").strip().upper()
+    hint = (model_hint or "").strip().upper()
+    combined = f"{mtm_u} {hint}"
+    if re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u) or mtm_u.startswith(("10", "20")):
+        return "LENOVO"
+    if "DELL" in combined or hint.startswith("LATITUDE"):
+        return "DELL"
+    if "PANASONIC" in combined or mtm_u.startswith(("CF-", "FZ-")):
+        return "PANASONIC"
+    if "ASUS" in combined:
+        return "ASUS"
+    if "HP" in combined or "#ABG" in combined:
+        return "HP"
+    return "LENOVO"
 
 def parse_size_gb(text) -> str:
     if text is None or (isinstance(text, float) and pd.isna(text)):
@@ -135,19 +155,31 @@ def find_latest_file(folder: Path, prefixes: tuple[str, ...], extensions: tuple[
         return None
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
+def find_master_file(folder: Path) -> Path | None:
+    """Stocktake CSV is preferred over delivery receipt when both exist."""
+    stocktake = find_latest_file(folder, STOCKTAKE_PREFIXES, STOCKTAKE_EXTENSIONS)
+    if stocktake:
+        return stocktake
+    return find_latest_file(folder, (RECEIPT_PREFIX,), RECEIPT_EXTENSIONS)
+
+def master_label(path: Path) -> str:
+    if path.suffix.lower() == ".csv" and path.name.lower().startswith("stocktake"):
+        return "Stocktake"
+    return "Delivery receipt"
+
 def pick_files_interactive(folder: Path) -> tuple[Path, Path]:
-    receipt = find_latest_file(folder, (RECEIPT_PREFIX,), RECEIPT_EXTENSIONS)
+    master = find_master_file(folder)
     blancco = find_latest_file(folder, BLANCCO_PREFIXES, BLANCCO_EXTENSIONS)
 
     # Headless / auto-confirm mode: skip popups (used for testing / scheduled runs)
     if "--yes" in sys.argv or "--auto" in sys.argv:
-        if not receipt or not blancco:
+        if not master or not blancco:
             raise FileNotFoundError(
-                "Auto mode: need both a delivery receipt and a Blancco file in "
+                "Auto mode: need a stocktake/receipt master and a Blancco file in "
                 + str(folder)
             )
-        print("Auto merge:", receipt.name, "+", blancco.name)
-        return receipt, blancco
+        print("Auto merge:", master.name, "+", blancco.name)
+        return master, blancco
 
     import tkinter as tk
     from tkinter import filedialog, messagebox
@@ -156,26 +188,29 @@ def pick_files_interactive(folder: Path) -> tuple[Path, Path]:
     root.withdraw()
     root.attributes("-topmost", True)
 
-    if receipt and blancco:
+    if master and blancco:
         msg = (
             "Found these files in this folder:\n\n"
-            f"Delivery receipt:\n  {receipt.name}\n\n"
+            f"{master_label(master)} (master):\n  {master.name}\n\n"
             f"Blancco report:\n  {blancco.name}\n\n"
-            "Merge now? (WD is master; each row will pull Blancco specs by serial)"
+            "Merge now? (master list drives serials; Blancco fills specs per serial)"
         )
         if messagebox.askyesno("Re-Ware merge", msg):
             root.destroy()
-            return receipt, blancco
+            return master, blancco
 
-    messagebox.showinfo("Re-Ware merge", "Pick the delivery receipt (.xlsx).")
-    receipt = Path(
+    messagebox.showinfo(
+        "Re-Ware merge",
+        "Pick the master file (STOCKTAKE .csv or delivery receipt .xlsx).",
+    )
+    master = Path(
         filedialog.askopenfilename(
-            title="Delivery receipt",
+            title="Master file (stocktake or receipt)",
             initialdir=str(folder),
-            filetypes=[("Excel", "*.xlsx")],
+            filetypes=[("CSV/Excel", "*.csv *.xlsx")],
         )
     )
-    if not receipt or not str(receipt):
+    if not master or not str(master):
         root.destroy()
         sys.exit(0)
 
@@ -190,7 +225,45 @@ def pick_files_interactive(folder: Path) -> tuple[Path, Path]:
     root.destroy()
     if not blancco or not str(blancco):
         sys.exit(0)
-    return receipt, blancco
+    return master, blancco
+
+def load_stocktake(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path, dtype=str)
+    df.columns = [str(c).strip() for c in df.columns]
+    col_map = {c.lower(): c for c in df.columns}
+    mtm_col = col_map.get("device model") or col_map.get("model mtm") or col_map.get("mtm")
+    serial_col = col_map.get("serial") or col_map.get("serial no.") or col_map.get("serial no")
+    has_ssd_col = col_map.get("has_ssd") or col_map.get("has ssd")
+    if not mtm_col or not serial_col:
+        raise ValueError(
+            f"Stocktake CSV needs 'Device Model' and 'Serial' columns. Found: {list(df.columns)}"
+        )
+
+    cols = [mtm_col, serial_col]
+    if has_ssd_col:
+        cols.append(has_ssd_col)
+    out = df[cols].copy()
+    out.columns = ["mtm_raw", "serial_raw"] + (["has_ssd_raw"] if has_ssd_col else [])
+    out["mtm"] = out["mtm_raw"].map(normalize_mtm)
+    out["serial"] = out["serial_raw"].map(normalize_serial)
+    if has_ssd_col:
+        out["no_ssd"] = out["has_ssd_raw"].fillna("").str.strip().str.upper().eq("NO SSD")
+    else:
+        out["no_ssd"] = False
+    out = out[(out["serial"] != "") & (out["mtm"] != "")]
+    out = out.drop_duplicates(subset=["serial"], keep="first")
+    return out[["mtm", "serial", "no_ssd", "mtm_raw"]].reset_index(drop=True)
+
+def load_master(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Load master list and optional receipt metadata for MTM lookup."""
+    if path.suffix.lower() == ".csv" and path.name.lower().startswith("stocktake"):
+        wd = load_stocktake(path)
+        return wd, pd.DataFrame(columns=["serial", "uncollected"]), pd.DataFrame()
+    wd = load_receipt_sheet1(path)
+    wd["no_ssd"] = False
+    wd["mtm_raw"] = wd["mtm"]
+    uncollected_df, sheet2_names = load_receipt_sheet2_meta(path)
+    return wd, uncollected_df, sheet2_names
 
 def load_receipt_sheet1(path: Path) -> pd.DataFrame:
     df = pd.read_excel(path, sheet_name=0, dtype=str)
@@ -312,7 +385,7 @@ def ensure_mtm_lookup(receipt_path: Path, sheet1: pd.DataFrame, sheet2_names: pd
     lut.to_csv(MTM_LUT_FILE, index=False)
     return lut
 
-def classify_row(wd_row, blancco_row, uncollected: bool) -> tuple[str, str]:
+def classify_row(wd_row, blancco_row, uncollected: bool, no_ssd: bool = False) -> tuple[str, str]:
     if uncollected:
         return "FAILED", "Uncollected (not received)"
     if blancco_row is None:
@@ -321,6 +394,8 @@ def classify_row(wd_row, blancco_row, uncollected: bool) -> tuple[str, str]:
         pass  # already deduped; note in reason if needed
     cpu = str(blancco_row.get("cpu", "") or "").strip()
     disk = str(blancco_row.get("disk_capacity", "") or "").strip()
+    if no_ssd and cpu:
+        return "SUCCESS", ""
     if not cpu and not disk:
         return "FAILED", "Serial in Blancco but specs empty"
     return "SUCCESS", ""
@@ -343,7 +418,8 @@ def merge_data(
             bl = bl.iloc[0]
 
         uncollected = uncollected_map.get(serial, False)
-        status, reason = classify_row(wd_row, bl, uncollected)
+        no_ssd = bool(wd_row.get("no_ssd", False))
+        status, reason = classify_row(wd_row, bl, uncollected, no_ssd=no_ssd)
 
         lut_row = lut_idx.loc[mtm] if mtm in getattr(lut_idx, "index", []) else None
         if lut_row is not None and isinstance(lut_row, pd.DataFrame):
@@ -360,10 +436,26 @@ def merge_data(
             wan = str(lut_row.get("wan", "") or "")
 
         system_version = str(bl.get("blancco_title", "") or "") if bl is not None else ""
+        if not model_name and system_version:
+            model_name = re.sub(
+                r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", system_version, flags=re.I
+            ).strip()
+        if not model_name:
+            mtm_raw = str(wd_row.get("mtm_raw", "") or "").strip()
+            if mtm_raw and not re.match(r"^\d{2}[A-Z0-9]{8}$", mtm):
+                model_name = mtm_raw
+
         gen = parse_generation_from_system_version(system_version)
         if not gen and lut_row is not None:
             gen = str(lut_row.get("generation", "") or "").strip()
         series = derive_series_label(system_version, model_name, mtm)
+        manufacturer = infer_manufacturer(mtm, model_name or str(wd_row.get("mtm_raw", "") or ""))
+
+        ssd_type = str(bl.get("ssd_type", "") if bl is not None else "")
+        ssd_size = parse_size_gb(bl.get("disk_capacity", "") if bl is not None else "")
+        if no_ssd:
+            ssd_type = ""
+            ssd_size = ""
 
         rows.append(
             {
@@ -377,13 +469,13 @@ def merge_data(
                 "Generation": gen,
                 "CPU": str(bl.get("cpu", "") if bl is not None else ""),
                 "RAM (GB)": parse_size_gb(bl.get("ram", "") if bl is not None else ""),
-                "SSD type": str(bl.get("ssd_type", "") if bl is not None else ""),
-                "SSD size (GB)": parse_size_gb(bl.get("disk_capacity", "") if bl is not None else ""),
+                "SSD type": ssd_type,
+                "SSD size (GB)": ssd_size,
                 "Battery (%)": str(bl.get("battery", "") if bl is not None else ""),
                 "GPU": str(bl.get("gpu", "") if bl is not None else ""),
                 "Mobo status": str(bl.get("mobo_status", "") if bl is not None else ""),
                 "Blancco date": str(bl.get("blancco_date", "") if bl is not None else ""),
-                "Manufacturer": "LENOVO",
+                "Manufacturer": manufacturer,
                 "Price": "",
                 "Status": status,
                 "Failure reason": reason,
@@ -399,7 +491,7 @@ def build_analysis(merged: pd.DataFrame) -> pd.DataFrame:
 
     lines = [
         ["Metric", "Value"],
-        ["WD rows (master)", total],
+        ["Master rows", total],
         ["Matched (SUCCESS)", success],
         ["Failed", failed],
         ["Match rate", rate],
@@ -419,8 +511,11 @@ def build_analysis(merged: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(lines)
 
 def write_output(merged: pd.DataFrame, analysis: pd.DataFrame, out_path: Path) -> None:
+    failed = merged.loc[merged["Status"] == "FAILED"]
     with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
         merged.to_excel(writer, sheet_name="Devices", index=False)
+        if not failed.empty:
+            failed.to_excel(writer, sheet_name="Failed", index=False)
         analysis.to_excel(writer, sheet_name="Analysis", index=False, header=False)
 
     wb = load_workbook(out_path)
@@ -434,15 +529,26 @@ def write_output(merged: pd.DataFrame, analysis: pd.DataFrame, out_path: Path) -
         if ws.cell(row=row_idx, column=status_col).value == "FAILED":
             for col_idx in range(1, len(OUTPUT_COLUMNS) + 1):
                 ws.cell(row=row_idx, column=col_idx).fill = FAIL_FILL
+
+    if "Failed" in wb.sheetnames:
+        ws_fail = wb["Failed"]
+        for cell in ws_fail[1]:
+            cell.fill = HEADER_FILL
+            cell.font = Font(bold=True)
+        for row_idx in range(2, ws_fail.max_row + 1):
+            for col_idx in range(1, len(OUTPUT_COLUMNS) + 1):
+                ws_fail.cell(row=row_idx, column=col_idx).fill = FAIL_FILL
+
     wb.save(out_path)
 
 def failure_summary_text(merged: pd.DataFrame) -> str:
     failed = merged[merged["Status"] == "FAILED"]
     if failed.empty:
         return ""
-    lines = ["\nFailed serials (not in Odoo CSV):"]
-    for _, row in failed.iterrows():
-        lines.append(f"  {row['Serial']} ({row['MTM']}): {row['Failure reason']}")
+    lines = ["\nFailure breakdown:"]
+    for reason, cnt in failed["Failure reason"].value_counts().items():
+        lines.append(f"  {reason}: {int(cnt)}")
+    lines.append("  (full failed list is in the Analysis sheet of the .xlsx)")
     return "\n".join(lines)
 
 def show_result_popup(summary: str, out_path: Path) -> None:
@@ -457,40 +563,45 @@ def show_result_popup(summary: str, out_path: Path) -> None:
 
 def main() -> int:
     folder = SCRIPT_DIR
-    receipt_path, blancco_path = pick_files_interactive(folder)
+    master_path, blancco_path = pick_files_interactive(folder)
 
-    wd = load_receipt_sheet1(receipt_path)
-    uncollected_df, sheet2_names = load_receipt_sheet2_meta(receipt_path)
+    wd, uncollected_df, sheet2_names = load_master(master_path)
     uncollected_map = dict(zip(uncollected_df["serial"], uncollected_df["uncollected"])) if not uncollected_df.empty else {}
     blancco = load_blancco(blancco_path)
-    lut = ensure_mtm_lookup(receipt_path, wd, sheet2_names)
+    lut = ensure_mtm_lookup(master_path, wd, sheet2_names)
 
     merged = merge_data(wd, blancco, lut, uncollected_map)
 
     stamp = datetime.now().strftime("%Y-%m-%d")
-    out_path = folder / f"{OUTPUT_PREFIX} {stamp}.csv"
-    merged.to_csv(out_path, index=False, encoding="utf-8-sig")
+    xlsx_path = folder / f"{OUTPUT_PREFIX} {stamp}.xlsx"
+    csv_path = folder / f"{OUTPUT_PREFIX} {stamp}.csv"
+    analysis = build_analysis(merged)
+    write_output(merged, analysis, xlsx_path)
+    merged.to_csv(csv_path, index=False, encoding="utf-8-sig")
 
     total = len(merged)
     success = int((merged["Status"] == "SUCCESS").sum())
     failed = total - success
     summary = (
-        f"WD master rows: {total}\n"
+        f"Master ({master_label(master_path)}): {total} rows\n"
         f"SUCCESS (Blancco data pulled): {success}\n"
         f"FAILED: {failed}\n"
         f"Match rate: {(success/total*100):.1f}%" if total else "No rows"
     )
     summary += failure_summary_text(merged)
     summary += (
-        f"\n\nSaved merge file:\n  {out_path.name}\n"
-        f"  (one row per device — upload this file in Odoo:\n"
-        f"   Inventory -> Upload inventory CSV, after DB backup)"
+        f"\n\nSaved:\n"
+        f"  {xlsx_path.name}  — review (red = failed, see Analysis sheet)\n"
+        f"  {csv_path.name}  — all rows with Status / Failure reason\n"
+        f"\nUpload SUCCESS rows to Odoo:\n"
+        f"  Inventory -> Upload inventory CSV (after DB backup)"
     )
     if "--yes" in sys.argv or "--auto" in sys.argv:
         print(summary)
-        print("Saved:", out_path)
+        print("Saved:", xlsx_path)
+        print("Saved:", csv_path)
     else:
-        show_result_popup(summary, out_path)
+        show_result_popup(summary, xlsx_path)
     return 0 if failed == 0 else 2
 
 if __name__ == "__main__":

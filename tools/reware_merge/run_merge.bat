@@ -35,7 +35,7 @@ echo.
 if %EXITCODE% NEQ 0 (
     echo Merge finished with warnings ^(some serials failed Blancco^). Check the popup/console list.
 ) else (
-    echo All WD rows matched Blancco. Import CSV ready for Odoo upload.
+    echo All rows matched Blancco. Review the .xlsx then upload SUCCESS rows to Odoo.
 )
 pause
 exit /b %EXITCODE%
