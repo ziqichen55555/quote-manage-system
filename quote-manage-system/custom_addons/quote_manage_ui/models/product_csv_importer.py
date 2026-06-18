@@ -39,14 +39,173 @@ class ProductCsvImporter(models.AbstractModel):
         reader = csv.DictReader(io.StringIO(text))
         if not reader.fieldnames:
             raise UserError(_("Could not read CSV column headers."))
-        required = {"section", "default_code", "title_raw", "cost_ex"}
-        missing = required - {h.strip() for h in reader.fieldnames if h}
-        if missing:
-            raise UserError(
-                _("Missing CSV columns: %s") % ", ".join(sorted(missing))
-            )
+        headers = {h.strip() for h in reader.fieldnames if h}
         rows = list(reader)
+        if self._is_merged_device_export(headers):
+            rows = self._merged_device_rows_to_import_rows(rows)
+        else:
+            required = {"section", "default_code", "title_raw", "cost_ex"}
+            missing = required - headers
+            if missing:
+                raise UserError(
+                    _("Missing CSV columns: %s") % ", ".join(sorted(missing))
+                )
         return self._run_import(rows)
+
+    @api.model
+    def _is_merged_device_export(self, headers):
+        """re-ware merge output: one row per device (Serial + MTM from Blancco join)."""
+        norm = {h.strip().lower() for h in headers}
+        return "serial" in norm and "mtm" in norm
+
+    @api.model
+    def _merged_str(self, row, *keys, default=""):
+        for key in keys:
+            for k, v in row.items():
+                if k and k.strip().lower() == key.lower():
+                    if v is None:
+                        continue
+                    s = str(v).strip()
+                    if s:
+                        return s
+        return default
+
+    @api.model
+    def _merged_int_gb(self, val):
+        s = (val or "").strip()
+        if not s:
+            return "0"
+        m = re.search(r"(\d+)", s)
+        return m.group(1) if m else "0"
+
+    @api.model
+    def _merged_section(self, model_name, mtm):
+        name = (model_name or "").lower()
+        desktop_kw = (
+            "thinkcentre", "thinkstation", "optiplex", "prodesk",
+            "elitedesk", "tiny", " sff", "desktop", "workstation",
+            "m70", "m73", "m910", "m920", "m93",
+        )
+        if any(k in name for k in desktop_kw):
+            return "Desktops"
+        if any(k in name for k in (
+            "thinkpad", "latitude", "toughbook", "elitebook", "laptop", "panasonic",
+        )):
+            return "Laptops"
+        if (mtm or "").startswith("20") and len(mtm) == 10:
+            return "Laptops"
+        return "Laptops"
+
+    @api.model
+    def _merged_brand(self, manufacturer):
+        m = (manufacturer or "").strip().upper()
+        return {
+            "LENOVO": "Lenovo",
+            "DELL": "Dell",
+            "HP": "HP",
+            "PANASONIC": "Panasonic",
+        }.get(m, manufacturer or "Lenovo")
+
+    @api.model
+    def _merged_title(self, row):
+        brand = self._merged_brand(self._merged_str(row, "Manufacturer"))
+        model = self._merged_str(row, "Model name")
+        parts = [f"Re-Ware {brand}"]
+        if model:
+            parts.append(model)
+        cpu = self._merged_str(row, "CPU")
+        if cpu:
+            parts.append(cpu)
+        ssd = self._merged_int_gb(self._merged_str(row, "SSD size (GB)", "SSD size"))
+        if ssd != "0":
+            parts.append(f"{ssd}GB SSD")
+        ram = self._merged_int_gb(self._merged_str(row, "RAM (GB)", "RAM"))
+        if ram != "0":
+            parts.append(f"{ram}GB RAM")
+        if self._merged_str(row, "Touch").lower() == "yes":
+            parts.append("TOUCHSCREEN")
+        if self._merged_str(row, "WAN").lower() == "yes":
+            parts.append("WAN ENABLED")
+        gen = self._merged_str(row, "Generation")
+        if gen:
+            parts.append(f"Gen {gen}")
+        return ", ".join(parts)
+
+    @api.model
+    def _merged_group_key(self, row):
+        return (
+            self._merged_str(row, "MTM").upper(),
+            self._merged_str(row, "Model name"),
+            self._merged_int_gb(self._merged_str(row, "RAM (GB)", "RAM")),
+            self._merged_int_gb(self._merged_str(row, "SSD size (GB)", "SSD size")),
+            self._merged_str(row, "Touch"),
+            self._merged_str(row, "WAN"),
+            self._merged_str(row, "CPU"),
+        )
+
+    @api.model
+    def _merged_sku_code(self, mtm, model_name, ram, ssd, touch):
+        ram_i = self._merged_int_gb(ram)
+        ssd_i = self._merged_int_gb(ssd)
+        touch_flag = "T" if (touch or "").strip().lower() == "yes" else "N"
+        return f"{mtm}-{ram_i}G-{ssd_i}G-{touch_flag}"
+
+    @api.model
+    def _merged_device_rows_to_import_rows(self, rows):
+        """Convert re-ware merge CSV (per device) → inventory import rows (per SKU)."""
+        ok = [
+            r for r in rows
+            if self._merged_str(r, "Status", default="SUCCESS").upper() == "SUCCESS"
+            and self._merged_str(r, "Serial")
+        ]
+        if not ok:
+            raise UserError(
+                _("No SUCCESS rows with serial numbers found in the merge export.")
+            )
+
+        by_mtm_configs = defaultdict(set)
+        for row in ok:
+            mtm = self._merged_str(row, "MTM").upper()
+            by_mtm_configs[mtm].add(self._merged_group_key(row))
+
+        buckets = defaultdict(list)
+        for row in ok:
+            buckets[self._merged_group_key(row)].append(row)
+
+        out = []
+        for key in sorted(buckets.keys()):
+            group = buckets[key]
+            sample = group[0]
+            mtm = self._merged_str(sample, "MTM").upper()
+            model_name = self._merged_str(sample, "Model name")
+            if len(by_mtm_configs.get(mtm, set())) == 1:
+                code = mtm
+            else:
+                code = self._merged_sku_code(
+                    mtm,
+                    model_name,
+                    self._merged_str(sample, "RAM (GB)", "RAM"),
+                    self._merged_str(sample, "SSD size (GB)", "SSD size"),
+                    self._merged_str(sample, "Touch"),
+                )
+            serials = sorted({
+                self._merged_str(r, "Serial").upper()
+                for r in group
+                if self._merged_str(r, "Serial")
+            })
+            price = self._merged_str(sample, "Price")
+            out.append({
+                "section": self._merged_section(model_name, mtm),
+                "default_code": code,
+                "title_raw": self._merged_title(sample),
+                "brand": self._merged_brand(self._merged_str(sample, "Manufacturer")),
+                "quantity": str(len(serials)),
+                "cost_ex": price,
+                "condition_note": self._merged_str(sample, "Mobo status"),
+                "unit_identifiers": "|".join(serials),
+                "row_note": "merged_blancco",
+            })
+        return out
 
     @api.model
     def import_from_binary(self, data, filename=None):
@@ -208,7 +367,7 @@ class ProductCsvImporter(models.AbstractModel):
                 public_cmds = [(6, 0, public_ids)] if public_ids else [(5, 0, 0)]
                 ptype = sources[0].type or "product"
 
-        prices = [u["price"] for u in group]
+        prices = [u["price"] for u in group if u.get("price", 0) > 0]
         base_price = min(prices) if prices else 0.0
 
         labels = self._unique_config_labels(group)
@@ -226,8 +385,6 @@ class ProductCsvImporter(models.AbstractModel):
             "tracking": self._resolve_tracking(
                 ptype, sec_key, all_unit_ids, categ_id=categ_id
             ),
-            "list_price": base_price,
-            "standard_price": base_price,
             "website_published": True,
             "sale_ok": True,
             "allow_out_of_stock_order": False,
@@ -239,12 +396,21 @@ class ProductCsvImporter(models.AbstractModel):
         if desc_html:
             vals["description"] = desc_html
 
+        if base_price > 0:
+            vals["list_price"] = base_price
+            vals["standard_price"] = base_price
+        elif tmpl:
+            vals["list_price"] = tmpl.list_price
+            vals["standard_price"] = tmpl.standard_price
+
         if tmpl:
             tmpl.write(vals)
             updated += 1
         else:
             tmpl = PT.create(vals)
             created += 1
+
+        effective_base = base_price if base_price > 0 else (tmpl.list_price or 0.0)
 
         self._set_configuration_line(tmpl, config_attr, config_vals)
         self._clear_managed_attribute_lines(tmpl)
@@ -260,7 +426,8 @@ class ProductCsvImporter(models.AbstractModel):
                 continue
             variant.write({"default_code": unit["code"]})
             ptav = ptavs[0]
-            ptav.price_extra = unit["price"] - base_price
+            if unit.get("price", 0) > 0:
+                ptav.price_extra = unit["price"] - effective_base
             if unit.get("_source_tmpl_id"):
                 old_tmpl = PT.browse(unit["_source_tmpl_id"])
                 if (
@@ -323,6 +490,7 @@ class ProductCsvImporter(models.AbstractModel):
 
         PT = self.env["product.template"].sudo()
         tmpl = PT.search([("default_code", "=", code)], limit=1)
+        price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         vals = {
             "name": name,
             "default_code": code,
@@ -331,8 +499,6 @@ class ProductCsvImporter(models.AbstractModel):
             "product_tag_ids": [(5, 0, 0)] if ptype == "product" else tag_cmds,
             "type": ptype,
             "tracking": tracking,
-            "list_price": unit["price"],
-            "standard_price": unit["price"],
             "website_published": True,
             "sale_ok": True,
             "description_sale": (f"{brand} · {code}".strip(" ·") if brand else code)[:500],
@@ -340,6 +506,15 @@ class ProductCsvImporter(models.AbstractModel):
             "show_availability": ptype == "product",
             "taxes_id": [(6, 0, self._default_sale_tax_ids())],
         }
+        if price > 0:
+            vals["list_price"] = price
+            vals["standard_price"] = price
+        elif tmpl:
+            vals["list_price"] = tmpl.list_price
+            vals["standard_price"] = tmpl.standard_price
+        else:
+            vals["list_price"] = 0.0
+            vals["standard_price"] = 0.0
         if desc_html:
             vals["description"] = desc_html
         if tmpl:

@@ -51,12 +51,10 @@
                 </group>
                 <div class="alert alert-info" role="alert">
                     <p class="mb-2"><strong>Use this instead of Products → Import records.</strong></p>
-                    <p class="mb-1">Upload the same inventory CSV your team already uses. The system will:</p>
+                    <p class="mb-1">Upload either:</p>
                     <ul class="mb-0">
-                        <li>Merge machines with the same <strong>Series</strong> into one shop product</li>
-                        <li>Show the <strong>lowest price</strong> on the catalogue</li>
-                        <li>Let customers pick a <strong>Configuration</strong> on the product page (different specs / prices)</li>
-                        <li>Update stock and archive old duplicate SKU products</li>
+                        <li><strong>MERGED import-ready</strong> CSV from the desktop <strong>re-ware merge</strong> folder (scan + Blancco, one row per device), or</li>
+                        <li>Legacy inventory CSV (<code>section, default_code, title_raw, …</code>)</li>
                     </ul>
                 </div>
                 <group invisible="not result_message">
