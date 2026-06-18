@@ -24,12 +24,15 @@ MTM_LUT_FILE = SCRIPT_DIR / "mtm_lookup.csv"
 OUTPUT_PREFIX = "MERGED import-ready"
 
 SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
-GEN_RE = re.compile(r"gen\s*(\d+)", re.I)
+GEN_RE = re.compile(r"gen\s*(\d+\w*)", re.I)
+SYSVER_GEN_RE = re.compile(r"Gen(?:eration)?\s*(\d+\w*)", re.I)
 
 OUTPUT_COLUMNS = [
     "Serial",
     "MTM",
     "Model name",
+    "System version",
+    "Series",
     "Touch",
     "WAN",
     "Generation",
@@ -91,7 +94,32 @@ def parse_name_attrs(name: str) -> dict:
     if m:
         gen = m.group(1)
     clean = re.sub(r"^lenovo\s+", "", n, flags=re.I).strip()
+    # WD receipt name — strip generation suffix; Gen comes from Blancco System version.
+    clean = re.sub(r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", clean, flags=re.I).strip()
     return {"model_name": clean, "touch": touch, "wan": wan, "generation": gen}
+
+def parse_generation_from_system_version(system_version: str) -> str:
+    """Gen 1 / Gen 2i / Gen 3 from Blancco System version (authoritative)."""
+    if not system_version:
+        return ""
+    m = SYSVER_GEN_RE.search(str(system_version))
+    return m.group(1) if m else ""
+
+def derive_series_label(system_version: str, model_name: str, mtm: str) -> str:
+    """Product family for grouping: e.g. ThinkPad T14s Gen 1 vs Gen 2i (never lumped)."""
+    gen = parse_generation_from_system_version(system_version)
+    base = ""
+    if system_version:
+        base = re.sub(
+            r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", str(system_version).strip(), flags=re.I
+        ).strip()
+    if not base and model_name:
+        base = str(model_name).strip()
+    if not base:
+        base = mtm
+    if gen:
+        return f"{base} Gen {gen}"
+    return base
 
 def find_latest_file(folder: Path, prefixes: tuple[str, ...], extensions: tuple[str, ...]) -> Path | None:
     candidates: list[Path] = []
@@ -322,20 +350,28 @@ def merge_data(
             lut_row = lut_row.iloc[0]
 
         model_name = ""
-        touch = wan = gen = ""
+        touch = wan = ""
         if lut_row is not None:
             model_name = str(lut_row.get("model_name", "") or "")
+            model_name = re.sub(
+                r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", model_name, flags=re.I
+            ).strip()
             touch = str(lut_row.get("touch", "") or "")
             wan = str(lut_row.get("wan", "") or "")
-            gen = str(lut_row.get("generation", "") or "")
-        elif bl is not None:
-            model_name = str(bl.get("blancco_title", "") or "")
+
+        system_version = str(bl.get("blancco_title", "") or "") if bl is not None else ""
+        gen = parse_generation_from_system_version(system_version)
+        if not gen and lut_row is not None:
+            gen = str(lut_row.get("generation", "") or "").strip()
+        series = derive_series_label(system_version, model_name, mtm)
 
         rows.append(
             {
                 "Serial": serial,
                 "MTM": mtm,
                 "Model name": model_name,
+                "System version": system_version,
+                "Series": series,
                 "Touch": touch,
                 "WAN": wan,
                 "Generation": gen,

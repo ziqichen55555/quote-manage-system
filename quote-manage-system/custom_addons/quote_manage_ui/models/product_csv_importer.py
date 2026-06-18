@@ -137,6 +137,7 @@ class ProductCsvImporter(models.AbstractModel):
     def _merged_group_key(self, row):
         return (
             self._merged_str(row, "MTM").upper(),
+            self._merged_str(row, "Generation"),
             self._merged_str(row, "Model name"),
             self._merged_int_gb(self._merged_str(row, "RAM (GB)", "RAM")),
             self._merged_int_gb(self._merged_str(row, "SSD size (GB)", "SSD size")),
@@ -168,7 +169,8 @@ class ProductCsvImporter(models.AbstractModel):
         by_mtm_configs = defaultdict(set)
         for row in ok:
             mtm = self._merged_str(row, "MTM").upper()
-            by_mtm_configs[mtm].add(self._merged_group_key(row))
+            gen = self._merged_str(row, "Generation")
+            by_mtm_configs[(mtm, gen)].add(self._merged_group_key(row))
 
         buckets = defaultdict(list)
         for row in ok:
@@ -179,8 +181,9 @@ class ProductCsvImporter(models.AbstractModel):
             group = buckets[key]
             sample = group[0]
             mtm = self._merged_str(sample, "MTM").upper()
+            gen = self._merged_str(sample, "Generation")
             model_name = self._merged_str(sample, "Model name")
-            if len(by_mtm_configs.get(mtm, set())) == 1:
+            if len(by_mtm_configs.get((mtm, gen), set())) == 1:
                 code = mtm
             else:
                 code = self._merged_sku_code(
@@ -196,10 +199,14 @@ class ProductCsvImporter(models.AbstractModel):
                 if self._merged_str(r, "Serial")
             })
             price = self._merged_str(sample, "Price")
+            series = self._merged_str(sample, "Series")
+            title = self._merged_title(sample)
+            if series and series.lower() not in title.lower():
+                title = f"Re-Ware {series}, {title.replace('Re-Ware ', '', 1)}"
             out.append({
                 "section": self._merged_section(model_name, mtm),
                 "default_code": code,
-                "title_raw": self._merged_title(sample),
+                "title_raw": title,
                 "brand": self._merged_brand(self._merged_str(sample, "Manufacturer")),
                 "quantity": str(len(serials)),
                 "cost_ex": price,
@@ -960,6 +967,9 @@ class ProductCsvImporter(models.AbstractModel):
             specs["series"] = "ThinkPad T490s"
         elif "T14S" in t_up or ("T14" in t_up and "T490" not in t_up):
             specs["series"] = "ThinkPad T14s"
+            gen_m = re.search(r"GEN\s*(\d+\w*)", t_up)
+            if gen_m:
+                specs["series"] = f"ThinkPad T14s Gen {gen_m.group(1)}"
         elif "T15" in t_up:
             specs["series"] = "ThinkPad T15"
         elif "P1" in t_up and ("GEN 3" in t_up or "GEN3" in t_up.replace(" ", "")):
