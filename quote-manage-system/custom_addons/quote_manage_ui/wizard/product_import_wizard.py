@@ -27,8 +27,9 @@ class ProductImportWizard(models.TransientModel):
             "• Old duplicate SKUs archived: %(archived_skus)s\n"
             "• Stock lines applied: %(stock_batches)s\n"
             "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
-            "MERGED device CSV imports are additive: existing products and "
-            "serials are kept; only new SKUs/serials are added."
+            "Same Series (e.g. ThinkPad T14s Gen 1) is merged into one shop "
+            "product with a Configuration dropdown. Re-upload or use "
+            "Inventory → Merge existing products to fix duplicate listings."
         ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
         self.result_message = msg
         return {

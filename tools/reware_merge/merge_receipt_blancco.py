@@ -123,16 +123,38 @@ def parse_generation_from_system_version(system_version: str) -> str:
     m = SYSVER_GEN_RE.search(str(system_version))
     return m.group(1) if m else ""
 
+def _looks_like_valid_family_label(text: str) -> bool:
+    if not text or len(str(text).strip()) < 8:
+        return False
+    s = str(text).strip()
+    if re.fullmatch(r"[A-Z0-9]{1,4}", s, re.I):
+        return False
+    low = s.lower()
+    if "kbc" in low or "version" in low:
+        return False
+    return bool(
+        re.search(
+            r"thinkpad|thinkcentre|latitude|toughbook|optiplex|panasonic|elitebook|dell",
+            low,
+            re.I,
+        )
+    )
+
 def derive_series_label(system_version: str, model_name: str, mtm: str) -> str:
     """Product family for grouping: e.g. ThinkPad T14s Gen 1 vs Gen 2i (never lumped)."""
     gen = parse_generation_from_system_version(system_version)
     base = ""
-    if system_version:
+    sv = str(system_version or "").strip()
+    if sv and _looks_like_valid_family_label(sv):
         base = re.sub(
-            r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", str(system_version).strip(), flags=re.I
+            r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", sv, flags=re.I
         ).strip()
     if not base and model_name:
-        base = str(model_name).strip()
+        mn = re.sub(
+            r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", str(model_name).strip(), flags=re.I
+        ).strip()
+        if _looks_like_valid_family_label(mn):
+            base = mn
     if not base:
         base = mtm
     if gen:

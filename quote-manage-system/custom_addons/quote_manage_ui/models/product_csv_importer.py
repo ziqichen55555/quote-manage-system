@@ -134,6 +134,78 @@ class ProductCsvImporter(models.AbstractModel):
         return ", ".join(parts)
 
     @api.model
+    def _is_valid_series_name(self, series):
+        s = (series or "").strip()
+        if len(s) < 8:
+            return False
+        if re.fullmatch(r"[A-Z0-9]{1,4}", s, re.I):
+            return False
+        low = s.lower()
+        if "kbc" in low or "version" in low:
+            return False
+        markers = (
+            "thinkpad", "thinkcentre", "latitude", "optiplex", "toughbook",
+            "dell", "lenovo", "panasonic", "elitebook",
+        )
+        return any(m in low for m in markers)
+
+    @api.model
+    def _canonical_series_name(self, series):
+        s = (series or "").strip()
+        s = re.sub(r"\bThinkpad\b", "ThinkPad", s, flags=re.I)
+        s = re.sub(r"\bThinkcentre\b", "ThinkCentre", s, flags=re.I)
+        if re.search(r"T490", s, re.I):
+            return "ThinkPad T490s"
+        m = re.search(r"T14s?\s*Gen\s*(\d+\w*)", s, re.I)
+        if m:
+            return f"ThinkPad T14s Gen {m.group(1)}"
+        m = re.search(r"T15\s*Gen\s*(\d+\w*)", s, re.I)
+        if m:
+            return f"ThinkPad T15 Gen {m.group(1)}"
+        m = re.search(r"P1\s*Gen\s*(\d+\w*)", s, re.I)
+        if m:
+            return f"ThinkPad P1 Gen {m.group(1)}"
+        if re.search(r"T480", s, re.I):
+            return "ThinkPad T480s"
+        if re.search(r"T14S", s, re.I):
+            return "ThinkPad T14s"
+        if re.search(r"M910", s, re.I):
+            return "ThinkCentre M910s"
+        if re.search(r"M70Q", s, re.I):
+            return "ThinkCentre M70q"
+        return s
+
+    @api.model
+    def _resolve_series_key(
+        self, series="", brand="", model_name="", mtm="", generation="", titles=None
+    ):
+        if self._is_valid_series_name(series):
+            return self._canonical_series_name(series)
+        gen = (generation or "").strip()
+        model_u = (model_name or "").upper()
+        mtm_u = (mtm or "").upper()
+        if "T490" in model_u or mtm_u in ("20NYS4CP00", "20NYS4CP01"):
+            return "ThinkPad T490s"
+        if any(x in model_u for x in ("T14S", "T14 ")) or mtm_u.startswith(
+            ("20T", "20WN", "20WNS")
+        ):
+            if gen:
+                return f"ThinkPad T14s Gen {gen}"
+        if "T15" in model_u or mtm_u.startswith("20W4"):
+            if gen:
+                return f"ThinkPad T15 Gen {gen}"
+            return "ThinkPad T15"
+        if "T480" in model_u or mtm_u.startswith("20L8"):
+            return "ThinkPad T480s"
+        if "M910" in model_u or mtm_u.startswith("10ML"):
+            return "ThinkCentre M910s"
+        if titles:
+            specs = self._parse_specs(brand, titles)
+            if specs.get("series"):
+                return self._canonical_series_name(specs["series"])
+        return ""
+
+    @api.model
     def _merged_group_key(self, row):
         return (
             self._merged_str(row, "MTM").upper(),
@@ -199,15 +271,24 @@ class ProductCsvImporter(models.AbstractModel):
                 if self._merged_str(r, "Serial")
             })
             price = self._merged_str(sample, "Price")
-            series = self._merged_str(sample, "Series")
+            brand = self._merged_brand(self._merged_str(sample, "Manufacturer"))
             title = self._merged_title(sample)
+            series = self._resolve_series_key(
+                series=self._merged_str(sample, "Series"),
+                brand=brand,
+                model_name=model_name,
+                mtm=mtm,
+                generation=gen,
+                titles=[title],
+            )
             if series and series.lower() not in title.lower():
                 title = f"Re-Ware {series}, {title.replace('Re-Ware ', '', 1)}"
             out.append({
                 "section": self._merged_section(model_name, mtm),
                 "default_code": code,
                 "title_raw": title,
-                "brand": self._merged_brand(self._merged_str(sample, "Manufacturer")),
+                "brand": brand,
+                "series": series,
                 "quantity": str(len(serials)),
                 "cost_ex": price,
                 "condition_note": self._merged_str(sample, "Mobo status"),
@@ -242,7 +323,7 @@ class ProductCsvImporter(models.AbstractModel):
                 singles.append(unit)
                 continue
             series = unit.get("series_key")
-            if series and not additive:
+            if series:
                 by_series[series].append(unit)
             else:
                 singles.append(unit)
@@ -291,6 +372,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "conditions": [],
                 "units": [],
                 "notes": [],
+                "series_keys": [],
             }
         )
         for r in rows:
@@ -316,6 +398,9 @@ class ProductCsvImporter(models.AbstractModel):
             brand = (r.get("brand") or "").strip()
             if brand:
                 a["brands"].append(brand)
+            series = (r.get("series") or "").strip()
+            if series:
+                a["series_keys"].append(series)
             for key, col in (
                 ("conditions", "condition_note"),
                 ("units", "unit_identifiers"),
@@ -335,6 +420,9 @@ class ProductCsvImporter(models.AbstractModel):
             titles = a["titles"] or [code]
             brand = a["brands"][-1] if a["brands"] else ""
             specs = self._parse_specs(brand, titles)
+            series_key = a["series_keys"][0] if a["series_keys"] else specs.get("series")
+            if series_key:
+                series_key = self._canonical_series_name(series_key)
             out.append(
                 {
                     "code": code,
@@ -347,7 +435,7 @@ class ProductCsvImporter(models.AbstractModel):
                     "conditions": a["conditions"],
                     "unit_ids": a["units"],
                     "notes": a["notes"],
-                    "series_key": specs.get("series"),
+                    "series_key": series_key,
                     "specs": specs,
                     "config_label": self._build_config_label(specs, code),
                 }
@@ -972,6 +1060,9 @@ class ProductCsvImporter(models.AbstractModel):
                 specs["series"] = f"ThinkPad T14s Gen {gen_m.group(1)}"
         elif "T15" in t_up:
             specs["series"] = "ThinkPad T15"
+            gen_m = re.search(r"GEN\s*(\d+\w*)", t_up)
+            if gen_m:
+                specs["series"] = f"ThinkPad T15 Gen {gen_m.group(1)}"
         elif "P1" in t_up and ("GEN 3" in t_up or "GEN3" in t_up.replace(" ", "")):
             specs["series"] = "ThinkPad P1"
         elif "T480" in t_up:
