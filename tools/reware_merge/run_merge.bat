@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-echo Re-Ware: merging delivery receipt + Blancco report...
+echo Re-Ware: merging product list + Blancco report...
 echo.
 
 py --version >nul 2>&1

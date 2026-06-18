@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Re-Ware: merge stocktake / delivery receipt (master) + Blancco export.
-Master priority: latest STOCKTAKE*.csv, else wp DELIVERY RECEIPT.xlsx.
+Re-Ware: merge product list (model + serial) + Blancco export.
+Detects files by column layout (not filename). CSV and Excel both supported.
 Double-click run_merge.bat in the folder that contains the input files.
 """
 from __future__ import annotations
@@ -15,16 +15,14 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill
 
-# --- Config (edit prefixes here if filenames change) ---
+# --- Config ---
 SCRIPT_DIR = Path(__file__).resolve().parent
-STOCKTAKE_PREFIXES = ("stocktake",)
-RECEIPT_PREFIX = "wp DELIVERY RECEIPT"
-BLANCCO_PREFIXES = ("reports blannco", "reports blancco")
-RECEIPT_EXTENSIONS = (".xlsx",)
-STOCKTAKE_EXTENSIONS = (".csv",)
-BLANCCO_EXTENSIONS = (".csv", ".xlsx")
+SUPPORTED_EXTENSIONS = (".csv", ".xlsx")
+PRODUCT_LIST_MAX_COLS = 6
+BLANCCO_MIN_COLS = 8
 MTM_LUT_FILE = SCRIPT_DIR / "mtm_lookup.csv"
 OUTPUT_PREFIX = "MERGED import-ready"
+OUTPUT_SKIP_PREFIXES = (OUTPUT_PREFIX.lower(), "merged import-ready")
 
 SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
 GEN_RE = re.compile(r"gen\s*(\d+\w*)", re.I)
@@ -141,102 +139,256 @@ def derive_series_label(system_version: str, model_name: str, mtm: str) -> str:
         return f"{base} Gen {gen}"
     return base
 
-def find_latest_file(folder: Path, prefixes: tuple[str, ...], extensions: tuple[str, ...]) -> Path | None:
-    candidates: list[Path] = []
-    for path in folder.iterdir():
-        if not path.is_file():
-            continue
-        name_lower = path.name.lower()
-        if path.suffix.lower() not in extensions:
-            continue
-        if any(name_lower.startswith(p.lower()) for p in prefixes):
-            candidates.append(path)
-    if not candidates:
-        return None
-    return max(candidates, key=lambda p: p.stat().st_mtime)
+_FILE_DIALOG_TYPES = [
+    ("CSV files", "*.csv"),
+    ("Excel files", "*.xlsx"),
+    ("All supported", "*.csv;*.xlsx"),
+]
 
-def find_master_file(folder: Path) -> Path | None:
-    """Stocktake CSV is preferred over delivery receipt when both exist."""
-    stocktake = find_latest_file(folder, STOCKTAKE_PREFIXES, STOCKTAKE_EXTENSIONS)
-    if stocktake:
-        return stocktake
-    return find_latest_file(folder, (RECEIPT_PREFIX,), RECEIPT_EXTENSIONS)
+def is_output_file(path: Path) -> bool:
+    name_lower = path.name.lower()
+    return any(name_lower.startswith(p) for p in OUTPUT_SKIP_PREFIXES)
+
+def read_tabular(path: Path, nrows: int | None = None) -> pd.DataFrame:
+    kwargs = {"dtype": str}
+    if nrows is not None:
+        kwargs["nrows"] = nrows
+    if path.suffix.lower() == ".csv":
+        return pd.read_csv(path, **kwargs)
+    if path.suffix.lower() == ".xlsx":
+        return pd.read_excel(path, sheet_name=0, **kwargs)
+    raise ValueError(f"Unsupported file type '{path.suffix}'. Use .csv or .xlsx.")
+
+def column_names(path: Path) -> list[str]:
+    df = read_tabular(path, nrows=0)
+    return [str(c).strip() for c in df.columns]
+
+def _col_lookup(cols: list[str]) -> dict[str, str]:
+    return {c.lower(): c for c in cols}
+
+def _pick_col(col_map: dict[str, str], *names: str) -> str | None:
+    for name in names:
+        if name.lower() in col_map:
+            return col_map[name.lower()]
+    return None
+
+def looks_like_product_list(cols: list[str]) -> bool:
+    """Simple list: model/MTM + serial (typically 2–3 columns)."""
+    if len(cols) > PRODUCT_LIST_MAX_COLS:
+        return False
+    col_map = _col_lookup(cols)
+    has_mtm = _pick_col(col_map, "device model", "model mtm", "mtm", "model") is not None
+    has_serial = _pick_col(col_map, "serial", "serial no.", "serial no") is not None
+    if has_mtm and has_serial:
+        return True
+    return len(cols) == 2
+
+def looks_like_blancco(cols: list[str]) -> bool:
+    """Detailed Blancco export: serial + many spec columns."""
+    col_map = _col_lookup(cols)
+    has_serial = _pick_col(col_map, "system serial", "serial", "system serial number") is not None
+    if not has_serial:
+        return False
+    markers = (
+        "creation date",
+        "system version",
+        "system model",
+        "cpu model",
+        "disk capacity",
+        "physical_memory",
+        "physical memory",
+        "motherboard test status",
+        "video card model",
+    )
+    marker_hits = sum(1 for m in markers if m in col_map)
+    return len(cols) >= BLANCCO_MIN_COLS or marker_hits >= 2
+
+def classify_file(path: Path) -> str:
+    """Return 'product', 'blancco', or 'unknown'."""
+    cols = column_names(path)
+    is_product = looks_like_product_list(cols)
+    is_blancco = looks_like_blancco(cols)
+    if is_product and not is_blancco:
+        return "product"
+    if is_blancco and not is_product:
+        return "blancco"
+    if is_product and is_blancco:
+        return "product" if len(cols) <= PRODUCT_LIST_MAX_COLS else "blancco"
+    return "unknown"
+
+def file_type_label(kind: str) -> str:
+    return {"product": "Product list", "blancco": "Blancco report"}.get(kind, "Unknown file")
+
+def scan_folder(folder: Path) -> tuple[Path | None, Path | None]:
+    """Pick newest product list + newest Blancco report by column layout."""
+    products: list[Path] = []
+    blanccos: list[Path] = []
+    for path in folder.iterdir():
+        if not path.is_file() or path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            continue
+        if is_output_file(path):
+            continue
+        try:
+            kind = classify_file(path)
+        except Exception:
+            continue
+        if kind == "product":
+            products.append(path)
+        elif kind == "blancco":
+            blanccos.append(path)
+    product = max(products, key=lambda p: p.stat().st_mtime) if products else None
+    blancco = max(blanccos, key=lambda p: p.stat().st_mtime) if blanccos else None
+    return product, blancco
 
 def master_label(path: Path) -> str:
-    if path.suffix.lower() == ".csv" and path.name.lower().startswith("stocktake"):
-        return "Stocktake"
-    return "Delivery receipt"
+    return file_type_label(classify_file(path))
+
+def _ask_open_file(title: str, folder: Path) -> Path | None:
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    selected = filedialog.askopenfilename(
+        title=title,
+        initialdir=str(folder),
+        filetypes=_FILE_DIALOG_TYPES,
+    )
+    root.destroy()
+    if not selected:
+        return None
+    return Path(selected)
 
 def pick_files_interactive(folder: Path) -> tuple[Path, Path]:
-    master = find_master_file(folder)
-    blancco = find_latest_file(folder, BLANCCO_PREFIXES, BLANCCO_EXTENSIONS)
+    product, blancco = scan_folder(folder)
+    force_pick = "--pick" in sys.argv
 
-    # Headless / auto-confirm mode: skip popups (used for testing / scheduled runs)
     if "--yes" in sys.argv or "--auto" in sys.argv:
-        if not master or not blancco:
+        if not product or not blancco:
             raise FileNotFoundError(
-                "Auto mode: need a stocktake/receipt master and a Blancco file in "
+                "Auto mode: need one product list (model + serial) and one Blancco report in "
                 + str(folder)
             )
-        print("Auto merge:", master.name, "+", blancco.name)
-        return master, blancco
+        print("Auto merge:", product.name, "+", blancco.name)
+        return product, blancco
 
     import tkinter as tk
-    from tkinter import filedialog, messagebox
+    from tkinter import messagebox
 
     root = tk.Tk()
     root.withdraw()
     root.attributes("-topmost", True)
 
-    if master and blancco:
+    if product and blancco and not force_pick:
         msg = (
-            "Found these files in this folder:\n\n"
-            f"{master_label(master)} (master):\n  {master.name}\n\n"
+            "Auto-detected by file layout:\n\n"
+            f"Product list:\n  {product.name}\n\n"
             f"Blancco report:\n  {blancco.name}\n\n"
-            "Merge now? (master list drives serials; Blancco fills specs per serial)"
+            "Yes = merge with these files\n"
+            "No = choose different files\n"
+            "Cancel = abort"
         )
-        if messagebox.askyesno("Re-Ware merge", msg):
-            root.destroy()
-            return master, blancco
-
-    messagebox.showinfo(
-        "Re-Ware merge",
-        "Pick the master file (STOCKTAKE .csv or delivery receipt .xlsx).",
-    )
-    master = Path(
-        filedialog.askopenfilename(
-            title="Master file (stocktake or receipt)",
-            initialdir=str(folder),
-            filetypes=[("CSV/Excel", "*.csv *.xlsx")],
-        )
-    )
-    if not master or not str(master):
+        choice = messagebox.askyesnocancel("Re-Ware merge", msg)
         root.destroy()
-        sys.exit(0)
-
-    messagebox.showinfo("Re-Ware merge", "Pick the Blancco report (.csv or .xlsx).")
-    blancco = Path(
-        filedialog.askopenfilename(
-            title="Blancco report",
-            initialdir=str(folder),
-            filetypes=[("CSV/Excel", "*.csv *.xlsx")],
+        if choice is True:
+            return product, blancco
+        if choice is None:
+            sys.exit(0)
+        product = None
+        blancco = None
+    else:
+        root.destroy()
+        hints = ["Could not auto-detect both files by column layout."]
+        if product:
+            hints.append(f"Product list found: {product.name}")
+        if blancco:
+            hints.append(f"Blancco report found: {blancco.name}")
+        hints.append(
+            "\nYou will pick two files:\n"
+            "  1) Product list — usually 2 columns (model/MTM + serial)\n"
+            "  2) Blancco report — many columns (CPU, disk, etc.)"
         )
-    )
-    root.destroy()
-    if not blancco or not str(blancco):
-        sys.exit(0)
-    return master, blancco
+        messagebox.showinfo("Re-Ware merge", "\n".join(hints))
 
-def load_stocktake(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype=str)
+    if not product or force_pick:
+        product = _ask_open_file(
+            "Step 1/2 — Product list (.csv or .xlsx: model/MTM + serial)",
+            folder,
+        )
+        if not product:
+            sys.exit(0)
+
+    if not blancco or force_pick:
+        blancco = _ask_open_file(
+            "Step 2/2 — Blancco report (.csv or .xlsx: detailed export)",
+            folder,
+        )
+        if not blancco:
+            sys.exit(0)
+
+    return product, blancco
+
+def validate_merge_inputs(product_path: Path, blancco_path: Path) -> None:
+    if not product_path.is_file():
+        raise FileNotFoundError(f"Product list not found:\n{product_path}")
+    if not blancco_path.is_file():
+        raise FileNotFoundError(f"Blancco report not found:\n{blancco_path}")
+    if product_path.resolve() == blancco_path.resolve():
+        raise ValueError("Product list and Blancco report must be two different files.")
+    if product_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        raise ValueError(f"Product list must be .csv or .xlsx, not '{product_path.suffix}'.")
+    if blancco_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        raise ValueError(f"Blancco report must be .csv or .xlsx, not '{blancco_path.suffix}'.")
+    if is_output_file(product_path):
+        raise ValueError(
+            f"'{product_path.name}' looks like a previous merge output.\n"
+            "Pick the simple product list (model + serial), not MERGED import-ready."
+        )
+    if is_output_file(blancco_path):
+        raise ValueError(
+            f"'{blancco_path.name}' looks like a previous merge output.\n"
+            "Pick the Blancco export file instead."
+        )
+
+    product_kind = classify_file(product_path)
+    blancco_kind = classify_file(blancco_path)
+
+    if product_kind == "blancco" and blancco_kind == "product":
+        raise ValueError(
+            "Files look swapped.\n\n"
+            f"First file '{product_path.name}' looks like a Blancco report.\n"
+            f"Second file '{blancco_path.name}' looks like a product list.\n\n"
+            "Run again and pick product list first, then Blancco report."
+        )
+    if product_kind != "product":
+        cols = column_names(product_path)
+        raise ValueError(
+            f"'{product_path.name}' does not look like a product list.\n"
+            f"Found {len(cols)} column(s): {', '.join(cols[:6])}{'...' if len(cols) > 6 else ''}\n\n"
+            "Expected a simple file with model/MTM + serial (about 2 columns)."
+        )
+    if blancco_kind != "blancco":
+        cols = column_names(blancco_path)
+        raise ValueError(
+            f"'{blancco_path.name}' does not look like a Blancco report.\n"
+            f"Found {len(cols)} column(s): {', '.join(cols[:6])}{'...' if len(cols) > 6 else ''}\n\n"
+            "Expected the detailed Blancco export (serial + CPU, disk, RAM, etc.)."
+        )
+
+def load_product_list(path: Path) -> pd.DataFrame:
+    df = read_tabular(path)
     df.columns = [str(c).strip() for c in df.columns]
-    col_map = {c.lower(): c for c in df.columns}
-    mtm_col = col_map.get("device model") or col_map.get("model mtm") or col_map.get("mtm")
-    serial_col = col_map.get("serial") or col_map.get("serial no.") or col_map.get("serial no")
-    has_ssd_col = col_map.get("has_ssd") or col_map.get("has ssd")
+    col_map = _col_lookup(list(df.columns))
+    mtm_col = _pick_col(col_map, "device model", "model mtm", "mtm", "model")
+    serial_col = _pick_col(col_map, "serial", "serial no.", "serial no")
+    has_ssd_col = _pick_col(col_map, "has_ssd", "has ssd")
+
+    if (not mtm_col or not serial_col) and len(df.columns) == 2:
+        mtm_col, serial_col = df.columns[0], df.columns[1]
     if not mtm_col or not serial_col:
         raise ValueError(
-            f"Stocktake CSV needs 'Device Model' and 'Serial' columns. Found: {list(df.columns)}"
+            f"Product list needs model/MTM and serial columns. Found: {list(df.columns)}"
         )
 
     cols = [mtm_col, serial_col]
@@ -251,35 +403,24 @@ def load_stocktake(path: Path) -> pd.DataFrame:
     else:
         out["no_ssd"] = False
     out = out[(out["serial"] != "") & (out["mtm"] != "")]
+    if out.empty:
+        raise ValueError("Product list has no valid rows with both model/MTM and serial.")
     out = out.drop_duplicates(subset=["serial"], keep="first")
     return out[["mtm", "serial", "no_ssd", "mtm_raw"]].reset_index(drop=True)
 
 def load_master(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Load master list and optional receipt metadata for MTM lookup."""
-    if path.suffix.lower() == ".csv" and path.name.lower().startswith("stocktake"):
-        wd = load_stocktake(path)
-        return wd, pd.DataFrame(columns=["serial", "uncollected"]), pd.DataFrame()
-    wd = load_receipt_sheet1(path)
-    wd["no_ssd"] = False
-    wd["mtm_raw"] = wd["mtm"]
-    uncollected_df, sheet2_names = load_receipt_sheet2_meta(path)
+    """Load product list; optional sheet-2 metadata from legacy delivery receipts."""
+    if classify_file(path) != "product":
+        raise ValueError(
+            f"'{path.name}' is not a product list. "
+            "Use the simple file with model/MTM + serial columns."
+        )
+    wd = load_product_list(path)
+    uncollected_df = pd.DataFrame(columns=["serial", "uncollected"])
+    sheet2_names = pd.DataFrame()
+    if path.suffix.lower() == ".xlsx":
+        uncollected_df, sheet2_names = load_receipt_sheet2_meta(path)
     return wd, uncollected_df, sheet2_names
-
-def load_receipt_sheet1(path: Path) -> pd.DataFrame:
-    df = pd.read_excel(path, sheet_name=0, dtype=str)
-    df.columns = [str(c).strip() for c in df.columns]
-    col_map = {c.lower(): c for c in df.columns}
-    mtm_col = col_map.get("model mtm") or col_map.get("mtm")
-    serial_col = col_map.get("serial no.") or col_map.get("serial no") or col_map.get("serial")
-    if not mtm_col or not serial_col:
-        raise ValueError(f"Sheet1 must have 'Model MTM' and 'Serial no.' columns. Found: {list(df.columns)}")
-    out = df[[mtm_col, serial_col]].copy()
-    out.columns = ["mtm_raw", "serial_raw"]
-    out["mtm"] = out["mtm_raw"].map(normalize_mtm)
-    out["serial"] = out["serial_raw"].map(normalize_serial)
-    out = out[(out["serial"] != "") & (out["mtm"] != "")]
-    out = out.drop_duplicates(subset=["serial"], keep="first")
-    return out.reset_index(drop=True)
 
 def load_receipt_sheet2_meta(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Returns (serial->comments/uncollected, rows for MTM LUT generation)."""
@@ -321,34 +462,31 @@ def load_receipt_sheet2_meta(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     return uncollected_df, lut_rows
 
 def load_blancco(path: Path) -> pd.DataFrame:
-    if path.suffix.lower() == ".csv":
-        df = pd.read_csv(path, dtype=str)
-    else:
-        df = pd.read_excel(path, dtype=str)
+    if classify_file(path) != "blancco":
+        cols = column_names(path)
+        raise ValueError(
+            f"'{path.name}' does not look like a Blancco report ({len(cols)} columns). "
+            "Expected serial + detailed specs (CPU, disk, RAM, etc.)."
+        )
+    df = read_tabular(path)
     df.columns = [str(c).strip() for c in df.columns]
+    col_map = _col_lookup(list(df.columns))
 
-    def pick(*names):
-        lower = {c.lower(): c for c in df.columns}
-        for n in names:
-            if n.lower() in lower:
-                return lower[n.lower()]
-        return None
-
-    serial_col = pick("System serial", "Serial", "System serial number")
+    serial_col = _pick_col(col_map, "system serial", "serial", "system serial number")
     if not serial_col:
         raise ValueError(f"Blancco file needs a serial column. Found: {list(df.columns)}")
 
     mapping = {
-        "blancco_date": pick("Creation date"),
-        "blancco_title": pick("System version"),
-        "blancco_mtm": pick("System model"),
-        "cpu": pick("CPU model", "CPU"),
-        "disk_capacity": pick("Disk capacity", "Disk capacit"),
-        "ssd_type": pick("Disk interface type"),
-        "ram": pick("Physical_memory", "Physical memory", "RAM"),
-        "battery": pick("Capacity"),
-        "gpu": pick("Video card model", "GPU"),
-        "mobo_status": pick("Motherboard test status", "CMOS condition"),
+        "blancco_date": _pick_col(col_map, "creation date"),
+        "blancco_title": _pick_col(col_map, "system version"),
+        "blancco_mtm": _pick_col(col_map, "system model"),
+        "cpu": _pick_col(col_map, "cpu model", "cpu"),
+        "disk_capacity": _pick_col(col_map, "disk capacity", "disk capacit"),
+        "ssd_type": _pick_col(col_map, "disk interface type"),
+        "ram": _pick_col(col_map, "physical_memory", "physical memory", "ram"),
+        "battery": _pick_col(col_map, "capacity"),
+        "gpu": _pick_col(col_map, "video card model", "gpu"),
+        "mobo_status": _pick_col(col_map, "motherboard test status", "cmos condition"),
     }
 
     out = pd.DataFrame()
@@ -563,12 +701,24 @@ def show_result_popup(summary: str, out_path: Path) -> None:
 
 def main() -> int:
     folder = SCRIPT_DIR
-    master_path, blancco_path = pick_files_interactive(folder)
+    product_path, blancco_path = pick_files_interactive(folder)
+    validate_merge_inputs(product_path, blancco_path)
 
-    wd, uncollected_df, sheet2_names = load_master(master_path)
+    try:
+        wd, uncollected_df, sheet2_names = load_master(product_path)
+    except Exception as exc:
+        raise ValueError(
+            f"Could not read product list '{product_path.name}':\n{exc}"
+        ) from exc
+    try:
+        blancco = load_blancco(blancco_path)
+    except Exception as exc:
+        raise ValueError(
+            f"Could not read Blancco report '{blancco_path.name}':\n{exc}"
+        ) from exc
+
     uncollected_map = dict(zip(uncollected_df["serial"], uncollected_df["uncollected"])) if not uncollected_df.empty else {}
-    blancco = load_blancco(blancco_path)
-    lut = ensure_mtm_lookup(master_path, wd, sheet2_names)
+    lut = ensure_mtm_lookup(product_path, wd, sheet2_names)
 
     merged = merge_data(wd, blancco, lut, uncollected_map)
 
@@ -583,7 +733,7 @@ def main() -> int:
     success = int((merged["Status"] == "SUCCESS").sum())
     failed = total - success
     summary = (
-        f"Master ({master_label(master_path)}): {total} rows\n"
+        f"Product list ({master_label(product_path)}): {total} rows\n"
         f"SUCCESS (Blancco data pulled): {success}\n"
         f"FAILED: {failed}\n"
         f"Match rate: {(success/total*100):.1f}%" if total else "No rows"
