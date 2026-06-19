@@ -44,7 +44,8 @@ class ProductCsvImporter(models.AbstractModel):
         rows = list(reader)
         if self._is_merged_device_export(headers):
             rows = self._merged_device_rows_to_import_rows(rows)
-            return self._run_import(rows, additive=True)
+            # Full create/update so archived SKUs (e.g. T14s MTMs) are republished.
+            return self._run_import(rows, additive=False)
         else:
             required = {"section", "default_code", "title_raw", "cost_ex"}
             missing = required - headers
@@ -726,15 +727,25 @@ class ProductCsvImporter(models.AbstractModel):
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
         if tmpl and additive:
-            if ptype == "product" and tracking == "serial" and tmpl.tracking != "serial":
-                tmpl.tracking = "serial"
-            if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
-                applied, skipped = self._apply_stock(
-                    tmpl.product_variant_id, unit, additive=True
-                )
-                stock_batches += applied
-                skipped_serials += skipped
-            return created, updated, stock_batches, skipped_serials
+            config_lines = tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == config_attr.id
+            )
+            needs_full_update = (
+                not tmpl.active
+                or not tmpl.website_published
+                or not tmpl.sale_ok
+                or bool(config_lines)
+            )
+            if not needs_full_update:
+                if ptype == "product" and tracking == "serial" and tmpl.tracking != "serial":
+                    tmpl.tracking = "serial"
+                if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
+                    applied, skipped = self._apply_stock(
+                        tmpl.product_variant_id, unit, additive=True
+                    )
+                    stock_batches += applied
+                    skipped_serials += skipped
+                return created, updated, stock_batches, skipped_serials
 
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         vals = {
