@@ -4,22 +4,18 @@
         <field name="name">product.merge.wizard.form</field>
         <field name="model">product.merge.wizard</field>
         <field name="arch" type="xml">
-            <form string="Merge existing products">
+            <form string="Archive old Series products">
                 <div class="alert alert-info" role="alert">
-                    <p class="mb-2"><strong>No CSV upload — works on products already in Odoo.</strong></p>
-                    <p class="mb-1">This will:</p>
-                    <ul class="mb-0">
-                        <li>Find products that share the same <strong>Series</strong> attribute</li>
-                        <li>Combine them into <strong>one shop product</strong> with a <strong>Configuration</strong> dropdown</li>
-                        <li><strong>Keep your images</strong> and move stock to the right variant</li>
-                        <li><strong>Archive</strong> the old duplicate SKU products (not deleted)</li>
-                    </ul>
+                    <p class="mb-2"><strong>Series merge is no longer used.</strong></p>
+                    <p class="mb-1">Each MTM/SKU (e.g. LAT5590 vs LAT5591) is its own shop product.</p>
+                    <p class="mb-1">This tool only <strong>archives</strong> old combined listings (<code>RW-SERIES-*</code> with a Configuration dropdown).</p>
+                    <p class="mb-0">Then re-upload your MERGED CSV under <strong>Upload inventory CSV</strong> to recreate separate products.</p>
                 </div>
                 <group invisible="not result_message">
                     <field name="result_message" nolabel="1"/>
                 </group>
                 <footer>
-                    <button name="action_merge" string="Merge existing products" type="object" class="btn-primary" confirm="Merge products with the same Series? Images and stock are kept; old SKU products are archived."/>
+                    <button name="action_merge" string="Archive old Series products" type="object" class="btn-primary" confirm="Archive old RW-SERIES combined shop products? Re-upload MERGED CSV afterward."/>
                     <button string="Close" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
@@ -27,14 +23,14 @@
     </record>
 
     <record id="action_product_merge_wizard" model="ir.actions.act_window">
-        <field name="name">Merge existing products</field>
+        <field name="name">Archive old Series products</field>
         <field name="res_model">product.merge.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
     <menuitem id="menu_product_merge_wizard"
-              name="Merge existing products"
+              name="Archive old Series products"
               parent="stock.menu_stock_inventory_control"
               action="action_product_merge_wizard"
               sequence="24"
@@ -61,7 +57,7 @@
                     <field name="result_message" nolabel="1"/>
                 </group>
                 <footer>
-                    <button name="action_import" string="Upload and merge" type="object" class="btn-primary"/>
+                    <button name="action_import" string="Upload and import" type="object" class="btn-primary"/>
                     <button string="Close" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
@@ -89,7 +85,7 @@
         <field name="arch" type="xml">
             <xpath expr="//tree/header" position="inside">
                     <button name="%(action_product_merge_wizard)d"
-                            string="Merge existing products"
+                            string="Archive old Series products"
                             type="action"
                             class="btn-primary"
                             display="always"

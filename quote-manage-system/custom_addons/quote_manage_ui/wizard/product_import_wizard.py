@@ -23,14 +23,11 @@ class ProductImportWizard(models.TransientModel):
             "• CSV rows (SKUs): %(sku_count)s\n"
             "• Products created: %(created)s\n"
             "• Products updated: %(updated)s\n"
-            "• Series merged (Configuration dropdown): %(merged_series)s\n"
-            "• Old duplicate SKUs archived: %(archived_skus)s\n"
             "• Stock lines applied: %(stock_batches)s\n"
             "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
-            "Same System version (e.g. ThinkPad T14s Gen 2i) becomes one shop "
-            "product; different MTM/specs are Configuration options; multiple "
-            "serials on the same option share stock. Re-upload or use "
-            "Inventory → Merge existing products to fix duplicate listings."
+            "Each MTM/SKU is its own shop product (e.g. LAT5590 and LAT5591 "
+            "are separate listings). Same name + same MTM share stock; "
+            "re-upload this CSV to refresh listings."
         ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
         self.result_message = msg
         return {

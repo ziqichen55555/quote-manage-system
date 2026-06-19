@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CSV inventory import with Series merge → Configuration variants (shop dropdown)."""
+"""CSV inventory import — one shop product per MTM/SKU (name + model)."""
 from __future__ import annotations
 
 import base64
@@ -24,7 +24,7 @@ SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 
 class ProductCsvImporter(models.AbstractModel):
     _name = "product.csv.importer"
-    _description = "Re-Ware CSV product import (Series merge)"
+    _description = "Re-Ware CSV product import (one product per MTM/SKU)"
 
     # ------------------------------------------------------------------ API
     @api.model
@@ -430,33 +430,12 @@ class ProductCsvImporter(models.AbstractModel):
     def _run_import(self, rows, additive=False):
         sections = self._section_maps()
         units = self._aggregate_rows(rows)
-        by_series = defaultdict(list)
-        singles = []
+
+        # One shop product per SKU/MTM (name + model). Never lump different MTMs
+        # under one Series + Configuration product (e.g. LAT5590 ≠ LAT5591).
+        created = updated = stock_batches = skipped_serials = 0
 
         for unit in units:
-            if unit["service"]:
-                singles.append(unit)
-                continue
-            series = unit.get("series_key")
-            if series:
-                by_series[series].append(unit)
-            else:
-                singles.append(unit)
-
-        created = updated = merged_groups = archived = stock_batches = skipped_serials = 0
-
-        for series_name, group in sorted(by_series.items()):
-            if len(group) >= 2:
-                c, u, a, s = self._import_merged_series(series_name, group, sections)
-                created += c
-                updated += u
-                archived += a
-                stock_batches += s
-                merged_groups += 1
-            else:
-                singles.extend(group)
-
-        for unit in singles:
             c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
@@ -467,8 +446,8 @@ class ProductCsvImporter(models.AbstractModel):
         return {
             "created": created,
             "updated": updated,
-            "merged_series": merged_groups,
-            "archived_skus": archived,
+            "merged_series": 0,
+            "archived_skus": 0,
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
             "sku_count": len(units),
@@ -729,15 +708,16 @@ class ProductCsvImporter(models.AbstractModel):
             tag_cmds = [(5, 0, 0)]
 
         titles = unit["titles"]
-        name = self._clean_title(titles[0], code)
+        product_name = unit.get("series_key") or self._clean_title(titles[0], code)
         brand = unit["brand"]
         desc_html = self._build_unit_description(unit)
         tracking = self._resolve_tracking(
             ptype, sec_key, unit["unit_ids"], categ_id=categ_id
         )
 
-        PT = self.env["product.template"].sudo()
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
         tmpl = PT.search([("default_code", "=", code)], limit=1)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
         if tmpl and additive:
             if ptype == "product" and tracking == "serial" and tmpl.tracking != "serial":
@@ -752,7 +732,7 @@ class ProductCsvImporter(models.AbstractModel):
 
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         vals = {
-            "name": name,
+            "name": product_name,
             "default_code": code,
             "categ_id": categ_id,
             "public_categ_ids": public_cmds,
@@ -761,7 +741,8 @@ class ProductCsvImporter(models.AbstractModel):
             "tracking": tracking,
             "website_published": True,
             "sale_ok": True,
-            "description_sale": self._shop_model_subtitle(code, name)[:500],
+            "active": True,
+            "description_sale": self._shop_model_subtitle(code, product_name)[:500],
             "allow_out_of_stock_order": ptype != "product",
             "show_availability": ptype == "product",
             "taxes_id": [(6, 0, self._default_sale_tax_ids())],
@@ -785,11 +766,17 @@ class ProductCsvImporter(models.AbstractModel):
             tmpl = PT.create(vals)
             created += 1
 
+        if ptype == "product":
+            tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == config_attr.id
+            ).unlink()
+
         series_name = self._sync_template_attributes(tmpl, brand=brand, titles=titles, ptype=ptype)
-        if series_name and ptype == "product":
+        shop_name = unit.get("series_key") or series_name or product_name
+        if shop_name and ptype == "product":
             tmpl.write({
-                "name": series_name,
-                "description_sale": self._shop_model_subtitle(code, series_name)[:500],
+                "name": shop_name,
+                "description_sale": self._shop_model_subtitle(code, shop_name)[:500],
             })
 
         try:
@@ -1365,67 +1352,39 @@ class ProductCsvImporter(models.AbstractModel):
 
     # ------------------------------------------- merge existing DB products
     @api.model
-    def merge_existing_catalog(self):
-        """Merge already-imported products by Series (no CSV re-upload).
-
-        Keeps images and stock from each source product; archives duplicate SKUs.
-        Safe to run more than once — already-merged groups are skipped.
-        """
-        PT = self.env["product.template"].sudo().with_context(active_test=False)
+    def archive_series_configuration_products(self):
+        """Unpublish old one-listing-per-Series products (RW-SERIES-* + Configuration)."""
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
-        series_attr = self.env.ref("quote_manage_ui.attr_series")
-
-        candidates = PT.search(
-            [
-                ("active", "=", True),
-                ("sale_ok", "=", True),
-                ("type", "=", "product"),
-            ]
-        )
-        candidates = candidates.filtered(
-            lambda t: not self._is_configuration_only_product(t, config_attr)
-        )
-
-        by_series = defaultdict(list)
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        candidates = PT.search([
+            ("active", "=", True),
+            ("default_code", "=like", "RW-SERIES-%"),
+        ])
+        archived = 0
         for tmpl in candidates:
-            series_line = tmpl.attribute_line_ids.filtered(
-                lambda l: l.attribute_id.id == series_attr.id
-            )
-            if not series_line or not series_line.value_ids:
+            if not tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == config_attr.id
+            ):
                 continue
-            series_name = series_line.value_ids[0].name
-            by_series[series_name].append(tmpl)
+            tmpl.write({"active": False, "website_published": False, "sale_ok": False})
+            archived += 1
+        return archived
 
-        sections = self._section_maps()
-        created = updated = merged_groups = archived = stock_batches = 0
-
-        for series_name, templates in sorted(by_series.items()):
-            if len(templates) < 2:
-                continue
-            group = [self._template_to_merge_unit(t) for t in templates]
-            try:
-                c, u, a, s = self._import_merged_series(series_name, group, sections)
-            except Exception as exc:
-                _logger.warning(
-                    "Series merge skipped for %s (%s templates): %s",
-                    series_name,
-                    len(templates),
-                    exc,
-                )
-                continue
-            created += c
-            updated += u
-            archived += a
-            stock_batches += s
-            merged_groups += 1
-
-        self.env.cr.commit()
+    @api.model
+    def merge_existing_catalog(self):
+        """Deprecated: shop uses one product per MTM/SKU, not Series merge."""
+        archived = self.archive_series_configuration_products()
         return {
-            "merged_series": merged_groups,
-            "created": created,
-            "updated": updated,
+            "merged_series": 0,
+            "created": 0,
+            "updated": 0,
             "archived_skus": archived,
-            "stock_migrations": stock_batches,
+            "stock_migrations": 0,
+            "message": (
+                "Series merge is disabled. Each MTM/SKU is its own shop product. "
+                "Re-upload your MERGED CSV to recreate separate listings. "
+                f"Archived {archived} old combined Series product(s)."
+            ),
         }
 
     @api.model
