@@ -23,11 +23,12 @@ class ProductImportWizard(models.TransientModel):
             "• CSV rows (SKUs): %(sku_count)s\n"
             "• Products created: %(created)s\n"
             "• Products updated: %(updated)s\n"
+            "• Old Configuration dropdown listings archived: %(archived_skus)s\n"
             "• Stock lines applied: %(stock_batches)s\n"
             "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
-            "Each MTM/SKU is its own shop product (e.g. LAT5590 and LAT5591 "
-            "are separate listings). Same name + same MTM share stock; "
-            "re-upload this CSV to refresh listings."
+            "Each MTM/SKU is its own shop product (e.g. 20NYS4CP00, "
+            "20NYS4CP00-8G-256G-T, 20NYS4CP00-8G-512G-T are three listings). "
+            "Same name + same MTM share stock."
         ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
         self.result_message = msg
         return {

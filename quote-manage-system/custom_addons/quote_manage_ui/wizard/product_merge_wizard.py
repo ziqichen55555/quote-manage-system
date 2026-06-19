@@ -4,7 +4,7 @@ from odoo import _, fields, models
 
 class ProductMergeWizard(models.TransientModel):
     _name = "product.merge.wizard"
-    _description = "Archive old Series-combined shop products"
+    _description = "Merge existing products (fix old combined listings)"
 
     result_message = fields.Text(string="Last result", readonly=True)
 
@@ -12,7 +12,7 @@ class ProductMergeWizard(models.TransientModel):
         self.ensure_one()
         result = self.env["product.csv.importer"].sudo().merge_existing_catalog()
         msg = result.get("message") or _(
-            "Archived %(archived)s old combined Series product(s). "
+            "Archived %(archived)s old combined shop product(s). "
             "Re-upload your MERGED CSV to recreate separate MTM listings."
         ) % {"archived": result.get("archived_skus", 0)}
         self.result_message = msg
@@ -20,7 +20,7 @@ class ProductMergeWizard(models.TransientModel):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _("Old Series products archived"),
+                "title": _("Merge / fix complete"),
                 "message": msg,
                 "type": "success",
                 "sticky": True,

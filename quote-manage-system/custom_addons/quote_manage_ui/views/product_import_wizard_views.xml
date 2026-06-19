@@ -4,18 +4,17 @@
         <field name="name">product.merge.wizard.form</field>
         <field name="model">product.merge.wizard</field>
         <field name="arch" type="xml">
-            <form string="Archive old Series products">
+            <form string="Merge existing products">
                 <div class="alert alert-info" role="alert">
-                    <p class="mb-2"><strong>Series merge is no longer used.</strong></p>
-                    <p class="mb-1">Each MTM/SKU (e.g. LAT5590 vs LAT5591) is its own shop product.</p>
-                    <p class="mb-1">This tool only <strong>archives</strong> old combined listings (<code>RW-SERIES-*</code> with a Configuration dropdown).</p>
-                    <p class="mb-0">Then re-upload your MERGED CSV under <strong>Upload inventory CSV</strong> to recreate separate products.</p>
+                    <p class="mb-2"><strong>Fix old combined shop listings (no CSV needed for this step).</strong></p>
+                    <p class="mb-1">This archives products that still use a <strong>Configuration</strong> dropdown — for example one ThinkPad T490s page with options <code>20NYS4CP00</code>, <code>20NYS4CP00-8G-256G-T</code>, <code>20NYS4CP00-8G-512G-T</code>.</p>
+                    <p class="mb-0">After running this, use <strong>Upload inventory CSV</strong> to recreate <strong>one listing per MTM/SKU</strong>.</p>
                 </div>
                 <group invisible="not result_message">
                     <field name="result_message" nolabel="1"/>
                 </group>
                 <footer>
-                    <button name="action_merge" string="Archive old Series products" type="object" class="btn-primary" confirm="Archive old RW-SERIES combined shop products? Re-upload MERGED CSV afterward."/>
+                    <button name="action_merge" string="Merge existing products" type="object" class="btn-primary" confirm="Archive old combined Configuration dropdown listings? Re-upload MERGED CSV afterward."/>
                     <button string="Close" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
@@ -23,14 +22,14 @@
     </record>
 
     <record id="action_product_merge_wizard" model="ir.actions.act_window">
-        <field name="name">Archive old Series products</field>
+        <field name="name">Merge existing products</field>
         <field name="res_model">product.merge.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
     <menuitem id="menu_product_merge_wizard"
-              name="Archive old Series products"
+              name="Merge existing products"
               parent="stock.menu_stock_inventory_control"
               action="action_product_merge_wizard"
               sequence="24"
@@ -85,7 +84,7 @@
         <field name="arch" type="xml">
             <xpath expr="//tree/header" position="inside">
                     <button name="%(action_product_merge_wizard)d"
-                            string="Archive old Series products"
+                            string="Merge existing products"
                             type="action"
                             class="btn-primary"
                             display="always"

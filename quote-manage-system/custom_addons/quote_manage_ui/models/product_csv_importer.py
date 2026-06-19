@@ -431,11 +431,16 @@ class ProductCsvImporter(models.AbstractModel):
         sections = self._section_maps()
         units = self._aggregate_rows(rows)
 
+        # Remove legacy one-listing + Configuration dropdown products (e.g. ThinkPad
+        # T490s with 20NYS4CP00 / 20NYS4CP00-8G-256G-T as variant options).
+        archived_dropdowns = self.archive_configuration_dropdown_products()
+
         # One shop product per SKU/MTM (name + model). Never lump different MTMs
         # under one Series + Configuration product (e.g. LAT5590 ≠ LAT5591).
         created = updated = stock_batches = skipped_serials = 0
 
         for unit in units:
+            self._archive_configuration_parent_for_sku(unit["code"])
             c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
@@ -447,7 +452,7 @@ class ProductCsvImporter(models.AbstractModel):
             "created": created,
             "updated": updated,
             "merged_series": 0,
-            "archived_skus": 0,
+            "archived_skus": archived_dropdowns,
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
             "sku_count": len(units),
@@ -716,6 +721,7 @@ class ProductCsvImporter(models.AbstractModel):
         )
 
         PT = self.env["product.template"].sudo().with_context(active_test=False)
+        self._archive_configuration_parent_for_sku(code)
         tmpl = PT.search([("default_code", "=", code)], limit=1)
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
@@ -1352,16 +1358,18 @@ class ProductCsvImporter(models.AbstractModel):
 
     # ------------------------------------------- merge existing DB products
     @api.model
-    def archive_series_configuration_products(self):
-        """Unpublish old one-listing-per-Series products (RW-SERIES-* + Configuration)."""
+    def _archive_configuration_parent_for_sku(self, code):
+        """Archive a legacy Configuration parent when the SKU only exists as a variant."""
+        code = (code or "").strip()
+        if not code:
+            return 0
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
-        PT = self.env["product.template"].sudo().with_context(active_test=False)
-        candidates = PT.search([
-            ("active", "=", True),
-            ("default_code", "=like", "RW-SERIES-%"),
-        ])
+        PP = self.env["product.product"].sudo().with_context(active_test=False)
         archived = 0
-        for tmpl in candidates:
+        for variant in PP.search([("default_code", "=", code), ("active", "=", True)]):
+            tmpl = variant.product_tmpl_id
+            if not tmpl.active or tmpl.default_code == code:
+                continue
             if not tmpl.attribute_line_ids.filtered(
                 lambda l: l.attribute_id.id == config_attr.id
             ):
@@ -1371,9 +1379,29 @@ class ProductCsvImporter(models.AbstractModel):
         return archived
 
     @api.model
+    def archive_configuration_dropdown_products(self):
+        """Unpublish legacy shop listings that use a Configuration dropdown."""
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        candidates = PT.search([
+            ("active", "=", True),
+            ("attribute_line_ids.attribute_id", "=", config_attr.id),
+        ])
+        archived = 0
+        for tmpl in candidates:
+            tmpl.write({"active": False, "website_published": False, "sale_ok": False})
+            archived += 1
+        return archived
+
+    @api.model
+    def archive_series_configuration_products(self):
+        """Backward-compatible alias for migrations."""
+        return self.archive_configuration_dropdown_products()
+
+    @api.model
     def merge_existing_catalog(self):
-        """Deprecated: shop uses one product per MTM/SKU, not Series merge."""
-        archived = self.archive_series_configuration_products()
+        """Archive legacy Configuration dropdown listings; re-upload CSV for separate SKUs."""
+        archived = self.archive_configuration_dropdown_products()
         return {
             "merged_series": 0,
             "created": 0,
@@ -1381,10 +1409,12 @@ class ProductCsvImporter(models.AbstractModel):
             "archived_skus": archived,
             "stock_migrations": 0,
             "message": (
-                "Series merge is disabled. Each MTM/SKU is its own shop product. "
-                "Re-upload your MERGED CSV to recreate separate listings. "
-                f"Archived {archived} old combined Series product(s)."
-            ),
+                "Archived %(archived)s old combined shop product(s) that used a "
+                "Configuration dropdown (e.g. ThinkPad T490s with multiple MTM/SKU "
+                "options on one page).\n\n"
+                "Each MTM/SKU is now its own listing. Re-upload your MERGED CSV under "
+                "Upload inventory CSV to recreate separate products and stock."
+            ) % {"archived": archived},
         }
 
     @api.model
