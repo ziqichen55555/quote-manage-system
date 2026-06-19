@@ -24,7 +24,7 @@ SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 
 class ProductCsvImporter(models.AbstractModel):
     _name = "product.csv.importer"
-    _description = "Re-Ware CSV product import (one product per MTM/SKU)"
+    _description = "Re-Ware CSV product import (additive — new SKUs + stock only)"
 
     # ------------------------------------------------------------------ API
     @api.model
@@ -44,8 +44,7 @@ class ProductCsvImporter(models.AbstractModel):
         rows = list(reader)
         if self._is_merged_device_export(headers):
             rows = self._merged_device_rows_to_import_rows(rows)
-            # Full create/update so archived SKUs (e.g. T14s MTMs) are republished.
-            return self._run_import(rows, additive=False)
+            return self._run_import(rows, additive=True)
         else:
             required = {"section", "default_code", "title_raw", "cost_ex"}
             missing = required - headers
@@ -53,7 +52,7 @@ class ProductCsvImporter(models.AbstractModel):
                 raise UserError(
                     _("Missing CSV columns: %s") % ", ".join(sorted(missing))
                 )
-        return self._run_import(rows)
+        return self._run_import(rows, additive=True)
 
     @api.model
     def _is_merged_device_export(self, headers):
@@ -432,16 +431,11 @@ class ProductCsvImporter(models.AbstractModel):
         sections = self._section_maps()
         units = self._aggregate_rows(rows)
 
-        # Remove legacy one-listing + Configuration dropdown products (e.g. ThinkPad
-        # T490s with 20NYS4CP00 / 20NYS4CP00-8G-256G-T as variant options).
-        archived_dropdowns = self.archive_configuration_dropdown_products()
-
-        # One shop product per SKU/MTM (name + model). Never lump different MTMs
-        # under one Series + Configuration product (e.g. LAT5590 ≠ LAT5591).
+        # Additive import: only SKUs present in the CSV are touched. No archiving,
+        # no overwriting existing products, no zeroing stock for absent SKUs.
         created = updated = stock_batches = skipped_serials = 0
 
         for unit in units:
-            self._archive_configuration_parent_for_sku(unit["code"])
             c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
@@ -453,7 +447,7 @@ class ProductCsvImporter(models.AbstractModel):
             "created": created,
             "updated": updated,
             "merged_series": 0,
-            "archived_skus": archived_dropdowns,
+            "archived_skus": 0,
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
             "sku_count": len(units),
@@ -700,6 +694,29 @@ class ProductCsvImporter(models.AbstractModel):
         return created, updated, archived, stock_batches
 
     @api.model
+    def _ensure_published(self, tmpl):
+        """Restore shop visibility only — never change name, price, or attributes."""
+        updates = {}
+        if not tmpl.active:
+            updates["active"] = True
+        if not tmpl.website_published:
+            updates["website_published"] = True
+        if not tmpl.sale_ok:
+            updates["sale_ok"] = True
+        if updates:
+            tmpl.write(updates)
+
+    @api.model
+    def _stock_variant_for_unit(self, tmpl, code):
+        variants = tmpl.product_variant_ids.filtered(lambda v: v.active)
+        if not variants:
+            return self.env["product.product"]
+        if len(variants) == 1:
+            return variants[0]
+        match = variants.filtered(lambda v: (v.default_code or "").strip() == code)
+        return match[:1] or variants[:1]
+
+    @api.model
     def _import_single_unit(self, unit, sections, additive=False):
         created = updated = stock_batches = skipped_serials = 0
         code = unit["code"]
@@ -722,30 +739,19 @@ class ProductCsvImporter(models.AbstractModel):
         )
 
         PT = self.env["product.template"].sudo().with_context(active_test=False)
-        self._archive_configuration_parent_for_sku(code)
         tmpl = PT.search([("default_code", "=", code)], limit=1)
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
         if tmpl and additive:
-            config_lines = tmpl.attribute_line_ids.filtered(
-                lambda l: l.attribute_id.id == config_attr.id
-            )
-            needs_full_update = (
-                not tmpl.active
-                or not tmpl.website_published
-                or not tmpl.sale_ok
-                or bool(config_lines)
-            )
-            if not needs_full_update:
-                if ptype == "product" and tracking == "serial" and tmpl.tracking != "serial":
-                    tmpl.tracking = "serial"
-                if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
-                    applied, skipped = self._apply_stock(
-                        tmpl.product_variant_id, unit, additive=True
-                    )
-                    stock_batches += applied
-                    skipped_serials += skipped
-                return created, updated, stock_batches, skipped_serials
+            self._ensure_published(tmpl)
+            variant = self._stock_variant_for_unit(tmpl, code)
+            if ptype == "product" and unit["qty"] > 0 and variant:
+                applied, skipped = self._apply_stock(
+                    variant, unit, additive=True
+                )
+                stock_batches += applied
+                skipped_serials += skipped
+            return created, updated, stock_batches, skipped_serials
 
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         vals = {
@@ -801,8 +807,11 @@ class ProductCsvImporter(models.AbstractModel):
         except Exception as exc:
             _logger.warning("Image sync failed for %s: %s", tmpl.name, exc)
 
-        if ptype == "product" and unit["qty"] > 0 and len(tmpl.product_variant_ids) == 1:
-            applied, skipped = self._apply_stock(tmpl.product_variant_id, unit)
+        variant = self._stock_variant_for_unit(tmpl, code)
+        if ptype == "product" and unit["qty"] > 0 and variant:
+            applied, skipped = self._apply_stock(
+                variant, unit, additive=bool(created)
+            )
             stock_batches += applied
             skipped_serials += skipped
 
@@ -1042,6 +1051,9 @@ class ProductCsvImporter(models.AbstractModel):
                 limit=1,
             )
             target = float(unit["qty"])
+            if additive:
+                current = sq.quantity if sq else 0.0
+                target = current + float(unit["qty"])
             if sq:
                 sq.with_context(inventory_mode=True).write(
                     {"inventory_quantity_auto_apply": target}

@@ -19,16 +19,14 @@ class ProductImportWizard(models.TransientModel):
             self.file, filename=self.filename
         )
         msg = _(
-            "Import complete.\n"
+            "Import complete (additive mode).\n"
             "• CSV rows (SKUs): %(sku_count)s\n"
-            "• Products created: %(created)s\n"
-            "• Products updated: %(updated)s\n"
-            "• Old Configuration dropdown listings archived: %(archived_skus)s\n"
-            "• Stock lines applied: %(stock_batches)s\n"
+            "• New products created: %(created)s\n"
+            "• Existing products changed: %(updated)s\n"
+            "• Stock lines added: %(stock_batches)s\n"
             "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
-            "Each MTM/SKU is its own shop product (e.g. 20NYS4CP00, "
-            "20NYS4CP00-8G-256G-T, 20NYS4CP00-8G-512G-T are three listings). "
-            "Same name + same MTM share stock."
+            "Existing products keep their name, price, and attributes — only "
+            "new serials/quantity are added. SKUs not in this file are untouched."
         ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
         self.result_message = msg
         return {
