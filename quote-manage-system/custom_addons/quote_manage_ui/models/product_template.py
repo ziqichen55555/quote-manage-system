@@ -117,6 +117,35 @@ class ProductTemplate(models.Model):
                 )
         return {"updated": updated, "skipped": skipped, "errors": errors}
 
+    def _rw_shop_model_label(self):
+        """MTM / model code shown under the product name on the shop (not the product title)."""
+        self.ensure_one()
+        name = (self.name or "").strip()
+        desc = (self.description_sale or "").strip()
+        if desc and desc != name and not desc.lower().startswith("imported sheet"):
+            return desc
+
+        code = (self.default_code or "").strip()
+        if code and not code.startswith("RW-SERIES-") and code != name:
+            return code
+
+        variant_codes = sorted(
+            {
+                c.strip()
+                for c in self.product_variant_ids.mapped("default_code")
+                if c and not c.startswith("RW-SERIES-") and c.strip() != name
+            }
+        )
+        if len(variant_codes) == 1:
+            return variant_codes[0]
+        if variant_codes:
+            return ", ".join(variant_codes[:4])
+
+        m = re.search(r"SKU\s+(\S+)", desc, re.I)
+        if m:
+            return m.group(1)
+        return code or ""
+
     def _rw_website_available_qty(self, variant=None):
         """Sellable quantity for the website warehouse.
 

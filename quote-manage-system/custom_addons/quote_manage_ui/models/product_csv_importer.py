@@ -134,6 +134,42 @@ class ProductCsvImporter(models.AbstractModel):
         return ", ".join(parts)
 
     @api.model
+    def _shop_model_subtitle(self, code, product_name=""):
+        """Sales description on shop = MTM / model code, not the product title."""
+        code = (code or "").strip()
+        name = (product_name or "").strip()
+        if code and code != name and not code.startswith("RW-SERIES-"):
+            return code
+        return code or name
+
+    @api.model
+    def _merged_series_model_subtitle(self, group):
+        codes = sorted({u["code"] for u in group if u.get("code")})
+        codes = [c for c in codes if c and not c.startswith("RW-SERIES-")]
+        if len(codes) == 1:
+            return codes[0]
+        if codes:
+            return ", ".join(codes[:6])
+        return group[0]["code"] if group else ""
+
+    @api.model
+    def fix_shop_model_subtitles(self):
+        """Set description_sale to MTM when it duplicates the product name."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        fixed = 0
+        for tmpl in PT.search([("sale_ok", "=", True), ("website_published", "=", True)]):
+            label = tmpl._rw_shop_model_label()
+            if not label:
+                continue
+            desc = (tmpl.description_sale or "").strip()
+            if desc == label:
+                continue
+            if desc == (tmpl.name or "").strip() or not desc or desc.lower().startswith("imported sheet"):
+                tmpl.description_sale = label[:500]
+                fixed += 1
+        return fixed
+
+    @api.model
     def _is_valid_series_name(self, series):
         s = (series or "").strip()
         if len(s) < 8:
@@ -600,7 +636,7 @@ class ProductCsvImporter(models.AbstractModel):
             "sale_ok": True,
             "allow_out_of_stock_order": False,
             "show_availability": True,
-            "description_sale": series_name[:500],
+            "description_sale": self._merged_series_model_subtitle(group)[:500],
             "taxes_id": [(6, 0, self._default_sale_tax_ids())],
         }
         desc_html = self._build_group_description(group)
@@ -725,7 +761,7 @@ class ProductCsvImporter(models.AbstractModel):
             "tracking": tracking,
             "website_published": True,
             "sale_ok": True,
-            "description_sale": (f"{brand} · {code}".strip(" ·") if brand else code)[:500],
+            "description_sale": self._shop_model_subtitle(code, name)[:500],
             "allow_out_of_stock_order": ptype != "product",
             "show_availability": ptype == "product",
             "taxes_id": [(6, 0, self._default_sale_tax_ids())],
@@ -751,7 +787,10 @@ class ProductCsvImporter(models.AbstractModel):
 
         series_name = self._sync_template_attributes(tmpl, brand=brand, titles=titles, ptype=ptype)
         if series_name and ptype == "product":
-            tmpl.write({"name": series_name})
+            tmpl.write({
+                "name": series_name,
+                "description_sale": self._shop_model_subtitle(code, series_name)[:500],
+            })
 
         try:
             self._sync_product_images(tmpl, tmpl.name)
