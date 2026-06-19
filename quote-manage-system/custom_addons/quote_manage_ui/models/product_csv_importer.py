@@ -707,8 +707,23 @@ class ProductCsvImporter(models.AbstractModel):
             tmpl.write(updates)
 
     @api.model
+    def _ensure_active_variant(self, tmpl, code):
+        """Reactivate a variant when a per-MTM template was archived without its variant."""
+        variants = tmpl.product_variant_ids.with_context(active_test=False)
+        active = variants.filtered(lambda v: v.active)
+        if active:
+            return active[:1]
+        match = variants.filtered(lambda v: (v.default_code or "").strip() == code)
+        to_activate = match or (variants if len(variants) == 1 else variants[:1])
+        if to_activate:
+            to_activate.write({"active": True, "sale_ok": True})
+        return to_activate[:1]
+
+    @api.model
     def _stock_variant_for_unit(self, tmpl, code):
         variants = tmpl.product_variant_ids.filtered(lambda v: v.active)
+        if not variants:
+            variants = self._ensure_active_variant(tmpl, code)
         if not variants:
             return self.env["product.product"]
         if len(variants) == 1:
@@ -744,6 +759,7 @@ class ProductCsvImporter(models.AbstractModel):
 
         if tmpl and additive:
             self._ensure_published(tmpl)
+            self._ensure_active_variant(tmpl, code)
             variant = self._stock_variant_for_unit(tmpl, code)
             if ptype == "product" and unit["qty"] > 0 and variant:
                 applied, skipped = self._apply_stock(
@@ -794,7 +810,11 @@ class ProductCsvImporter(models.AbstractModel):
                 lambda l: l.attribute_id.id == config_attr.id
             ).unlink()
 
-        series_name = self._sync_template_attributes(tmpl, brand=brand, titles=titles, ptype=ptype)
+        specs = unit.get("specs") or self._parse_specs(brand, titles)
+        series_name = self._sync_template_attributes(
+            tmpl, brand=brand, titles=titles, ptype=ptype, specs=specs
+        )
+        self._ensure_active_variant(tmpl, code)
         shop_name = unit.get("series_key") or series_name or product_name
         if shop_name and ptype == "product":
             tmpl.write({
@@ -1257,8 +1277,10 @@ class ProductCsvImporter(models.AbstractModel):
             specs["cpu"] = "i5-10210U"
         elif re.search(r"I5[-\s]?6500|6500", t_up) and "I7" not in t_up:
             specs["cpu"] = "i5-6500"
-        elif "1135G7" in t_up or "1145G7" in t_up:
-            specs["cpu"] = "11th Gen i5/i7"
+        elif "1145G7" in t_up:
+            specs["cpu"] = "i5-1145G7"
+        elif "1135G7" in t_up:
+            specs["cpu"] = "i5-1135G7"
         elif "7300U" in t_up:
             specs["cpu"] = "i5-7300U"
         elif "8365U" in t_up:
@@ -1278,15 +1300,26 @@ class ProductCsvImporter(models.AbstractModel):
             elif len(all_gb) == 1 and int(all_gb[0]) <= 64:
                 specs["ram"] = f"{int(all_gb[0])}GB"
 
-        if re.search(r"1\s*TB\s*SSD", blob, re.I):
+        storage_blob = re.sub(
+            r"11th\s+Gen[^,|]*|i[3579]-\d{4}G\d[^,|]*|@\s*[\d.]+\s*GHz",
+            " ",
+            blob,
+            flags=re.I,
+        )
+        if re.search(r"1\s*TB\s*SSD", storage_blob, re.I):
             specs["storage"] = "1TB SSD"
         else:
-            st_m = re.search(r"(\d+)\s*(?:GB|G)\s*SSD", blob, re.I)
+            st_m = re.search(r"(\d+)\s*(?:GB|G)\s*SSD", storage_blob, re.I)
             if st_m:
                 specs["storage"] = f"{st_m.group(1)}GB SSD"
             else:
-                nums = [int(x) for x in re.findall(r"(\d+)\s*G[B]?", blob, re.I)]
-                big = [x for x in nums if x > 64]
+                nums = [
+                    int(x)
+                    for x in re.findall(
+                        r"(?<![\d])(\d{2,4})\s*G[B]?\b", storage_blob, re.I
+                    )
+                ]
+                big = [x for x in nums if 64 < x <= 2048]
                 if big:
                     specs["storage"] = f"{max(big)}GB SSD"
                 elif "500GB" in t_up:
@@ -1321,11 +1354,12 @@ class ProductCsvImporter(models.AbstractModel):
         return fixed
 
     @api.model
-    def _sync_template_attributes(self, tmpl, *, brand, titles, ptype):
+    def _sync_template_attributes(self, tmpl, *, brand, titles, ptype, specs=None):
         """Legacy single-SKU attribute lines for shop filters."""
         if ptype != "product":
             return None
-        specs = self._parse_specs(brand, titles)
+        if not specs:
+            specs = self._parse_specs(brand, titles)
         Line = self.env["product.template.attribute.line"].sudo()
         managed = [
             self.env.ref(x).id
