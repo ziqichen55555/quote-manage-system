@@ -1124,6 +1124,56 @@ class ProductCsvImporter(models.AbstractModel):
         ).unlink()
 
     @api.model
+    def _set_serial_stock_one(self, variant, lot, wh):
+        """Ensure exactly one unit in stock for a serial lot (idempotent re-import)."""
+        Quant = self.env["stock.quant"].sudo()
+        sq = Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "=", wh.lot_stock_id.id),
+                ("lot_id", "=", lot.id),
+            ],
+            limit=1,
+        )
+        if sq and sq.quantity >= 1:
+            return 0, 1
+        if sq:
+            sq.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 1.0}
+            )
+            return 1, 0
+        Quant.with_context(inventory_mode=True).create(
+            {
+                "product_id": variant.id,
+                "location_id": wh.lot_stock_id.id,
+                "lot_id": lot.id,
+                "inventory_quantity_auto_apply": 1.0,
+            }
+        )
+        return 1, 0
+
+    @api.model
+    def _find_or_create_lot(self, variant, serial_name):
+        Lot = self.env["stock.lot"].sudo()
+        lot = Lot.search(
+            [
+                ("product_id", "=", variant.id),
+                ("name", "=", serial_name),
+                ("company_id", "=", self.env.company.id),
+            ],
+            limit=1,
+        )
+        if not lot:
+            lot = Lot.create(
+                {
+                    "product_id": variant.id,
+                    "name": serial_name,
+                    "company_id": self.env.company.id,
+                }
+            )
+        return lot
+
+    @api.model
     def _move_serial_lot_to_variant(self, lot, new_variant, wh):
         """Move on-hand qty for one serial onto new_variant (merge re-import)."""
         if not lot or not new_variant or lot.product_id.id == new_variant.id:
@@ -1140,9 +1190,6 @@ class ProductCsvImporter(models.AbstractModel):
             ]
         )
         for quant in quants:
-            qty = quant.quantity
-            if qty <= 0:
-                continue
             location = quant.location_id
             new_lot = Lot.search(
                 [
@@ -1168,9 +1215,15 @@ class ProductCsvImporter(models.AbstractModel):
                 ],
                 limit=1,
             )
+            if dest and dest.quantity >= 1:
+                quant.with_context(inventory_mode=True).write(
+                    {"inventory_quantity_auto_apply": 0.0}
+                )
+                moved = True
+                continue
             if dest:
                 dest.with_context(inventory_mode=True).write(
-                    {"inventory_quantity_auto_apply": dest.quantity + qty}
+                    {"inventory_quantity_auto_apply": 1.0}
                 )
             else:
                 Quant.with_context(inventory_mode=True).create(
@@ -1178,7 +1231,7 @@ class ProductCsvImporter(models.AbstractModel):
                         "product_id": new_variant.id,
                         "location_id": location.id,
                         "lot_id": new_lot.id,
-                        "inventory_quantity_auto_apply": qty,
+                        "inventory_quantity_auto_apply": 1.0,
                     }
                 )
             quant.with_context(inventory_mode=True).write(
@@ -1231,53 +1284,23 @@ class ProductCsvImporter(models.AbstractModel):
                             ):
                                 applied += 1
                             else:
-                                skipped += 1
+                                lot = self._find_or_create_lot(variant, lot_name)
+                                a, s = self._set_serial_stock_one(
+                                    variant, lot, wh
+                                )
+                                applied += a
+                                skipped += s
                         else:
-                            skipped += 1
+                            a, s = self._set_serial_stock_one(
+                                variant, existing, wh
+                            )
+                            applied += a
+                            skipped += s
                         continue
-                lot = Lot.search(
-                    [
-                        ("product_id", "=", variant.id),
-                        ("name", "=", lot_name),
-                        ("company_id", "=", self.env.company.id),
-                    ],
-                    limit=1,
-                )
-                if not lot:
-                    lot = Lot.create(
-                        {
-                            "product_id": variant.id,
-                            "name": lot_name,
-                            "company_id": self.env.company.id,
-                        }
-                    )
-                sq = self.env["stock.quant"].sudo().search(
-                    [
-                        ("product_id", "=", variant.id),
-                        ("location_id", "=", wh.lot_stock_id.id),
-                        ("lot_id", "=", lot.id),
-                    ],
-                    limit=1,
-                )
-                if sq and sq.quantity > 0:
-                    skipped += 1
-                    continue
-                if sq:
-                    sq.with_context(inventory_mode=True).write(
-                        {"inventory_quantity_auto_apply": 1.0}
-                    )
-                else:
-                    self.env["stock.quant"].sudo().with_context(
-                        inventory_mode=True
-                    ).create(
-                        {
-                            "product_id": variant.id,
-                            "location_id": wh.lot_stock_id.id,
-                            "lot_id": lot.id,
-                            "inventory_quantity_auto_apply": 1.0,
-                        }
-                    )
-                applied += 1
+                lot = self._find_or_create_lot(variant, lot_name)
+                a, s = self._set_serial_stock_one(variant, lot, wh)
+                applied += a
+                skipped += s
         else:
             sq = self.env["stock.quant"].sudo().search(
                 [
