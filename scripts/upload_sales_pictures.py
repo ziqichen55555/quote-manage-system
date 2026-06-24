@@ -46,6 +46,7 @@ from sales_pictures_upload import (  # noqa: E402
     image_quality_ok,
     load_sku_images,
     manifest_for_sku,
+    manifest_report,
     scan_suggestions,
 )
 
@@ -287,7 +288,7 @@ def main() -> int:
     parser.add_argument("--overwrite", action="store_true", default=True)
     parser.add_argument("--no-overwrite", action="store_false", dest="overwrite")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--scan", action="store_true", help="List files in pictures dir with quality flags")
+    parser.add_argument("--list-manifest", action="store_true", help="List 30 mapped SKUs and files")
     args = parser.parse_args()
     pictures_dir = args.pictures_dir or find_sales_pictures_dir()
     if not pictures_dir.is_dir():
@@ -296,6 +297,19 @@ def main() -> int:
         return 1
     if not args.pictures_dir and not os.environ.get("SALES_PICTURES_DIR"):
         print(f"Using pictures dir: {pictures_dir}")
+
+    if args.list_manifest:
+        ready = 0
+        for row in manifest_report(pictures_dir):
+            flag = "OK" if row["ready"] else "MISSING"
+            if row["ready"]:
+                ready += 1
+            gal = ", ".join(row["gallery"]) if row["gallery"] else "—"
+            print(
+                f"[{flag}] {row['sku']:18} main={row['main'] or '—':30} gallery={gal}"
+            )
+        print(f"\nReady: {ready}/{len(manifest_report(pictures_dir))} SKUs")
+        return 0
 
     if args.scan:
         for row in scan_suggestions(pictures_dir):

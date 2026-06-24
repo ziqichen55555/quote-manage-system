@@ -50,42 +50,56 @@ DEFAULT_SALES_PICTURES_DIR = find_sales_pictures_dir()
 MIN_IMAGE_SIDE = 400
 MIN_FILE_BYTES = 45_000
 
-# SKU -> filenames (case-insensitive match inside pictures dir).
+# SKU -> filenames on the U盘 Sales Pictures folder (quality-checked on upload).
+# ~30 shop products with warehouse-grade photos; small .jfif / PNG thumbs excluded.
 SKU_FILE_MANIFEST: dict[str, list[str]] = {
-  # ThinkPad T14s Gen 1 — share real warehouse photos (not 99px PNG thumbs).
+    # --- Laptops (11 SKUs) ---
     "20T0003UAU": ["t14s.jpg", "t14s side.jpg"],
     "20T1S6C300": ["t14s.jpg", "t14s side.jpg"],
-  # ThinkPad T14s Gen 2i
     "20WN0025AU": ["T14s G2.jpg", "T14s G2 2.jpg"],
     "20WNA07YAU": ["T14s G2.jpg", "T14s G2 2.jpg"],
     "20WNS6LL00": ["T14s G2.jpg", "T14s G2 2.jpg"],
-  # ThinkPad T15
-    "20W4004TAU": ["T15 1.jpg", "T15 2.jpg", "T15 3.jpg"],
-  # Dell Latitude
-    "LAT3301": ["lattitude 3301.jpg", "lattitude 3301 2.jpg"],
-    "LATITUDE 3301": ["lattitude 3301.jpg", "lattitude 3301 2.jpg"],
+    "20W4004TAU": ["T15 1.jpg", "T15 2.jpg", "T15 3.jpg", "T15 4.jpg"],
+    "20NYS4CP00": ["T490s open.jpg", "T490s closed.jpg", "T490s with monitors.jpg"],
+    "CF 54 MK 3": [
+        "CF 54 1.jpg",
+        "CF54 2.jpg",
+        "CF54 3.jpg",
+        "CF 54 4.jpg",
+        "CF54 5.jpg",
+    ],
+    "LAT3301": ["lattitude 3301.jpg", "lattitude 3301 2.jpg", "lattitude 3301 3.jpg"],
     "LAT5590": ["latitude 5590.jpg", "latitude 5590 2.jpg"],
     "LAT5591": ["latitude 5590.jpg", "latitude 5590 2.jpg"],
-  # Toughbook
-    "CF 54 MK 3": ["CF 54 1.jpg", "CF54 2.jpg", "CF54 3.jpg"],
-    "FZ55-1": ["FZ 55.jfif"],
-  # Desktops
+    # --- Desktops (6 SKUs, 3 image sets) ---
     "30B4S1QA00": ["P510.jpg"],
     "30B4S3WF00": ["P510.jpg"],
     "10MLS1BU00": ["M910s.jpg", "M910s back.jpg"],
+    "10MLS15E00": ["M910s.jpg", "M910s back.jpg"],
     "10MLS5RS00": ["M910s.jpg", "M910s back.jpg"],
-    "4518PT1": ["M91p.jfif"],
-    "10A8A06QAU": ["M93p.jfif"],
-    "10AXS27900": ["M73 Tiny.webp", "m73 tINY.jfif"],
-  # Docks / monitors (bundles)
-    "26D32AA": ["Hp G5 F.jpg", "Hp G5 R.jpg", "HP G5 back.jpg"],
+    "10AXS27900": ["M73 Tiny.webp"],
+    # --- Docks (4 SKUs) ---
+    "26D32AA": ["Hp G5 F.jpg", "Hp G5 R.jpg", "HP G5 back.jpg", "new g5 box.jpg"],
     "3FF69AA": ["Hp G4.jpg"],
-    "BUNDLES24E450": ["dual monitor bundle 1.jpg", "dual monitor bundle 2.jpg"],
+    "40AF0135AU": ["Lenovo hybrid dock.jpg", "Lenovo hybrid dock full.jpg"],
+    "40AJ0135AU": ["lenovo dock cable.jpeg"],
+    # --- Monitors & bundles (5 SKUs) ---
+    "BUNDLES24E450": ["Dual monitor bundle 1.jpg", "Dual monitor bundle 2.jpg", "dual monitor bundle 3.jpg"],
     "22C450": ["22 bundle dock.jpg", "22bundle dock 2.jpg"],
+    "BUNDLESA1450": ["dual monitor 1.jpg", "Dual moniotr 2.jpg", "dual monitor setup.jpg"],
+    "F24T450FQEXXY": ["Samsung F24T.webp"],
+    "S24E450": ["single screen.jpg", "single screen 2.jpg"],
+    # --- Accessories (1 SKU) ---
+    "CCITREWAREBAG": ["backpack.jpg", "Back pack 2.jpg"],
+    # --- Networking (2 SKUs) ---
+    "MR18-HW": ["MR18 1.jpg", "MR18 2.jpg", "MR18 3.jpg"],
+    "WS-3750X-48P": ["Cisco Cx3750x.jpg", "Cisco CX3750x back.jpg"],
+    # --- Services (1 SKU) ---
+    "CCIT0001": ["Service.JPEG"],
 }
 
 SKIP_NAME_PATTERNS = re.compile(
-    r"(gen\s*1\.png$|gen\s*2i\.png$|whatsapp|whiteboard|service\.jpeg$)",
+    r"(gen\s*1\.png$|gen\s*2i\.png$|whatsapp|whiteboard)",
     re.I,
 )
 
@@ -175,3 +189,23 @@ def load_sku_images(pictures_dir: Path, sku: str) -> list[Path]:
         if ok:
             good.append(path)
     return good
+
+
+def manifest_report(pictures_dir: Path | None = None) -> list[dict]:
+    """One row per mapped SKU: resolved files and upload readiness."""
+    root = pictures_dir or find_sales_pictures_dir()
+    rows = []
+    for sku in sorted(SKU_FILE_MANIFEST.keys(), key=lambda s: s.upper()):
+        wanted = manifest_for_sku(sku)
+        resolved = load_sku_images(root, sku)
+        rows.append(
+            {
+                "sku": sku,
+                "wanted": wanted,
+                "resolved": [p.name for p in resolved],
+                "ready": bool(resolved),
+                "main": resolved[0].name if resolved else "",
+                "gallery": [p.name for p in resolved[1:]],
+            }
+        )
+    return rows
