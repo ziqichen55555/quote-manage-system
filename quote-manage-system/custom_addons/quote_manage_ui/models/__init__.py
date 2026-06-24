@@ -6,3 +6,4 @@ from . import product_template_attribute_line
 from . import product_public_category
 from . import product_csv_importer
 from . import delivery_carrier
+from . import quote_manage_ui_setup

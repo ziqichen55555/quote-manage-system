@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.114',
+    'version': '1.0.115',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -23,6 +23,7 @@
         'data/quote_refurb_product_tags.xml',
         'data/quote_refurb_product_attributes.xml',
         'data/delivery_shipping_rules.xml',
+        'data/stock_serial_tracking_enable.xml',
         # Product rows are imported via scripts/import_products_to_odoo.sh;
         # loading them on every -u hits duplicate barcode errors.
         'data/quote_manage_ui_arch_sync_policy.xml',

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Re-Ware refurb stock is serial-tracked; without this group the delivery
+         form hides lot/serial fields but validation still requires them. -->
+    <data noupdate="1">
+        <function model="quote.manage.ui.setup" name="enable_lots_and_serial_numbers"/>
+    </data>
+</odoo>
