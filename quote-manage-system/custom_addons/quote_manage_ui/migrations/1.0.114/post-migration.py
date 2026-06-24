@@ -12,7 +12,7 @@ def migrate(cr, version):
 
     View = env["ir.ui.view"]
     if hasattr(View, "_quote_manage_ui_sync_single_template_from_xml"):
-        for key in ("s_rw_hero", "s_rw_categories"):
+        for key in ("rw_footer_block", "s_rw_categories"):
             try:
                 View._quote_manage_ui_sync_single_template_from_xml(key)
             except Exception:

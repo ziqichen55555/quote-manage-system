@@ -117,6 +117,40 @@ class ProductTemplate(models.Model):
                 )
         return {"updated": updated, "skipped": skipped, "errors": errors}
 
+    @api.model
+    def quote_copy_product_images(self, source_code, target_codes, overwrite=True):
+        """Copy main + gallery images from one SKU to others (same model photos)."""
+        PT = self.sudo()
+        src = PT.search([("default_code", "=ilike", (source_code or "").strip())], limit=1)
+        if not src:
+            return {"error": "source_not_found", "source": source_code}
+        Image = self.env["product.image"].sudo()
+        results = []
+        for code in target_codes or []:
+            code = (code or "").strip()
+            if not code or code.upper() == (source_code or "").upper():
+                continue
+            tgt = PT.search([("default_code", "=ilike", code)], limit=1)
+            if not tgt:
+                results.append({"sku": code, "status": "not_found"})
+                continue
+            if overwrite:
+                tgt.product_template_image_ids.unlink()
+            if src.image_1920:
+                tgt.image_1920 = src.image_1920
+            for img in src.product_template_image_ids:
+                if not img.image_1920:
+                    continue
+                Image.create(
+                    {
+                        "name": img.name,
+                        "product_tmpl_id": tgt.id,
+                        "image_1920": img.image_1920,
+                    }
+                )
+            results.append({"sku": code, "status": "copied", "gallery": len(src.product_template_image_ids)})
+        return {"source": src.default_code, "results": results}
+
     def _rw_shop_model_label(self):
         """MTM / model code shown under the product name on the shop (not the product title)."""
         self.ensure_one()

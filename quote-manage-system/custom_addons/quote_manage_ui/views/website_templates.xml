@@ -125,6 +125,11 @@
                         <div class="rw-footer-logo">
                             <img src="/quote_manage_ui/static/src/img/brand/reware-logo-footer.png" alt="Re-Ware logo" class="img-fluid"/>
                         </div>
+                        <div class="rw-footer-rrr mt-3" aria-label="Repair, repurpose, reuse">
+                            <p class="rw-footer-rrr-line mb-0">Repair</p>
+                            <p class="rw-footer-rrr-line mb-0">Repurpose</p>
+                            <p class="rw-footer-rrr-line mb-0">Reuse</p>
+                        </div>
                     </div>
                     <div class="col-md-4 order-3">
                         <h4>Location</h4>

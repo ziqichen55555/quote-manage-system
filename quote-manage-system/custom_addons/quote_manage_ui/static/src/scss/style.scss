@@ -463,15 +463,8 @@ html:has(main .o_wsale_products_page) {
         font-size: clamp(0.95rem, 1.25vw, 1.1rem);
         font-weight: 500;
         line-height: 1.55;
-        margin-bottom: 1rem;
+        margin-bottom: 1.75rem;
         max-width: 30rem;
-    }
-    .rw-hero-rrr-line {
-        color: $rw-gold;
-        font-size: clamp(0.82rem, 1.1vw, 0.95rem);
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
     }
     .rw-hero-image {
         border-radius: 8px;
@@ -821,6 +814,15 @@ html:has(main .o_wsale_products_page) {
             height: auto;
             object-fit: contain;
         }
+    }
+    .rw-footer-rrr-line {
+        font-family: $rw-font-body;
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: $rw-gold;
+        line-height: 1.6;
     }
     .rw-footer-bottom { border-top: 1px solid $rw-border; padding-top: 1.5rem; margin-top: 2.5rem; font-size: 0.8rem; color: $rw-text-muted; }
 }
