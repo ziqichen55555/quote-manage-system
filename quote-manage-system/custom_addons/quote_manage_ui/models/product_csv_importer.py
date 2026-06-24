@@ -294,7 +294,111 @@ class ProductCsvImporter(models.AbstractModel):
         return s[:64]
 
     @api.model
-    def _merged_specs_from_fields(self, brand, mtm, cpu_raw, ram_gb, ssd_gb, touch, wan):
+    def _shop_filter_series(
+        self, mtm="", model_name="", brand="", manufacturer="", titles=None
+    ):
+        """Short Series label for the eCommerce sidebar (no Gen suffix)."""
+        model_u = (model_name or "").upper()
+        mtm_u = (mtm or "").upper()
+        mfr_u = (manufacturer or brand or "").upper()
+
+        if "T490" in model_u or mtm_u in ("20NYS4CP00", "20NYS4CP01"):
+            return "ThinkPad T490s"
+        if any(x in model_u for x in ("T14S", "T14 ")) or mtm_u.startswith(
+            ("20T", "20WN", "20WNS")
+        ):
+            return "ThinkPad T14s"
+        if "T15" in model_u or mtm_u.startswith("20W4"):
+            return "ThinkPad T15"
+        if "P1" in model_u or mtm_u.startswith("20TJ"):
+            return "ThinkPad P1"
+        if "T480" in model_u or mtm_u.startswith("20L8"):
+            return "ThinkPad T480s"
+        if "M910" in model_u or mtm_u.startswith("10ML"):
+            return "ThinkCentre M910s"
+        if "M93" in model_u or mtm_u.startswith("10A8"):
+            return "ThinkCentre M93p"
+        if "M73" in model_u or mtm_u.startswith("10AX"):
+            return "ThinkCentre M73"
+        if (
+            mtm_u.startswith(("CF-", "FZ-"))
+            or "TOUGHBOOK" in model_u
+            or ("PANASONIC" in mfr_u and mtm_u[:3] in ("CF-", "FZ-"))
+        ):
+            return "Toughbook"
+        if "3301" in mtm_u:
+            return "Dell 3301"
+        if "5590" in mtm_u or "5591" in mtm_u:
+            return "Dell 5590"
+        if "E7470" in mtm_u:
+            return "Dell E7470"
+        if "D09U" in mtm_u or "OPTIPLEX" in model_u:
+            return "Dell Optiplex"
+        if mtm_u.startswith("T1D") or "ELITEBOOK" in model_u:
+            return "HP EliteBook"
+        if "LATITUDE" in mtm_u:
+            m = re.search(r"(\d{4})", mtm_u)
+            if m:
+                return f"Dell {m.group(1)}"
+            return "Dell Latitude"
+        if titles:
+            parsed = self._parse_specs(brand or "", titles)
+            if parsed.get("series"):
+                return self._normalize_filter_series(parsed["series"])
+        return ""
+
+    @api.model
+    def _normalize_filter_series(self, series):
+        """Map legacy / verbose series strings to shop filter labels."""
+        s = (series or "").strip()
+        if not s:
+            return ""
+        if re.search(r"T490", s, re.I):
+            return "ThinkPad T490s"
+        if re.search(r"T14s?", s, re.I):
+            return "ThinkPad T14s"
+        if re.search(r"T15", s, re.I):
+            return "ThinkPad T15"
+        if re.search(r"\bP1\b", s, re.I):
+            return "ThinkPad P1"
+        if re.search(r"T480", s, re.I):
+            return "ThinkPad T480s"
+        if re.search(r"M910", s, re.I):
+            return "ThinkCentre M910s"
+        if re.search(r"M93", s, re.I):
+            return "ThinkCentre M93p"
+        if re.search(r"M73", s, re.I):
+            return "ThinkCentre M73"
+        if re.search(r"TOUGHBOOK|CF-|FZ-", s, re.I):
+            return "Toughbook"
+        if re.search(r"3301", s, re.I):
+            return "Dell 3301"
+        if re.search(r"5590|5591", s, re.I):
+            return "Dell 5590"
+        if re.search(r"E7470", s, re.I):
+            return "Dell E7470"
+        if re.search(r"LATITUDE\s+3301", s, re.I):
+            return "Dell 3301"
+        if s.upper().startswith("LATITUDE "):
+            m = re.search(r"(\d{4})", s)
+            return f"Dell {m.group(1)}" if m else "Dell Latitude"
+        if s.upper().startswith("DELL "):
+            return s
+        return s
+
+    @api.model
+    def _merged_specs_from_fields(
+        self,
+        brand,
+        mtm,
+        cpu_raw,
+        ram_gb,
+        ssd_gb,
+        touch,
+        wan,
+        model_name="",
+        manufacturer="",
+    ):
         specs = {"brand": brand, "mtm": (mtm or "").upper()}
         cpu = self._short_cpu_label(cpu_raw)
         if cpu:
@@ -309,6 +413,14 @@ class ProductCsvImporter(models.AbstractModel):
             specs["touch"] = "Yes"
         if (wan or "").strip().lower() == "yes":
             specs["wan"] = "Yes"
+        series = self._shop_filter_series(
+            mtm=mtm,
+            model_name=model_name,
+            brand=brand,
+            manufacturer=manufacturer,
+        )
+        if series:
+            specs["series"] = series
         self._validate_merged_specs(specs, mtm or "")
         return specs
 
@@ -347,10 +459,15 @@ class ProductCsvImporter(models.AbstractModel):
         ):
             if gen:
                 return f"ThinkPad T14s Gen {gen}"
+            return "ThinkPad T14s"
         if "T15" in model_u or mtm_u.startswith("20W4"):
             if gen:
                 return f"ThinkPad T15 Gen {gen}"
             return "ThinkPad T15"
+        if "P1" in model_u or mtm_u.startswith("20TJ"):
+            if gen:
+                return f"ThinkPad P1 Gen {gen}"
+            return "ThinkPad P1"
         if "T480" in model_u or mtm_u.startswith("20L8"):
             return "ThinkPad T480s"
         if "M910" in model_u or mtm_u.startswith("10ML"):
@@ -450,6 +567,8 @@ class ProductCsvImporter(models.AbstractModel):
                 "product_key": product_key,
                 "system_version": system_version,
                 "mtm_code": mtm,
+                "model_name": model_name,
+                "manufacturer": self._merged_str(sample, "Manufacturer"),
                 "cpu_raw": self._merged_str(sample, "CPU"),
                 "ram_gb": self._merged_str(sample, "RAM (GB)", "RAM"),
                 "ssd_gb": self._merged_str(sample, "SSD size (GB)", "SSD size"),
@@ -610,6 +729,8 @@ class ProductCsvImporter(models.AbstractModel):
                 a["merged_fields"].append({
                     "brand": (r.get("brand") or "").strip(),
                     "mtm": (r.get("mtm_code") or "").strip(),
+                    "model_name": (r.get("model_name") or "").strip(),
+                    "manufacturer": (r.get("manufacturer") or "").strip(),
                     "cpu_raw": (r.get("cpu_raw") or "").strip(),
                     "ram_gb": (r.get("ram_gb") or "").strip(),
                     "ssd_gb": (r.get("ssd_gb") or "").strip(),
@@ -644,9 +765,17 @@ class ProductCsvImporter(models.AbstractModel):
                     mf["ssd_gb"],
                     mf["touch"],
                     mf["wan"],
+                    model_name=mf.get("model_name") or "",
+                    manufacturer=mf.get("manufacturer") or "",
                 )
             else:
                 specs = self._parse_specs(brand, titles)
+                if not specs.get("series"):
+                    filter_series = self._shop_filter_series(
+                        mtm=code, model_name="", brand=brand, titles=titles
+                    )
+                    if filter_series:
+                        specs["series"] = filter_series
             series_key = ""
             if a["product_keys"]:
                 series_key = self._normalize_product_name(a["product_keys"][0])
@@ -654,8 +783,6 @@ class ProductCsvImporter(models.AbstractModel):
                 series_key = self._normalize_product_name(a["series_keys"][0])
             if not series_key:
                 series_key = specs.get("series")
-            if series_key:
-                specs["series"] = series_key
             out.append(
                 {
                     "code": code,
@@ -1484,20 +1611,14 @@ class ProductCsvImporter(models.AbstractModel):
             specs["series"] = "ThinkPad T490s"
         elif "T14S" in t_up or ("T14" in t_up and "T490" not in t_up):
             specs["series"] = "ThinkPad T14s"
-            gen_m = re.search(r"GEN\s*(\d+\w*)", t_up)
-            if gen_m:
-                specs["series"] = f"ThinkPad T14s Gen {gen_m.group(1)}"
         elif "T15" in t_up:
             specs["series"] = "ThinkPad T15"
-            gen_m = re.search(r"GEN\s*(\d+\w*)", t_up)
-            if gen_m:
-                specs["series"] = f"ThinkPad T15 Gen {gen_m.group(1)}"
         elif "P1" in t_up and ("GEN 3" in t_up or "GEN3" in t_up.replace(" ", "")):
             specs["series"] = "ThinkPad P1"
         elif "T480" in t_up:
             specs["series"] = "ThinkPad T480s"
         elif "LAT3301" in t_up:
-            specs["series"] = "Latitude 3301"
+            specs["series"] = "Dell 3301"
         elif "LAT5590" in t_up or "LAT5591" in t_up:
             specs["series"] = "Dell 5590"
         elif "LATITUDE" in t_up:
@@ -1505,13 +1626,16 @@ class ProductCsvImporter(models.AbstractModel):
             specs["series"] = f"Dell {m.group(1) if m else 'Latitude'}"
         elif "OPTIPLEX" in t_up:
             m = re.search(r"Optiplex\s+([A-Z0-9]+)", blob, re.I)
-            specs["series"] = f"Optiplex {m.group(1) if m else 'Optiplex'}"
+            specs["series"] = f"Dell Optiplex {m.group(1) if m else ''}".strip()
         elif "TOUGHBOOK" in t_up or "FZ55" in t_up or "CF-54" in t_up or "CF 54" in t_up:
             specs["series"] = "Toughbook"
         elif re.search(r"M70Q|M70\s*Q", t_up) or "11T300A1AU" in t_up:
             specs["series"] = "ThinkCentre M70q"
         elif "M910" in t_up or "THINKCENTRE M910" in t_up or "10MLS" in t_up:
             specs["series"] = "ThinkCentre M910s"
+
+        if specs.get("series"):
+            specs["series"] = self._normalize_filter_series(specs["series"])
 
         if re.search(r"I5[-\s]?10210U|102IOU", t_up):
             specs["cpu"] = "i5-10210U"
@@ -1621,6 +1745,71 @@ class ProductCsvImporter(models.AbstractModel):
                 specs=specs,
             )
             fixed += 1
+        return fixed
+
+    @api.model
+    def _set_filter_series(self, tmpl, series_name):
+        """Update only the Series attribute line (shop sidebar filter)."""
+        series_name = (series_name or "").strip()
+        if not series_name or tmpl.type != "product":
+            return False
+        attr = self.env.ref("quote_manage_ui.attr_series")
+        Line = self.env["product.template.attribute.line"].sudo()
+        val = self.env["product.attribute.value"].sudo().search(
+            [("attribute_id", "=", attr.id), ("name", "=", series_name)],
+            limit=1,
+        )
+        if not val:
+            val = self.env["product.attribute.value"].sudo().create(
+                {"attribute_id": attr.id, "name": series_name[:128]}
+            )
+        existing = Line.search(
+            [
+                ("product_tmpl_id", "=", tmpl.id),
+                ("attribute_id", "=", attr.id),
+            ],
+            limit=1,
+        )
+        if existing and set(existing.value_ids.ids) == {val.id}:
+            return False
+        if existing:
+            existing.write({"value_ids": [(6, 0, [val.id])]})
+        else:
+            Line.create(
+                {
+                    "product_tmpl_id": tmpl.id,
+                    "attribute_id": attr.id,
+                    "value_ids": [(6, 0, [val.id])],
+                }
+            )
+        return True
+
+    @api.model
+    def repair_shop_filter_series(self):
+        """Re-map Series filter attrs from SKU (fix Gen-suffixed / missing values)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        fixed = 0
+        for tmpl in PT.search([("sale_ok", "=", True), ("type", "=", "product")]):
+            if self._is_configuration_only_product(tmpl, config_attr):
+                continue
+            code = (tmpl.default_code or "").strip()
+            if not code:
+                continue
+            haystack = " ".join(
+                x
+                for x in (tmpl.name, tmpl.description_sale, code)
+                if x
+            )
+            series = self._shop_filter_series(
+                mtm=code,
+                model_name=haystack,
+                titles=[haystack],
+            )
+            if not series:
+                continue
+            if self._set_filter_series(tmpl, series):
+                fixed += 1
         return fixed
 
     @api.model
