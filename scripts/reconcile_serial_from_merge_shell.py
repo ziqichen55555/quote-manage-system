@@ -2,29 +2,28 @@
 """
 Reconcile all serial-tracked refurb products from MERGED import-ready CSV.
 
-Merge CSV = source of truth for:
-  - which serial numbers exist per SKU
-  - how many units (len(serials))
-  - product name + Blancco CPU/RAM/SSD/Series attrs
+Prerequisites:
+  1) Regenerate CSV with tools/reware_merge (run_merge.bat on Desktop folder)
+     — use MERGED import-ready *-fixed.csv or today's date after script update
+  2) Production on quote_manage_ui >= 1.0.119 (model-as-title for HP/Dell/Panasonic)
+  3) DB backup before import
 
-Steps when DRY_RUN=False:
-  1) Additive merge import (refresh product info, create missing SKUs)
-  2) sync_serial_stock_allowlist per SKU (zero wrong/auto SNs, fix qty)
+Merge CSV = source of truth for SN, qty, and Blancco-backed titles:
+  Lenovo:     title = System version,  SKU = System model (MTM)
+  HP/Dell/Panasonic: title = System model, SKU = System SKU number
 
-Monitors / bags / services are NOT in merge CSV → untouched.
-
-Usage (local docker, repo root):
+Usage (local docker or prod via SSH pipe):
   Get-Content scripts/reconcile_serial_from_merge_shell.py |
     docker compose run --rm -T web odoo shell -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init
 
-Set MERGE_CSV to your file path inside the container or mount path.
+Or: Odoo backend → Inventory → Products → Upload inventory CSV (same reconcile logic).
 """
 from pathlib import Path
 
 DRY_RUN = True  # preview first; set False to apply
-MERGE_CSV = r"/mnt/extra-addons/../../tools/reware_merge/MERGED import-ready 2026-06-19.csv"
-# Or on prod copy after scp:
-# MERGE_CSV = "/tmp/MERGED-import-ready.csv"
+MERGE_CSV = r"/mnt/extra-addons/../../tools/reware_merge/MERGED import-ready 2026-06-24-fixed.csv"
+# Windows Desktop (copy into repo tools/reware_merge/ or set path after scp to server):
+# MERGE_CSV = "/mnt/custom-addons/quote_manage_ui/scripts/_prod_merge_import.csv"
 
 Importer = env["product.csv.importer"].sudo()
 path = Path(MERGE_CSV)

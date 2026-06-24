@@ -273,6 +273,44 @@ class ProductCsvImporter(models.AbstractModel):
         return s
 
     @api.model
+    def _is_lenovo_style_mtm(self, mtm):
+        mtm_u = (mtm or "").strip().upper()
+        return bool(
+            re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u)
+            or mtm_u.startswith(("10", "20", "30"))
+        )
+
+    @api.model
+    def _uses_model_as_product_title(
+        self, manufacturer="", brand="", mtm="", model_name=""
+    ):
+        """HP / Panasonic / Dell: Blancco system model = shop title (not system version)."""
+        if self._is_lenovo_style_mtm(mtm):
+            return False
+        mfr = (manufacturer or brand or "").strip().upper()
+        if mfr in ("HP", "PANASONIC", "DELL"):
+            return True
+        blob = f"{(mtm or '').upper()} {(model_name or '').upper()}"
+        if re.search(
+            r"CF-?\d|FZ-?\d|TOUGHBOOK|#ABG|T1D\d|LATITUDE|OPTIPLEX|ELITEDESK|PRODESK",
+            blob,
+        ):
+            return True
+        return False
+
+    @api.model
+    def _is_valid_model_title(self, name):
+        s = (name or "").strip()
+        if len(s) < 3:
+            return False
+        low = s.lower()
+        if "kbc" in low or "version" in low:
+            return False
+        if re.fullmatch(r"0+\d?", s):
+            return False
+        return True
+
+    @api.model
     def _normalize_product_name(self, name):
         s = (name or "").strip()
         s = re.sub(r"\bThinkpad\b", "ThinkPad", s, flags=re.I)
@@ -293,8 +331,22 @@ class ProductCsvImporter(models.AbstractModel):
         mtm="",
         generation="",
         titles=None,
+        manufacturer="",
     ):
-        """Shop product = Blancco System version (e.g. ThinkPad T14s Gen 2i ≠ Gen 1)."""
+        """Shop product title.
+
+        Lenovo: Blancco *system version* (e.g. ThinkPad T14s Gen 2i).
+        HP / Panasonic / Dell: Blancco *system model* via merge ``Model name``.
+        """
+        if self._uses_model_as_product_title(
+            manufacturer=manufacturer,
+            brand=brand,
+            mtm=mtm,
+            model_name=model_name,
+        ):
+            mn = (model_name or "").strip()
+            if self._is_valid_model_title(mn):
+                return self._normalize_product_name(mn)
         sv = (system_version or "").strip()
         if self._is_valid_product_name(sv):
             return self._normalize_product_name(sv)
@@ -355,9 +407,23 @@ class ProductCsvImporter(models.AbstractModel):
         if (
             mtm_u.startswith(("CF-", "FZ-"))
             or "TOUGHBOOK" in model_u
-            or ("PANASONIC" in mfr_u and mtm_u[:3] in ("CF-", "FZ-"))
+            or ("PANASONIC" in mfr_u and "CF-" in model_u)
         ):
             return "Toughbook"
+        if self._uses_model_as_product_title(
+            manufacturer=mfr_u, brand=brand, mtm=mtm_u, model_name=model_name
+        ):
+            if "LATITUDE" in model_u:
+                m = re.search(r"Latitude\s+(\d{4})", model_name or "", re.I)
+                if m:
+                    return f"Dell {m.group(1)}"
+                return "Dell Latitude"
+            if "OPTIPLEX" in model_u:
+                return "Dell Optiplex"
+            if "ELITEDESK" in model_u or "PRODESK" in model_u:
+                return self._normalize_product_name(model_name)
+            if model_name and len(model_name.strip()) >= 4:
+                return self._normalize_filter_series(model_name)
         if "3301" in mtm_u:
             return "Dell 3301"
         if "5590" in mtm_u or "5591" in mtm_u:
@@ -651,6 +717,7 @@ class ProductCsvImporter(models.AbstractModel):
                 mtm=mtm,
                 generation=gen,
                 titles=[title],
+                manufacturer=self._merged_str(sample, "Manufacturer"),
             )
             if product_key and product_key.lower() not in title.lower():
                 title = f"Re-Ware {product_key}, {title.replace('Re-Ware ', '', 1)}"

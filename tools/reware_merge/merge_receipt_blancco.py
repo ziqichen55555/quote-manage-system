@@ -501,15 +501,29 @@ def normalize_sku(value) -> str:
     """System SKU number (HP / Panasonic) — preserve CF-54… / #ABG style codes."""
     return normalize_mtm(value)
 
-def is_hp_or_panasonic(manufacturer: str, mtm: str = "", model_hint: str = "") -> bool:
+def is_sku_title_vendor(manufacturer: str, mtm: str = "", model_hint: str = "") -> bool:
+    """HP / Panasonic / Dell: Blancco *system model* = title, *system SKU* = product code.
+
+  Lenovo is the exception (system *version* = title, system *model* = MTM).
+    """
+    if is_lenovo_style_mtm(mtm) or is_lenovo_style_mtm(model_hint):
+        return False
     mfr = (manufacturer or "").strip().upper()
-    if mfr in ("HP", "PANASONIC"):
+    if mfr in ("HP", "PANASONIC", "DELL"):
         return True
     blob = f"{mtm or ''} {model_hint or ''}".upper()
     return bool(
-        re.search(r"CF-?\d|FZ-?\d|TOUGHBOOK|#ABG|T1D\d", blob)
-        or blob.startswith(("CF", "FZ"))
+        re.search(
+            r"CF-?\d|FZ-?\d|TOUGHBOOK|#ABG|T1D\d|LATITUDE|OPTIPLEX|ELITEDESK|PRODESK",
+            blob,
+        )
+        or blob.startswith(("CF", "FZ", "DELL"))
     )
+
+
+def is_hp_or_panasonic(manufacturer: str, mtm: str = "", model_hint: str = "") -> bool:
+    """Backward-compatible alias — prefer :func:`is_sku_title_vendor`."""
+    return is_sku_title_vendor(manufacturer, mtm, model_hint)
 
 def is_lenovo_style_mtm(mtm: str) -> bool:
     mtm_u = (mtm or "").strip().upper()
@@ -540,9 +554,8 @@ def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receip
     """Match receipt row to Blancco.
 
     Lenovo: receipt serial ≈ Blancco *system serial*.
-    HP / Panasonic: receipt may list *system SKU* (CF-54…, T1D55PA#ABG) in the serial
-    or MTM column — join via *system SKU number*, then use Blancco *system serial*
-    as the device SN for Odoo.
+    HP / Panasonic / Dell: receipt may list *system SKU* in the serial or MTM column —
+    join via *system SKU number*, then use Blancco *system serial* as the device SN.
     """
     for key, idx, kind in (
         (receipt_serial, by_serial, "system_serial"),
@@ -573,15 +586,17 @@ def output_mtm(receipt_mtm: str, bl_row, manufacturer: str) -> str:
     """MTM/SKU for Odoo.
 
     Lenovo: Blancco *system model* (20WN… MTM).
-    HP / Panasonic: Blancco *system SKU number* (T1D55PA#ABG, CF-54J1436VA) — receipt
-    Device Model column; *system model* is the human-readable family name only.
+    HP / Panasonic / Dell: Blancco *system SKU number* — receipt Device Model column;
+    *system model* is the shop title only.
     """
     if bl_row is None:
         return receipt_mtm
     sku = normalize_sku(str(bl_row.get("sku_number", "") or ""))
     bl_mtm = normalize_mtm(str(bl_row.get("blancco_mtm", "") or ""))
-    if is_hp_or_panasonic(manufacturer, receipt_mtm, sku or bl_mtm):
-        return sku or receipt_mtm
+    if is_sku_title_vendor(manufacturer, receipt_mtm, sku or bl_mtm):
+        if sku and not sku.upper().startswith("LENOVO_MT_"):
+            return sku
+        return receipt_mtm
     if bl_mtm and not is_lenovo_style_mtm(receipt_mtm):
         return bl_mtm
     return receipt_mtm
@@ -724,13 +739,12 @@ def merge_data(
         mtm = output_mtm(receipt_mtm, bl, manufacturer)
         device_serial = output_device_serial(receipt_serial, bl, match_kind)
 
-        if is_hp_or_panasonic(manufacturer, mtm, model_name or bl_mtm):
+        if is_sku_title_vendor(manufacturer, mtm, model_name or bl_mtm):
             if bl_mtm:
                 model_name = bl_mtm
             elif mtm_raw:
                 model_name = mtm_raw
-            if system_version and not _looks_like_valid_family_label(system_version):
-                system_version = ""
+            system_version = ""
         elif not model_name and system_version and _looks_like_valid_family_label(system_version):
             model_name = re.sub(
                 r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", system_version, flags=re.I
@@ -743,7 +757,7 @@ def merge_data(
         )
         if not gen and lut_row is not None:
             gen = str(lut_row.get("generation", "") or "").strip()
-        if is_hp_or_panasonic(manufacturer, mtm, model_name):
+        if is_sku_title_vendor(manufacturer, mtm, model_name):
             series = model_name or derive_product_name("", model_name, mtm, gen)
         else:
             series = derive_product_name(
