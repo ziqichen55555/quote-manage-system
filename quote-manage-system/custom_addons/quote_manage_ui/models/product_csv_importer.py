@@ -1541,6 +1541,20 @@ class ProductCsvImporter(models.AbstractModel):
         return archived
 
     @api.model
+    def archive_synthetic_import_skus(self):
+        """Archive shop products whose SKU was auto-generated (IMPORT-... from title)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        candidates = PT.search([
+            ("active", "=", True),
+            ("default_code", "=ilike", "IMPORT-%"),
+        ])
+        archived = 0
+        for tmpl in candidates:
+            tmpl.write({"active": False, "website_published": False, "sale_ok": False})
+            archived += 1
+        return archived
+
+    @api.model
     def archive_configuration_dropdown_products(self):
         """Unpublish legacy shop listings that use a Configuration dropdown."""
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
