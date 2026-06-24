@@ -2484,6 +2484,142 @@ class ProductCsvImporter(models.AbstractModel):
         return count
 
     @api.model
+    def _next_auto_serial_name(self, variant):
+        """Next S/N-{SKU}-NNN name for a variant (matches legacy CSV import)."""
+        code = (
+            (variant.default_code or variant.product_tmpl_id.default_code or "SKU")
+            .strip()
+        )
+        prefix = f"S/N-{code}-"
+        Lot = self.env["stock.lot"].sudo()
+        lots = Lot.search(
+            [
+                ("product_id", "=", variant.id),
+                ("name", "=like", prefix + "%"),
+            ]
+        )
+        max_n = 0
+        for lot in lots:
+            m = re.search(r"-(\d+)$", lot.name)
+            if m:
+                max_n = max(max_n, int(m.group(1)))
+        return f"{prefix}{max_n + 1:03d}"
+
+    @api.model
+    def repair_serial_lots_on_inactive_variants(self):
+        """Move serial lots from archived variants onto the active stock variant."""
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not wh:
+            return 0
+        moved = 0
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        for tmpl in PT.search([("tracking", "=", "serial"), ("type", "=", "product")]):
+            active = tmpl.product_variant_ids.filtered(lambda v: v.active)
+            if not active:
+                continue
+            canon = self._stock_variant_for_unit(
+                tmpl, tmpl.default_code or active[0].default_code or ""
+            )
+            if not canon:
+                canon = active[0]
+            for variant in tmpl.product_variant_ids - canon:
+                for lot in self.env["stock.lot"].sudo().search(
+                    [("product_id", "=", variant.id)]
+                ):
+                    if self._move_serial_lot_to_variant(lot, canon, wh):
+                        moved += 1
+        return moved
+
+    @api.model
+    def repair_serial_stock_quants(self, sku=None):
+        """Split internal quants without lots on serial-tracked products into serial rows.
+
+        Legacy sheet import often left qty on a single quant before tracking was set to
+        serial; deliveries then show Available but the Serial Numbers dropdown is empty.
+        """
+        Quant = self.env["stock.quant"].sudo()
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not wh:
+            return {"fixed_quants": 0, "lots_created": 0, "moved_lots": 0}
+
+        moved_lots = self.repair_serial_lots_on_inactive_variants()
+
+        domain = [("tracking", "=", "serial"), ("type", "=", "product")]
+        if sku:
+            code = self._canonical_sku_code(sku)
+            domain = [
+                ("tracking", "=", "serial"),
+                ("type", "=", "product"),
+                "|",
+                ("default_code", "=", code),
+                ("product_variant_ids.default_code", "=", code),
+            ]
+
+        fixed_quants = lots_created = 0
+        stock_root = wh.lot_stock_id
+        for tmpl in PT.search(domain):
+            for variant in tmpl.product_variant_ids.filtered(lambda v: v.active):
+                quants = Quant.search(
+                    [
+                        ("product_id", "=", variant.id),
+                        ("location_id", "child_of", stock_root.id),
+                        ("lot_id", "=", False),
+                        ("quantity", ">", 0),
+                    ]
+                )
+                for quant in quants:
+                    units = int(quant.quantity)
+                    if units <= 0:
+                        _logger.warning(
+                            "Skipping fractional lot-less qty for %s: %s",
+                            variant.display_name,
+                            quant.quantity,
+                        )
+                        continue
+                    location = quant.location_id
+                    for _i in range(units):
+                        lot_name = self._next_auto_serial_name(variant)
+                        lot = self._find_or_create_lot(variant, lot_name)
+                        existing = Quant.search(
+                            [
+                                ("product_id", "=", variant.id),
+                                ("location_id", "=", location.id),
+                                ("lot_id", "=", lot.id),
+                            ],
+                            limit=1,
+                        )
+                        if existing and existing.quantity >= 1:
+                            continue
+                        if existing:
+                            existing.with_context(inventory_mode=True).write(
+                                {"inventory_quantity_auto_apply": 1.0}
+                            )
+                        else:
+                            Quant.with_context(inventory_mode=True).create(
+                                {
+                                    "product_id": variant.id,
+                                    "location_id": location.id,
+                                    "lot_id": lot.id,
+                                    "inventory_quantity_auto_apply": 1.0,
+                                }
+                            )
+                        lots_created += 1
+                    quant.with_context(inventory_mode=True).write(
+                        {"inventory_quantity_auto_apply": 0.0}
+                    )
+                    fixed_quants += 1
+        return {
+            "fixed_quants": fixed_quants,
+            "lots_created": lots_created,
+            "moved_lots": moved_lots,
+        }
+
+    @api.model
     def _sync_product_images(self, tmpl, title):
         """Optional demo images — skipped when requests unavailable."""
         return
