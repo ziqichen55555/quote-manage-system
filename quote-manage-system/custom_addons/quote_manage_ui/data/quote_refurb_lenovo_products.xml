@@ -8,8 +8,7 @@
             <field name="barcode">20T0003UAU</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="180.0"/>
@@ -40,8 +39,7 @@
             <field name="barcode">20T1S6C300</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="348.18"/>
@@ -72,8 +70,7 @@
             <field name="barcode">20WNS6LL00</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="278.38"/>
@@ -104,8 +101,7 @@
             <field name="barcode">20NYS4CP00</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="130.16"/>
@@ -136,8 +132,7 @@
             <field name="barcode">20W4004TAU</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="375.31"/>
@@ -168,8 +163,7 @@
             <field name="barcode">20TJ5S5WV00</field>
             <field name="categ_id" ref="quote_manage_ui.product_category_computer_systems_refurb"/>
             <field name="public_categ_ids" eval="[(6, 0, [
-                ref('quote_manage_ui.public_cat_laptops'),
-                ref('quote_manage_ui.public_cat_laptops_computer_systems')
+                ref('quote_manage_ui.public_cat_laptops')
             ])]"/>
             <field name="website_published">True</field>
             <field name="list_price" eval="1450.0"/>

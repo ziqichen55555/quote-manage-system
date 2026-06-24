@@ -15,16 +15,10 @@
             <field name="name">Computer Systems</field>
         </record>
 
-        <!-- Website top-level categories -->
+        <!-- Website top-level categories (sequence: Laptops → Desktops → …) -->
         <record id="public_cat_laptops" model="product.public.category">
             <field name="name">Laptops</field>
             <field name="sequence" eval="10"/>
-        </record>
-
-        <!-- Optional level-2 category for current imported stock -->
-        <record id="public_cat_laptops_computer_systems" model="product.public.category">
-            <field name="name">Computer Systems</field>
-            <field name="parent_id" ref="quote_manage_ui.public_cat_laptops"/>
         </record>
 
         <!-- Internal categories (inventory / reporting) — use with product.template categ_id -->
@@ -50,23 +44,29 @@
         </record>
 
         <!-- eCommerce navigation -->
+        <record id="public_cat_desktops" model="product.public.category">
+            <field name="name">Desktops &amp; Mini PCs</field>
+            <field name="sequence" eval="20"/>
+        </record>
         <record id="public_cat_monitors" model="product.public.category">
             <field name="name">Monitors &amp; Displays</field>
+            <field name="sequence" eval="30"/>
         </record>
         <record id="public_cat_docks" model="product.public.category">
             <field name="name">Docks</field>
+            <field name="sequence" eval="40"/>
         </record>
         <record id="public_cat_accessories" model="product.public.category">
             <field name="name">Accessories</field>
-        </record>
-        <record id="public_cat_desktops" model="product.public.category">
-            <field name="name">Desktops &amp; Mini PCs</field>
+            <field name="sequence" eval="50"/>
         </record>
         <record id="public_cat_projectors_av" model="product.public.category">
             <field name="name">Projectors &amp; AV</field>
+            <field name="sequence" eval="60"/>
         </record>
         <record id="public_cat_services" model="product.public.category">
             <field name="name">Services</field>
+            <field name="sequence" eval="70"/>
         </record>
     </data>
 </odoo>

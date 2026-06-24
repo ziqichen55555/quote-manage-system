@@ -1613,10 +1613,7 @@ class ProductCsvImporter(models.AbstractModel):
                     (
                         6,
                         0,
-                        [
-                            ref("quote_manage_ui.public_cat_laptops"),
-                            ref("quote_manage_ui.public_cat_laptops_computer_systems"),
-                        ],
+                        [ref("quote_manage_ui.public_cat_laptops")],
                     )
                 ],
                 [(6, 0, [ref("quote_manage_ui.product_tag_computer_systems")])],

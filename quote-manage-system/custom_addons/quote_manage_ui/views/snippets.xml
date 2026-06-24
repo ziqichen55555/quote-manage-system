@@ -18,6 +18,9 @@
                     <div class="col-lg-6">
                         <h1 class="rw-hero-title">Turning old tech into opportunity.</h1>
                         <p class="rw-hero-sub">Your secure, compliant way to clear out old devices and help close the digital divide.</p>
+                        <div class="rw-hero-rrr mb-4" aria-label="Repair, repurpose, reuse">
+                            <p class="rw-hero-rrr-line mb-0"><strong>Repair</strong> · <strong>Repurpose</strong> · <strong>Reuse</strong></p>
+                        </div>
                         <div class="d-flex flex-wrap gap-3">
                             <a href="#rw-services" class="rw-btn-coral">Learn more</a>
                             <a href="/contactus" class="rw-btn-outline-light">Donate</a>
@@ -254,7 +257,7 @@
                          up in the Builder. -->
                     <t t-set="home_categories" t-value="(request.env['product.public.category'].search([('parent_id', '=', False), ('product_tmpl_ids.website_published', '=', True), ('product_tmpl_ids.sale_ok', '=', True)], limit=16, order='sequence, name, id')) if (request and request.env) else []"/>
                     <t t-foreach="home_categories" t-as="h_cat">
-                        <t t-set="_home_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [h_cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
+                        <t t-set="_home_cat_cnt" t-value="h_cat.sudo()._rw_website_stock_units()"/>
                         <div class="col-6 col-md-3">
                             <a t-attf-href="/shop/category/#{slug(h_cat)}" class="text-decoration-none text-dark">
                                 <div class="qm-comsol-cat-tile qm-comsol-home-cat-tile h-100 d-flex flex-column align-items-center justify-content-center text-center">
@@ -267,7 +270,7 @@
                                         </t>
                                     </div>
                                     <p class="fw-bold mb-0" t-field="h_cat.name"/>
-                                    <p class="small mb-0" style="color: var(--rw-text-muted);"><t t-esc="_home_cat_cnt"/> products</p>
+                                    <p class="small mb-0" style="color: var(--rw-text-muted);"><t t-esc="_home_cat_cnt"/> in stock</p>
                                 </div>
                             </a>
                         </div>

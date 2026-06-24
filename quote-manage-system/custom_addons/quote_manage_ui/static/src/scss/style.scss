@@ -463,8 +463,15 @@ html:has(main .o_wsale_products_page) {
         font-size: clamp(0.95rem, 1.25vw, 1.1rem);
         font-weight: 500;
         line-height: 1.55;
-        margin-bottom: 1.75rem;
+        margin-bottom: 1rem;
         max-width: 30rem;
+    }
+    .rw-hero-rrr-line {
+        color: $rw-gold;
+        font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
     }
     .rw-hero-image {
         border-radius: 8px;

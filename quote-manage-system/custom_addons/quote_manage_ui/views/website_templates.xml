@@ -196,7 +196,7 @@
                         <div class="row g-3 text-center justify-content-start border-top pt-4 mt-2">
                             <t t-set="top_categories" t-value="list(categories) if categories else []"/>
                             <t t-foreach="top_categories" t-as="t_cat">
-                                <t t-set="_cat_cnt" t-value="request.env['product.template'].sudo().search_count([('public_categ_ids', 'in', [t_cat.id]), ('website_published', '=', True), ('sale_ok', '=', True)])"/>
+                                <t t-set="_cat_cnt" t-value="t_cat.sudo()._rw_website_stock_units()"/>
                                 <div class="col-3 col-md-2">
                                     <a t-attf-href="/shop/category/#{slug(t_cat)}" class="text-decoration-none text-dark">
                                         <div class="qm-comsol-cat-tile p-3 h-100 d-flex flex-column align-items-center justify-content-center">
