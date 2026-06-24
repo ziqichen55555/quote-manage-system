@@ -1,0 +1,33 @@
+# Manual only: restart web/caddy and kill stuck odoo/pg_dump — NO module upgrade.
+name: Repair production
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prod-repair
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kill stuck jobs and restart stack
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          command_timeout: 10m
+          script_stop: false
+          script: |
+            set -x
+            cd "${{ secrets.PROD_APP_DIR }}"
+            docker ps -a --filter "name=reware-web-run" --format '{{.ID}}' | xargs -r docker rm -f
+            pkill -9 -f 'pg_dump.*cocreativeit' 2>/dev/null || true
+            pkill -9 -f 'odoo -u quote_manage_ui' 2>/dev/null || true
+            pkill -9 -f 'odoo shell' 2>/dev/null || true
+            docker compose --env-file .env restart web caddy
+            sleep 5
+            docker compose --env-file .env ps
+            echo "Repair done — check https://www.reware-project.com"
