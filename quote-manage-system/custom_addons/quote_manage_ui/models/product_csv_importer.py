@@ -1124,6 +1124,70 @@ class ProductCsvImporter(models.AbstractModel):
         ).unlink()
 
     @api.model
+    def _move_serial_lot_to_variant(self, lot, new_variant, wh):
+        """Move on-hand qty for one serial onto new_variant (merge re-import)."""
+        if not lot or not new_variant or lot.product_id.id == new_variant.id:
+            return False
+        Quant = self.env["stock.quant"].sudo()
+        Lot = self.env["stock.lot"].sudo()
+        moved = False
+        quants = Quant.search(
+            [
+                ("lot_id", "=", lot.id),
+                ("product_id", "=", lot.product_id.id),
+                ("location_id", "child_of", wh.lot_stock_id.id),
+                ("quantity", ">", 0),
+            ]
+        )
+        for quant in quants:
+            qty = quant.quantity
+            if qty <= 0:
+                continue
+            location = quant.location_id
+            new_lot = Lot.search(
+                [
+                    ("product_id", "=", new_variant.id),
+                    ("name", "=", lot.name),
+                    ("company_id", "=", self.env.company.id),
+                ],
+                limit=1,
+            )
+            if not new_lot:
+                new_lot = Lot.create(
+                    {
+                        "product_id": new_variant.id,
+                        "name": lot.name,
+                        "company_id": self.env.company.id,
+                    }
+                )
+            dest = Quant.search(
+                [
+                    ("product_id", "=", new_variant.id),
+                    ("location_id", "=", location.id),
+                    ("lot_id", "=", new_lot.id),
+                ],
+                limit=1,
+            )
+            if dest:
+                dest.with_context(inventory_mode=True).write(
+                    {"inventory_quantity_auto_apply": dest.quantity + qty}
+                )
+            else:
+                Quant.with_context(inventory_mode=True).create(
+                    {
+                        "product_id": new_variant.id,
+                        "location_id": location.id,
+                        "lot_id": new_lot.id,
+                        "inventory_quantity_auto_apply": qty,
+                    }
+                )
+            quant.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 0.0}
+            )
+            moved = True
+        return moved
+
+    @api.model
     def _apply_stock(self, variant, unit, additive=False):
         if "stock.quant" not in self.env or unit["qty"] <= 0:
             return 0, 0
@@ -1161,7 +1225,15 @@ class ProductCsvImporter(models.AbstractModel):
                         limit=1,
                     )
                     if existing:
-                        skipped += 1
+                        if existing.product_id.id != variant.id:
+                            if self._move_serial_lot_to_variant(
+                                existing, variant, wh
+                            ):
+                                applied += 1
+                            else:
+                                skipped += 1
+                        else:
+                            skipped += 1
                         continue
                 lot = Lot.search(
                     [
