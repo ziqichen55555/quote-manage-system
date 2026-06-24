@@ -346,6 +346,8 @@ class ProductCsvImporter(models.AbstractModel):
             return "ThinkCentre M93p"
         if "M73" in model_u or mtm_u.startswith("10AX"):
             return "ThinkCentre M73"
+        if "M91" in model_u or mtm_u == "4518PT1":
+            return "ThinkCentre M91p"
         if (
             mtm_u.startswith(("CF-", "FZ-"))
             or "TOUGHBOOK" in model_u
@@ -2109,6 +2111,138 @@ class ProductCsvImporter(models.AbstractModel):
             "renamed": renamed,
             "stock_moved": stock_moved,
             "archived": archived,
+        }
+
+    # Canonical M91p: legacy RW-4518PT1 + 4518PT1 → one SKU, three serials.
+    M91P_CANONICAL_SKU = "4518PT1"
+    M91P_LEGACY_RW_SKU = "RW-4518PT1"
+    M91P_SERIALS = ("PBMDFG4", "PBMDFX6", "R8LD26K")
+
+    @api.model
+    def repair_m91p_product_merge(self):
+        """Merge RW-4518PT1 into 4518PT1; stock = 3 serial units (Blancco + legacy)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not wh:
+            return {"error": "no_warehouse"}
+
+        canonical_code = self.M91P_CANONICAL_SKU
+        legacy_code = self.M91P_LEGACY_RW_SKU
+        canon_tmpl, _ = self._find_product_by_sku(canonical_code)
+        legacy_tmpl = PT.search(
+            [("default_code", "=", legacy_code)], limit=1
+        )
+
+        if not canon_tmpl and legacy_tmpl:
+            legacy_tmpl.write({"default_code": canonical_code})
+            canon_tmpl = legacy_tmpl
+            legacy_tmpl = PT.browse()
+
+        if not canon_tmpl:
+            canon_tmpl = PT.create(
+                {
+                    "name": "ThinkCentre M91p SFF",
+                    "default_code": canonical_code,
+                    "type": "product",
+                    "tracking": "serial",
+                    "website_published": True,
+                    "sale_ok": True,
+                    "list_price": 50.0,
+                }
+            )
+
+        canon_var = self._ensure_active_variant(canon_tmpl, canonical_code)
+        if not canon_var:
+            return {"error": "no_variant"}
+
+        legacy_price = legacy_tmpl.list_price if legacy_tmpl else 0.0
+        archived_legacy = False
+
+        if legacy_tmpl and legacy_tmpl.id != canon_tmpl.id:
+            rw_var = legacy_tmpl.product_variant_ids[:1]
+            if rw_var and canon_var:
+                Lot = self.env["stock.lot"].sudo()
+                for lot in Lot.search(
+                    [
+                        ("product_id", "=", rw_var.id),
+                        ("company_id", "=", self.env.company.id),
+                    ]
+                ):
+                    self._move_serial_lot_to_variant(lot, canon_var, wh)
+                self._migrate_variant_stock(rw_var, canon_var)
+            legacy_tmpl.write(
+                {
+                    "active": False,
+                    "website_published": False,
+                    "sale_ok": False,
+                }
+            )
+            archived_legacy = True
+
+        Lot = self.env["stock.lot"].sudo()
+        stocked = 0
+        for serial in self.M91P_SERIALS:
+            existing = Lot.search(
+                [
+                    ("name", "=", serial),
+                    ("company_id", "=", self.env.company.id),
+                ],
+                limit=1,
+            )
+            if existing and existing.product_id.id != canon_var.id:
+                self._move_serial_lot_to_variant(existing, canon_var, wh)
+            lot = self._find_or_create_lot(canon_var, serial)
+            applied, _skipped = self._set_serial_stock_one(canon_var, lot, wh)
+            if applied or (existing and existing.product_id.id == canon_var.id):
+                stocked += 1
+
+        shop_name = "ThinkCentre M91p SFF"
+        specs = {
+            "brand": "Lenovo",
+            "cpu": "i5-2400",
+            "ram": "8GB",
+            "storage": "250GB SSD",
+            "series": self._shop_filter_series(
+                mtm=canonical_code, model_name=shop_name
+            ),
+        }
+        price = canon_tmpl.list_price or 50.0
+        if legacy_price:
+            price = max(price, legacy_price)
+
+        canon_tmpl.write(
+            {
+                "name": shop_name,
+                "default_code": canonical_code,
+                "tracking": "serial",
+                "website_published": True,
+                "sale_ok": True,
+                "active": True,
+                "list_price": price,
+                "description_sale": self._shop_model_subtitle(
+                    canonical_code, shop_name
+                )[:500],
+            }
+        )
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        canon_tmpl.attribute_line_ids.filtered(
+            lambda l: l.attribute_id.id == config_attr.id
+        ).unlink()
+        self._sync_template_attributes(
+            canon_tmpl,
+            brand="Lenovo",
+            titles=[shop_name],
+            ptype="product",
+            specs=specs,
+        )
+
+        return {
+            "canonical": canonical_code,
+            "serials": list(self.M91P_SERIALS),
+            "stock_units": stocked,
+            "archived_legacy": archived_legacy,
         }
 
     @api.model

@@ -60,46 +60,12 @@
             <field name="name">ThinkPad T15</field>
             <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
         </record>
-        <record id="attr_val_series_t480s" model="product.attribute.value">
-            <field name="name">ThinkPad T480s</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
         <record id="attr_val_series_p1" model="product.attribute.value">
             <field name="name">ThinkPad P1</field>
             <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
         </record>
-        <record id="attr_val_series_toughbook" model="product.attribute.value">
-            <field name="name">Toughbook</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_dell_3301" model="product.attribute.value">
-            <field name="name">Dell 3301</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_dell_5590" model="product.attribute.value">
-            <field name="name">Dell 5590</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_dell_e7470" model="product.attribute.value">
-            <field name="name">Dell E7470</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_dell_optiplex" model="product.attribute.value">
-            <field name="name">Dell Optiplex</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_hp_elitebook" model="product.attribute.value">
-            <field name="name">HP EliteBook</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_thinkcentre_m93p" model="product.attribute.value">
-            <field name="name">ThinkCentre M93p</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
-        <record id="attr_val_series_thinkcentre_m73" model="product.attribute.value">
-            <field name="name">ThinkCentre M73</field>
-            <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
-        </record>
+        <!-- Extra Series values (T480s, Toughbook, Dell*, M93p…) are created at
+             import time; defining them here breaks -u when they already exist in DB. -->
         <record id="attr_val_series_thinkcentre_m910s" model="product.attribute.value">
             <field name="name">ThinkCentre M910s</field>
             <field name="attribute_id" ref="quote_manage_ui.attr_series"/>
