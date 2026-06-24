@@ -77,8 +77,23 @@ class ProductCsvImporter(models.AbstractModel):
         s = (val or "").strip()
         if not s:
             return "0"
+        if re.search(r"\d{4}G\d", s, re.I):
+            return "0"
         m = re.search(r"(\d+)", s)
-        return m.group(1) if m else "0"
+        if not m:
+            return "0"
+        n = int(m.group(1))
+        if n in self._cpu_model_storage_false_positives(s):
+            return "0"
+        return str(n)
+
+    @api.model
+    def _cpu_model_storage_false_positives(self, text):
+        """Digits from CPU strings like i5-1135G7 — must not be treated as SSD GB."""
+        blob = text or ""
+        false = {int(x) for x in re.findall(r"i[3579]-(\d{4})G\d", blob, re.I)}
+        false.update({int(x) for x in re.findall(r"\b(\d{4})G\d\b", blob, re.I)})
+        return false
 
     @api.model
     def _merged_section(self, model_name, mtm):
@@ -707,6 +722,40 @@ class ProductCsvImporter(models.AbstractModel):
             tmpl.write(updates)
 
     @api.model
+    def _is_merged_unit(self, unit):
+        if "merged_blancco" in (unit.get("notes") or []):
+            return True
+        return bool((unit.get("specs") or {}).get("mtm"))
+
+    @api.model
+    def _refresh_existing_from_merge_unit(
+        self, tmpl, unit, code, brand, titles, ptype, config_attr
+    ):
+        """Re-apply Blancco-backed name + filter attributes on additive merge upload."""
+        specs = unit.get("specs") or {}
+        shop_name = unit.get("series_key") or specs.get("series") or tmpl.name
+        updates = {}
+        if shop_name and shop_name != tmpl.name:
+            updates["name"] = shop_name
+        subtitle = self._shop_model_subtitle(code, shop_name)[:500]
+        if subtitle and subtitle != (tmpl.description_sale or "").strip():
+            updates["description_sale"] = subtitle
+        if updates:
+            tmpl.write(updates)
+        if ptype != "product" or not specs:
+            return
+        tmpl.attribute_line_ids.filtered(
+            lambda l: l.attribute_id.id == config_attr.id
+        ).unlink()
+        self._sync_template_attributes(
+            tmpl,
+            brand=brand or specs.get("brand", ""),
+            titles=titles,
+            ptype=ptype,
+            specs=specs,
+        )
+
+    @api.model
     def _ensure_active_variant(self, tmpl, code):
         """Reactivate a variant when a per-MTM template was archived without its variant."""
         variants = tmpl.product_variant_ids.with_context(active_test=False)
@@ -760,6 +809,11 @@ class ProductCsvImporter(models.AbstractModel):
         if tmpl and additive:
             self._ensure_published(tmpl)
             self._ensure_active_variant(tmpl, code)
+            if self._is_merged_unit(unit):
+                self._refresh_existing_from_merge_unit(
+                    tmpl, unit, code, brand, titles, ptype, config_attr
+                )
+                updated += 1
             variant = self._stock_variant_for_unit(tmpl, code)
             if ptype == "product" and unit["qty"] > 0 and variant:
                 applied, skipped = self._apply_stock(
@@ -1306,11 +1360,12 @@ class ProductCsvImporter(models.AbstractModel):
             blob,
             flags=re.I,
         )
+        cpu_false_gb = self._cpu_model_storage_false_positives(blob)
         if re.search(r"1\s*TB\s*SSD", storage_blob, re.I):
             specs["storage"] = "1TB SSD"
         else:
             st_m = re.search(r"(\d+)\s*(?:GB|G)\s*SSD", storage_blob, re.I)
-            if st_m:
+            if st_m and int(st_m.group(1)) not in cpu_false_gb:
                 specs["storage"] = f"{st_m.group(1)}GB SSD"
             else:
                 nums = [
@@ -1319,7 +1374,11 @@ class ProductCsvImporter(models.AbstractModel):
                         r"(?<![\d])(\d{2,4})\s*G[B]?\b", storage_blob, re.I
                     )
                 ]
-                big = [x for x in nums if 64 < x <= 2048]
+                big = [
+                    x
+                    for x in nums
+                    if 64 < x <= 2048 and x not in cpu_false_gb
+                ]
                 if big:
                     specs["storage"] = f"{max(big)}GB SSD"
                 elif "500GB" in t_up:
@@ -1331,6 +1390,52 @@ class ProductCsvImporter(models.AbstractModel):
             specs["wan"] = "Yes"
 
         return specs
+
+    @api.model
+    def repair_cpu_model_storage_attrs(self):
+        """Fix Storage values mis-parsed from i5-1135G7 / i5-1145G7 CPU model numbers."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        storage_attr = self.env.ref("quote_manage_ui.attr_storage")
+        bad_vals = self.env["product.attribute.value"].sudo().search([
+            ("attribute_id", "=", storage_attr.id),
+            "|",
+            ("name", "ilike", "1135%"),
+            ("name", "ilike", "1145%"),
+        ])
+        if not bad_vals:
+            return 0
+        bad_ids = set(bad_vals.ids)
+        fixed = 0
+        for tmpl in PT.search([("default_code", "!=", False)]):
+            storage_lines = tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == storage_attr.id
+                and set(l.value_ids.ids) & bad_ids
+            )
+            if not storage_lines:
+                continue
+            brand = ""
+            for line in tmpl.attribute_line_ids:
+                if line.attribute_id.name == "Brand" and line.value_ids:
+                    brand = line.value_ids[0].name
+                    break
+            titles = [t for t in (tmpl.name, tmpl.description_sale) if t]
+            specs = self._parse_specs(brand, titles)
+            storage = (specs.get("storage") or "").lower()
+            if not storage or "1135gb" in storage or "1145gb" in storage:
+                blob = " ".join(titles).upper()
+                if re.search(r"\b512\b", blob):
+                    specs["storage"] = "512GB SSD"
+                elif re.search(r"\b256\b", blob):
+                    specs["storage"] = "256GB SSD"
+            self._sync_template_attributes(
+                tmpl,
+                brand=brand,
+                titles=titles,
+                ptype=tmpl.type,
+                specs=specs,
+            )
+            fixed += 1
+        return fixed
 
     @api.model
     def fix_thinkcentre_m910_series(self):
