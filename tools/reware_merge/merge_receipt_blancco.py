@@ -70,6 +70,19 @@ def normalize_mtm(value) -> str:
         return ""
     return str(value).strip().upper()
 
+def normalize_manufacturer(raw: str, mtm: str = "", model_hint: str = "") -> str:
+    """Map Blancco / inferred text to LENOVO|DELL|HP|PANASONIC."""
+    s = (raw or "").strip().upper()
+    if "DELL" in s:
+        return "DELL"
+    if "LENOVO" in s:
+        return "LENOVO"
+    if "HP" in s or "HEWLETT" in s:
+        return "HP"
+    if "PANASONIC" in s:
+        return "PANASONIC"
+    return infer_manufacturer(mtm, model_hint)
+
 def infer_manufacturer(mtm: str, model_hint: str = "") -> str:
     """Guess manufacturer from MTM / model text for Odoo import."""
     mtm_u = (mtm or "").strip().upper()
@@ -77,7 +90,12 @@ def infer_manufacturer(mtm: str, model_hint: str = "") -> str:
     combined = f"{mtm_u} {hint}"
     if re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u) or mtm_u.startswith(("10", "20")):
         return "LENOVO"
-    if "DELL" in combined or hint.startswith("LATITUDE"):
+    if (
+        "DELL" in combined
+        or "LATITUDE" in combined
+        or "OPTIPLEX" in combined
+        or hint.startswith("LATITUDE")
+    ):
         return "DELL"
     if "PANASONIC" in combined or mtm_u.startswith(("CF-", "FZ-")):
         return "PANASONIC"
@@ -505,6 +523,7 @@ def load_blancco(path: Path) -> pd.DataFrame:
         "battery": _pick_col(col_map, "capacity"),
         "gpu": _pick_col(col_map, "video card model", "gpu"),
         "mobo_status": _pick_col(col_map, "motherboard test status", "cmos condition"),
+        "manufacturer": _pick_col(col_map, "system manufacturer", "manufacturer"),
     }
 
     out = pd.DataFrame()
@@ -605,7 +624,12 @@ def merge_data(
         if not gen and lut_row is not None:
             gen = str(lut_row.get("generation", "") or "").strip()
         series = derive_product_name(system_version, model_name, mtm, gen)
-        manufacturer = infer_manufacturer(mtm, model_name or str(wd_row.get("mtm_raw", "") or ""))
+        bl_mfr = str(bl.get("manufacturer", "") if bl is not None else "")
+        manufacturer = normalize_manufacturer(
+            bl_mfr,
+            mtm,
+            model_name or str(wd_row.get("mtm_raw", "") or ""),
+        )
 
         ssd_type = str(bl.get("ssd_type", "") if bl is not None else "")
         ssd_size = parse_size_gb(bl.get("disk_capacity", "") if bl is not None else "")

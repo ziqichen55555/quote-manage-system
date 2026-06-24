@@ -130,6 +130,25 @@ class ProductCsvImporter(models.AbstractModel):
         return "Laptops"
 
     @api.model
+    def _resolve_import_brand(self, mtm="", manufacturer="", model_name=""):
+        """Brand for shop filters — MTM/model overrides bad merge Manufacturer rows."""
+        mtm_u = (mtm or "").strip().upper()
+        combined = f"{mtm_u} {(model_name or '').upper()}"
+        if (
+            "LATITUDE" in combined
+            or "OPTIPLEX" in combined
+            or mtm_u.startswith("DELL")
+        ):
+            return "Dell"
+        if mtm_u.startswith(("CF-", "FZ-")) or "TOUGHBOOK" in combined:
+            return "Panasonic"
+        if mtm_u.startswith("T1D") or "#ABG" in mtm_u or "ELITEBOOK" in combined:
+            return "HP"
+        if re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u) or mtm_u.startswith(("10", "20")):
+            return "Lenovo"
+        return self._merged_brand(manufacturer)
+
+    @api.model
     def _merged_brand(self, manufacturer):
         m = (manufacturer or "").strip().upper()
         return {
@@ -141,7 +160,12 @@ class ProductCsvImporter(models.AbstractModel):
 
     @api.model
     def _merged_title(self, row):
-        brand = self._merged_brand(self._merged_str(row, "Manufacturer"))
+        mtm = self._merged_str(row, "MTM")
+        brand = self._resolve_import_brand(
+            mtm=mtm,
+            manufacturer=self._merged_str(row, "Manufacturer"),
+            model_name=self._merged_str(row, "Model name"),
+        )
         model = self._merged_str(row, "Model name")
         parts = [f"Re-Ware {brand}"]
         if model:
@@ -399,7 +423,12 @@ class ProductCsvImporter(models.AbstractModel):
         model_name="",
         manufacturer="",
     ):
-        specs = {"brand": brand, "mtm": (mtm or "").upper()}
+        resolved_brand = self._resolve_import_brand(
+            mtm=mtm,
+            manufacturer=manufacturer or brand,
+            model_name=model_name,
+        )
+        specs = {"brand": resolved_brand, "mtm": (mtm or "").upper()}
         cpu = self._short_cpu_label(cpu_raw)
         if cpu:
             specs["cpu"] = cpu
@@ -544,7 +573,11 @@ class ProductCsvImporter(models.AbstractModel):
                 if self._merged_str(r, "Serial")
             })
             price = self._merged_str(sample, "Price")
-            brand = self._merged_brand(self._merged_str(sample, "Manufacturer"))
+            brand = self._resolve_import_brand(
+                mtm=mtm,
+                manufacturer=self._merged_str(sample, "Manufacturer"),
+                model_name=model_name,
+            )
             title = self._merged_title(sample)
             system_version = self._merged_str(sample, "System version")
             product_key = self._resolve_product_key(
@@ -1744,6 +1777,56 @@ class ProductCsvImporter(models.AbstractModel):
                 ptype=tmpl.type,
                 specs=specs,
             )
+            fixed += 1
+        return fixed
+
+    @api.model
+    def repair_shop_brand_attrs(self):
+        """Fix Brand=Lenovo on Dell/HP/Panasonic SKUs (bad merge Manufacturer)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        config_attr = self.env.ref(CONFIG_ATTR_XMLID)
+        brand_attr = self.env.ref("quote_manage_ui.attr_brand")
+        Line = self.env["product.template.attribute.line"].sudo()
+        fixed = 0
+        for tmpl in PT.search([("sale_ok", "=", True), ("type", "=", "product")]):
+            if self._is_configuration_only_product(tmpl, config_attr):
+                continue
+            code = (tmpl.default_code or "").strip()
+            if not code:
+                continue
+            brand = self._resolve_import_brand(
+                mtm=code,
+                model_name=tmpl.name or "",
+            )
+            if not brand:
+                continue
+            val = self.env["product.attribute.value"].sudo().search(
+                [("attribute_id", "=", brand_attr.id), ("name", "=", brand)],
+                limit=1,
+            )
+            if not val:
+                val = self.env["product.attribute.value"].sudo().create(
+                    {"attribute_id": brand_attr.id, "name": brand[:128]}
+                )
+            existing = Line.search(
+                [
+                    ("product_tmpl_id", "=", tmpl.id),
+                    ("attribute_id", "=", brand_attr.id),
+                ],
+                limit=1,
+            )
+            if existing and set(existing.value_ids.ids) == {val.id}:
+                continue
+            if existing:
+                existing.write({"value_ids": [(6, 0, [val.id])]})
+            else:
+                Line.create(
+                    {
+                        "product_tmpl_id": tmpl.id,
+                        "attribute_id": brand_attr.id,
+                        "value_ids": [(6, 0, [val.id])],
+                    }
+                )
             fixed += 1
         return fixed
 
