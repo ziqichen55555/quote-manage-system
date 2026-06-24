@@ -22,6 +22,8 @@ CONFIG_ATTR_XMLID = "quote_manage_ui.attr_configuration"
 SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 # Auto-generated test SKUs — never create or stock via CSV import.
 BLOCKED_SKU_PREFIXES = ("IMPORT-",)
+# Legacy refurb prefix on product_import_ready.csv (stripped → real MTM on import).
+LEGACY_RW_PRODUCT_PREFIX = "RW-"
 
 
 class ProductCsvImporter(models.AbstractModel):
@@ -459,6 +461,61 @@ class ProductCsvImporter(models.AbstractModel):
         return any(c.startswith(p.upper()) for p in BLOCKED_SKU_PREFIXES)
 
     @api.model
+    def _looks_like_real_product_sku(self, code):
+        """True when code is a manufacturer MTM / model (not RW-SERIES- internal slug)."""
+        u = (code or "").strip().upper()
+        if not u or u.startswith("RW-SERIES-"):
+            return False
+        if u.startswith(("CF-", "FZ-", "LATITUDE", "DELL")):
+            return True
+        if re.match(r"^\d{2}[A-Z0-9]{8}$", u):
+            return True
+        if re.match(r"^\d{4}[A-Z0-9]{3,10}$", u):
+            return True
+        if "#" in u or u.startswith("T1D"):
+            return True
+        if re.match(r"^[A-Z][A-Z0-9-]{4,22}$", u) and not u.startswith("IMPORT"):
+            return True
+        return False
+
+    @api.model
+    def _canonical_sku_code(self, code):
+        """Map legacy RW-{MTM} shop SKUs to the real MTM used by merge import."""
+        c = (code or "").strip()
+        if not c:
+            return c
+        if c.upper().startswith("RW-SERIES-"):
+            return c
+        if c.upper().startswith(LEGACY_RW_PRODUCT_PREFIX):
+            rest = c[len(LEGACY_RW_PRODUCT_PREFIX) :].strip()
+            if rest and self._looks_like_real_product_sku(rest):
+                return rest
+        return c
+
+    @api.model
+    def _legacy_rw_sku_code(self, canonical):
+        c = self._canonical_sku_code(canonical)
+        if c.upper().startswith("RW-"):
+            return c
+        return f"{LEGACY_RW_PRODUCT_PREFIX}{c}"
+
+    @api.model
+    def _find_product_by_sku(self, code):
+        """Resolve template by canonical MTM; rename lone RW-{MTM} rows in place."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        canonical = self._canonical_sku_code(code)
+        tmpl = PT.search([("default_code", "=", canonical)], limit=1)
+        if tmpl:
+            return tmpl, canonical
+        legacy_code = self._legacy_rw_sku_code(canonical)
+        if legacy_code != canonical:
+            legacy_tmpl = PT.search([("default_code", "=", legacy_code)], limit=1)
+            if legacy_tmpl:
+                legacy_tmpl.write({"default_code": canonical})
+                return legacy_tmpl, canonical
+        return PT.browse(), canonical
+
+    @api.model
     def _validate_merged_specs(self, specs, code):
         """Reject specs that confuse CPU model digits with SSD size."""
         storage = (specs.get("storage") or "").lower()
@@ -726,7 +783,7 @@ class ProductCsvImporter(models.AbstractModel):
         )
         skipped_blocked_skus = 0
         for r in rows:
-            code = (r.get("default_code") or "").strip()
+            code = self._canonical_sku_code((r.get("default_code") or "").strip())
             if not code:
                 continue
             if self._is_blocked_sku(code):
@@ -1034,7 +1091,8 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _import_single_unit(self, unit, sections, additive=False):
         created = updated = stock_batches = skipped_serials = 0
-        code = unit["code"]
+        code = self._canonical_sku_code(unit["code"])
+        unit["code"] = code
         sec_key = (unit["sections"][-1] if unit["sections"] else "accessories").lower()
         if sec_key not in sections:
             sec_key = "accessories"
@@ -1054,7 +1112,8 @@ class ProductCsvImporter(models.AbstractModel):
         )
 
         PT = self.env["product.template"].sudo().with_context(active_test=False)
-        tmpl = PT.search([("default_code", "=", code)], limit=1)
+        tmpl, code = self._find_product_by_sku(code)
+        unit["code"] = code
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
         if tmpl and additive:
@@ -1999,6 +2058,60 @@ class ProductCsvImporter(models.AbstractModel):
         return archived
 
     @api.model
+    def consolidate_legacy_rw_skus(self):
+        """Merge RW-{MTM} duplicates into canonical MTM products (one shop row per model)."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        renamed = stock_moved = archived = 0
+        rw_tmpls = PT.search(
+            [
+                ("default_code", "=ilike", "RW-%"),
+                ("active", "=", True),
+            ]
+        )
+        for rw_tmpl in rw_tmpls:
+            rw_code = (rw_tmpl.default_code or "").strip()
+            if rw_code.upper().startswith("RW-SERIES-"):
+                continue
+            canonical = self._canonical_sku_code(rw_code)
+            if canonical == rw_code:
+                continue
+            canon_tmpl = PT.search(
+                [("default_code", "=", canonical), ("id", "!=", rw_tmpl.id)],
+                limit=1,
+            )
+            rw_var = rw_tmpl.product_variant_ids[:1]
+            if canon_tmpl:
+                canon_var = canon_tmpl.product_variant_ids[:1]
+                if rw_var and canon_var:
+                    wh = self.env["stock.warehouse"].search(
+                        [("company_id", "=", self.env.company.id)], limit=1
+                    )
+                    if wh:
+                        for lot in self.env["stock.lot"].sudo().search(
+                            [
+                                ("product_id", "=", rw_var.id),
+                                ("company_id", "=", self.env.company.id),
+                            ]
+                        ):
+                            if self._move_serial_lot_to_variant(
+                                lot, canon_var, wh
+                            ):
+                                stock_moved += 1
+                    stock_moved += self._migrate_variant_stock(rw_var, canon_var)
+                rw_tmpl.write(
+                    {"active": False, "website_published": False, "sale_ok": False}
+                )
+                archived += 1
+            else:
+                rw_tmpl.write({"default_code": canonical})
+                renamed += 1
+        return {
+            "renamed": renamed,
+            "stock_moved": stock_moved,
+            "archived": archived,
+        }
+
+    @api.model
     def archive_synthetic_import_skus(self):
         """Archive shop products whose SKU was auto-generated (IMPORT-... from title)."""
         PT = self.env["product.template"].sudo().with_context(active_test=False)
@@ -2188,9 +2301,15 @@ class ProductCsvImporter(models.AbstractModel):
                     ],
                     limit=1,
                 )
+                if dest and dest.quantity >= 1:
+                    quant.with_context(inventory_mode=True).write(
+                        {"inventory_quantity_auto_apply": 0.0}
+                    )
+                    count += 1
+                    continue
                 if dest:
                     dest.with_context(inventory_mode=True).write(
-                        {"inventory_quantity_auto_apply": dest.quantity + qty}
+                        {"inventory_quantity_auto_apply": 1.0}
                     )
                 else:
                     Quant.with_context(inventory_mode=True).create(
@@ -2198,7 +2317,7 @@ class ProductCsvImporter(models.AbstractModel):
                             "product_id": new_variant.id,
                             "location_id": location.id,
                             "lot_id": new_lot.id,
-                            "inventory_quantity_auto_apply": qty,
+                            "inventory_quantity_auto_apply": 1.0,
                         }
                     )
             else:
