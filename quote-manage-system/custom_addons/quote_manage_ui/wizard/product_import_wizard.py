@@ -15,19 +15,9 @@ class ProductImportWizard(models.TransientModel):
         self.ensure_one()
         if not self.file:
             raise UserError(_("Please choose a CSV file to upload."))
-        result = self.env["product.csv.importer"].sudo().import_from_binary(
-            self.file, filename=self.filename
-        )
-        msg = _(
-            "Import complete (additive mode).\n"
-            "• CSV rows (SKUs): %(sku_count)s\n"
-            "• New products created: %(created)s\n"
-            "• Existing products changed: %(updated)s\n"
-            "• Stock lines added: %(stock_batches)s\n"
-            "• Serial numbers skipped (already in stock): %(skipped_serials)s\n\n"
-            "Existing products keep their name, price, and attributes — only "
-            "new serials/quantity are added. SKUs not in this file are untouched."
-        ) % {**result, "skipped_serials": result.get("skipped_serials", 0)}
+        Importer = self.env["product.csv.importer"].sudo()
+        result = Importer.import_from_binary(self.file, filename=self.filename)
+        msg = Importer.format_import_result_message(result)
         self.result_message = msg
         return {
             "type": "ir.actions.client",

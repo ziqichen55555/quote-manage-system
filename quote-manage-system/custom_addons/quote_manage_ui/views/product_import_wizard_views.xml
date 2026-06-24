@@ -45,11 +45,19 @@
                     <field name="file" filename="filename"/>
                 </group>
                 <div class="alert alert-info" role="alert">
-                    <p class="mb-2"><strong>Additive import — safe to re-upload.</strong></p>
+                    <p class="mb-2"><strong>Standard workflow (laptops / desktops)</strong></p>
+                    <ol class="mb-2 ps-3">
+                        <li>On your PC: put receipt + Blancco report in the <em>re-ware merge</em> folder</li>
+                        <li>Double-click <strong>run_merge.bat</strong> → get <code>MERGED import-ready &lt;date&gt;.csv</code></li>
+                        <li>Upload that CSV here (must have <strong>Serial</strong> + <strong>MTM</strong> columns)</li>
+                        <li>Only <strong>Status = SUCCESS</strong> rows are imported; fix FAILED rows in merge first</li>
+                    </ol>
+                    <p class="mb-2"><strong>What this upload does (additive, safe to re-run)</strong></p>
                     <ul class="mb-0">
-                        <li><strong>New MTM/SKU</strong> in the file → creates a product + stock</li>
-                        <li><strong>Existing MTM/SKU</strong> → adds new serials/quantity only (name, price, images unchanged)</li>
-                        <li><strong>Not in the file</strong> → left completely untouched (stock is not zeroed)</li>
+                        <li><strong>New MTM/SKU</strong> → creates shop product + serial stock</li>
+                        <li><strong>Existing MTM/SKU</strong> → updates name &amp; specs from Blancco, adds new serials</li>
+                        <li><strong>Not in file</strong> → untouched (stock is not zeroed)</li>
+                        <li><strong>IMPORT-*</strong> synthetic SKUs are blocked automatically</li>
                     </ul>
                 </div>
                 <group invisible="not result_message">

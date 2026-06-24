@@ -18,7 +18,8 @@ on:
 
 concurrency:
   group: prod-deploy
-  cancel-in-progress: false
+  # Only the latest push deploys; avoid queued back-to-back odoo -u on the server.
+  cancel-in-progress: true
 
 jobs:
   deploy:

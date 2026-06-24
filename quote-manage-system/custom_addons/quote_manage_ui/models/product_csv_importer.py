@@ -20,11 +20,13 @@ _logger = logging.getLogger(__name__)
 CONFIG_ATTR_XMLID = "quote_manage_ui.attr_configuration"
 # Refurb computers imported via CSV — always serial-tracked.
 SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
+# Auto-generated test SKUs — never create or stock via CSV import.
+BLOCKED_SKU_PREFIXES = ("IMPORT-",)
 
 
 class ProductCsvImporter(models.AbstractModel):
     _name = "product.csv.importer"
-    _description = "Re-Ware CSV product import (additive — new SKUs + stock only)"
+    _description = "Re-Ware CSV product import (merge Blancco export or legacy sheet)"
 
     # ------------------------------------------------------------------ API
     @api.model
@@ -43,8 +45,22 @@ class ProductCsvImporter(models.AbstractModel):
         headers = {h.strip() for h in reader.fieldnames if h}
         rows = list(reader)
         if self._is_merged_device_export(headers):
+            device_count = len(rows)
+            failed_devices = sum(
+                1
+                for r in rows
+                if self._merged_str(r, "Status", default="SUCCESS").upper() != "SUCCESS"
+            )
             rows = self._merged_device_rows_to_import_rows(rows)
-            return self._run_import(rows, additive=True)
+            return self._run_import(
+                rows,
+                additive=True,
+                import_source="merged_blancco",
+                source_stats={
+                    "devices_in_file": device_count,
+                    "failed_devices": failed_devices,
+                },
+            )
         else:
             required = {"section", "default_code", "title_raw", "cost_ex"}
             missing = required - headers
@@ -52,7 +68,7 @@ class ProductCsvImporter(models.AbstractModel):
                 raise UserError(
                     _("Missing CSV columns: %s") % ", ".join(sorted(missing))
                 )
-        return self._run_import(rows, additive=True)
+        return self._run_import(rows, additive=True, import_source="legacy_sheet")
 
     @api.model
     def _is_merged_device_export(self, headers):
@@ -293,7 +309,27 @@ class ProductCsvImporter(models.AbstractModel):
             specs["touch"] = "Yes"
         if (wan or "").strip().lower() == "yes":
             specs["wan"] = "Yes"
+        self._validate_merged_specs(specs, mtm or "")
         return specs
+
+    @api.model
+    def _is_blocked_sku(self, code):
+        c = (code or "").strip().upper()
+        return any(c.startswith(p.upper()) for p in BLOCKED_SKU_PREFIXES)
+
+    @api.model
+    def _validate_merged_specs(self, specs, code):
+        """Reject specs that confuse CPU model digits with SSD size."""
+        storage = (specs.get("storage") or "").lower()
+        if "1135gb" in storage or "1145gb" in storage:
+            raise UserError(
+                _(
+                    "SKU %(code)s: Storage “%(storage)s” looks like a CPU model "
+                    "(i5-1135G7 / i5-1145G7). Fix the merge export or Blancco "
+                    "disk column before importing."
+                )
+                % {"code": code or "?", "storage": specs.get("storage")}
+            )
 
     @api.model
     def _resolve_series_key(
@@ -428,6 +464,51 @@ class ProductCsvImporter(models.AbstractModel):
         return out
 
     @api.model
+    def format_import_result_message(self, result):
+        """Human-readable summary for the upload wizard."""
+        src = result.get("import_source") or "legacy_sheet"
+        if src == "merged_blancco":
+            return _(
+                "Merge import complete (MERGED import-ready CSV).\n"
+                "• Devices in file: %(devices_in_file)s "
+                "(FAILED rows ignored: %(failed_devices)s)\n"
+                "• SKUs imported: %(sku_count)s\n"
+                "• New shop products: %(created)s\n"
+                "• Existing products updated (name + Blancco attrs + stock): %(updated)s\n"
+                "• Serial stock lines added: %(stock_batches)s\n"
+                "• Serials skipped (already in stock): %(skipped_serials)s\n"
+                "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
+                "Specs (CPU / RAM / Storage) come from Blancco columns in the merge "
+                "file — not from product titles. Re-upload is safe: SKUs not in "
+                "this file are untouched."
+            ) % {
+                "devices_in_file": result.get("devices_in_file", 0),
+                "failed_devices": result.get("failed_devices", 0),
+                "sku_count": result.get("sku_count", 0),
+                "created": result.get("created", 0),
+                "updated": result.get("updated", 0),
+                "stock_batches": result.get("stock_batches", 0),
+                "skipped_serials": result.get("skipped_serials", 0),
+                "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
+            }
+        return _(
+            "Legacy sheet import complete.\n"
+            "• SKUs in file: %(sku_count)s\n"
+            "• New products: %(created)s\n"
+            "• Updated: %(updated)s\n"
+            "• Stock lines added: %(stock_batches)s\n"
+            "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
+            "For laptops/desktops, prefer MERGED import-ready CSV from "
+            "run_merge.bat (Serial + MTM columns) so CPU/SSD come from Blancco."
+        ) % {
+            "sku_count": result.get("sku_count", 0),
+            "created": result.get("created", 0),
+            "updated": result.get("updated", 0),
+            "stock_batches": result.get("stock_batches", 0),
+            "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
+        }
+
+    @api.model
     def import_from_binary(self, data, filename=None):
         try:
             raw = base64.b64decode(data)
@@ -442,12 +523,12 @@ class ProductCsvImporter(models.AbstractModel):
 
     # -------------------------------------------------------------- pipeline
     @api.model
-    def _run_import(self, rows, additive=False):
+    def _run_import(self, rows, additive=False, import_source="legacy_sheet", source_stats=None):
         sections = self._section_maps()
-        units = self._aggregate_rows(rows)
+        units, skipped_blocked_skus = self._aggregate_rows(rows)
 
         # Additive import: only SKUs present in the CSV are touched. No archiving,
-        # no overwriting existing products, no zeroing stock for absent SKUs.
+        # no zeroing stock for absent SKUs. Merge uploads also refresh name/attrs.
         created = updated = stock_batches = skipped_serials = 0
 
         for unit in units:
@@ -458,6 +539,7 @@ class ProductCsvImporter(models.AbstractModel):
             skipped_serials += sk
 
         self.env.cr.commit()
+        stats = source_stats or {}
         return {
             "created": created,
             "updated": updated,
@@ -465,7 +547,11 @@ class ProductCsvImporter(models.AbstractModel):
             "archived_skus": 0,
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
+            "skipped_blocked_skus": skipped_blocked_skus,
             "sku_count": len(units),
+            "import_source": import_source,
+            "devices_in_file": stats.get("devices_in_file", 0),
+            "failed_devices": stats.get("failed_devices", 0),
         }
 
     @api.model
@@ -486,9 +572,14 @@ class ProductCsvImporter(models.AbstractModel):
                 "merged_fields": [],
             }
         )
+        skipped_blocked_skus = 0
         for r in rows:
             code = (r.get("default_code") or "").strip()
             if not code:
+                continue
+            if self._is_blocked_sku(code):
+                skipped_blocked_skus += 1
+                _logger.info("Skipping blocked synthetic SKU: %s", code)
                 continue
             a = agg[code]
             sec = (r.get("section") or "").strip()
@@ -582,7 +673,7 @@ class ProductCsvImporter(models.AbstractModel):
                     "config_label": self._build_config_label(specs, code),
                 }
             )
-        return out
+        return out, skipped_blocked_skus
 
     # -------------------------------------------------------- merged series
     @api.model
