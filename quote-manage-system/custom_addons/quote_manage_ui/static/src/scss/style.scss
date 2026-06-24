@@ -815,14 +815,23 @@ html:has(main .o_wsale_products_page) {
             object-fit: contain;
         }
     }
+    .rw-footer-rrr {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: baseline;
+        column-gap: 1rem;
+        row-gap: 0.15rem;
+    }
     .rw-footer-rrr-line {
         font-family: $rw-font-body;
         font-weight: 700;
-        font-size: 0.78rem;
-        letter-spacing: 0.18em;
+        font-size: 0.58rem;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: $rw-gold;
-        line-height: 1.6;
+        line-height: 1.2;
     }
     .rw-footer-bottom { border-top: 1px solid $rw-border; padding-top: 1.5rem; margin-top: 2.5rem; font-size: 0.8rem; color: $rw-text-muted; }
 }
