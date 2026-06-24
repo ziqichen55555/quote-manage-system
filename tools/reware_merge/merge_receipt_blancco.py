@@ -152,7 +152,7 @@ def _looks_like_valid_family_label(text: str) -> bool:
         return False
     return bool(
         re.search(
-            r"thinkpad|thinkcentre|latitude|toughbook|optiplex|panasonic|elitebook|dell",
+            r"thinkpad|thinkcentre|latitude|toughbook|optiplex|panasonic|elitebook|elitedesk|prodesk|cf-?\d|fz-?\d|dell",
             low,
             re.I,
         )
@@ -497,6 +497,95 @@ def load_receipt_sheet2_meta(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     lut_rows = meta[["serial", "name"]].drop_duplicates("serial") if name_col else pd.DataFrame()
     return uncollected_df, lut_rows
 
+def normalize_sku(value) -> str:
+    """System SKU number (HP / Panasonic) — preserve CF-54… / #ABG style codes."""
+    return normalize_mtm(value)
+
+def is_hp_or_panasonic(manufacturer: str, mtm: str = "", model_hint: str = "") -> bool:
+    mfr = (manufacturer or "").strip().upper()
+    if mfr in ("HP", "PANASONIC"):
+        return True
+    blob = f"{mtm or ''} {model_hint or ''}".upper()
+    return bool(
+        re.search(r"CF-?\d|FZ-?\d|TOUGHBOOK|#ABG|T1D\d", blob)
+        or blob.startswith(("CF", "FZ"))
+    )
+
+def is_lenovo_style_mtm(mtm: str) -> bool:
+    mtm_u = (mtm or "").strip().upper()
+    return bool(re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u) or mtm_u.startswith(("10", "20", "30")))
+
+def build_blancco_indexes(blancco: pd.DataFrame):
+    """Index Blancco rows by device serial, system SKU number, and system model."""
+    by_serial = blancco.set_index("serial", drop=False)
+    sku_rows = blancco[blancco["sku_number"].astype(str).str.strip() != ""]
+    by_sku = (
+        sku_rows.drop_duplicates(subset=["sku_number"], keep="first").set_index(
+            "sku_number", drop=False
+        )
+        if not sku_rows.empty
+        else pd.DataFrame().set_index(pd.Index([], name="sku_number"))
+    )
+    model_rows = blancco[blancco["blancco_mtm"].astype(str).str.strip() != ""]
+    by_model = (
+        model_rows.drop_duplicates(subset=["blancco_mtm"], keep="first").set_index(
+            "blancco_mtm", drop=False
+        )
+        if not model_rows.empty
+        else pd.DataFrame().set_index(pd.Index([], name="blancco_mtm"))
+    )
+    return by_serial, by_sku, by_model
+
+def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receipt_mtm: str):
+    """Match receipt row to Blancco.
+
+    Lenovo: receipt serial ≈ Blancco *system serial*.
+    HP / Panasonic: receipt may list *system SKU* (CF-54…, T1D55PA#ABG) in the serial
+    or MTM column — join via *system SKU number*, then use Blancco *system serial*
+    as the device SN for Odoo.
+    """
+    for key, idx, kind in (
+        (receipt_serial, by_serial, "system_serial"),
+        (receipt_serial, by_sku, "system_sku"),
+        (receipt_mtm, by_sku, "mtm_as_sku"),
+        (receipt_mtm, by_model, "system_model"),
+    ):
+        if not key or idx.empty or key not in idx.index:
+            continue
+        row = idx.loc[key]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        return row, kind
+    return None, ""
+
+def output_device_serial(receipt_serial: str, bl_row, match_kind: str) -> str:
+    """Odoo / CSV Serial column = real unit SN from Blancco when known."""
+    if bl_row is None:
+        return receipt_serial
+    device = str(bl_row.get("serial", "") or "").strip().upper()
+    if match_kind in ("system_sku", "mtm_as_sku", "system_model") and device:
+        return device
+    if match_kind == "system_serial" and device:
+        return device
+    return receipt_serial
+
+def output_mtm(receipt_mtm: str, bl_row, manufacturer: str) -> str:
+    """MTM/SKU for Odoo.
+
+    Lenovo: Blancco *system model* (20WN… MTM).
+    HP / Panasonic: Blancco *system SKU number* (T1D55PA#ABG, CF-54J1436VA) — receipt
+    Device Model column; *system model* is the human-readable family name only.
+    """
+    if bl_row is None:
+        return receipt_mtm
+    sku = normalize_sku(str(bl_row.get("sku_number", "") or ""))
+    bl_mtm = normalize_mtm(str(bl_row.get("blancco_mtm", "") or ""))
+    if is_hp_or_panasonic(manufacturer, receipt_mtm, sku or bl_mtm):
+        return sku or receipt_mtm
+    if bl_mtm and not is_lenovo_style_mtm(receipt_mtm):
+        return bl_mtm
+    return receipt_mtm
+
 def load_blancco(path: Path) -> pd.DataFrame:
     if classify_file(path) != "blancco":
         cols = column_names(path)
@@ -509,6 +598,14 @@ def load_blancco(path: Path) -> pd.DataFrame:
     col_map = _col_lookup(list(df.columns))
 
     serial_col = _pick_col(col_map, "system serial", "serial", "system serial number")
+    sku_col = _pick_col(
+        col_map,
+        "system sku number",
+        "system sku",
+        "system sku no.",
+        "system sku no",
+        "sku number",
+    )
     if not serial_col:
         raise ValueError(f"Blancco file needs a serial column. Found: {list(df.columns)}")
 
@@ -528,8 +625,11 @@ def load_blancco(path: Path) -> pd.DataFrame:
 
     out = pd.DataFrame()
     out["serial"] = df[serial_col].map(normalize_serial)
+    out["sku_number"] = df[sku_col].map(normalize_sku) if sku_col else ""
     for key, col in mapping.items():
         out[key] = df[col] if col else ""
+    if "blancco_mtm" in out.columns:
+        out["blancco_mtm"] = out["blancco_mtm"].map(normalize_mtm)
     out = out[out["serial"] != ""]
     out["_duplicate_count"] = out.groupby("serial")["serial"].transform("count")
 
@@ -581,22 +681,24 @@ def merge_data(
     lut: pd.DataFrame,
     uncollected_map: dict[str, bool],
 ) -> pd.DataFrame:
-    blancco_idx = blancco.set_index("serial", drop=False)
+    by_serial, by_sku, by_model = build_blancco_indexes(blancco)
     lut_idx = lut.set_index("mtm", drop=False) if not lut.empty else {}
 
     rows = []
     for _, wd_row in wd.iterrows():
-        serial = wd_row["serial"]
-        mtm = wd_row["mtm"]
-        bl = blancco_idx.loc[serial] if serial in blancco_idx.index else None
-        if bl is not None and isinstance(bl, pd.DataFrame):
-            bl = bl.iloc[0]
+        receipt_serial = wd_row["serial"]
+        receipt_mtm = wd_row["mtm"]
+        bl, match_kind = resolve_blancco_row(
+            by_serial, by_sku, by_model, receipt_serial, receipt_mtm
+        )
 
-        uncollected = uncollected_map.get(serial, False)
+        uncollected = uncollected_map.get(receipt_serial, False)
         no_ssd = bool(wd_row.get("no_ssd", False))
         status, reason = classify_row(wd_row, bl, uncollected, no_ssd=no_ssd)
+        if bl is None and not uncollected:
+            reason = "Serial/SKU not found in Blancco (tried system serial, system SKU, system model)"
 
-        lut_row = lut_idx.loc[mtm] if mtm in getattr(lut_idx, "index", []) else None
+        lut_row = lut_idx.loc[receipt_mtm] if receipt_mtm in getattr(lut_idx, "index", []) else None
         if lut_row is not None and isinstance(lut_row, pd.DataFrame):
             lut_row = lut_row.iloc[0]
 
@@ -611,25 +713,45 @@ def merge_data(
             wan = str(lut_row.get("wan", "") or "")
 
         system_version = str(bl.get("blancco_title", "") or "") if bl is not None else ""
-        if not model_name and system_version:
-            model_name = re.sub(
-                r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", system_version, flags=re.I
-            ).strip()
-        if not model_name:
-            mtm_raw = str(wd_row.get("mtm_raw", "") or "").strip()
-            if mtm_raw and not re.match(r"^\d{2}[A-Z0-9]{8}$", mtm):
-                model_name = mtm_raw
-
-        gen = parse_generation_from_system_version(system_version)
-        if not gen and lut_row is not None:
-            gen = str(lut_row.get("generation", "") or "").strip()
-        series = derive_product_name(system_version, model_name, mtm, gen)
+        bl_mtm = str(bl.get("blancco_mtm", "") or "") if bl is not None else ""
+        mtm_raw = str(wd_row.get("mtm_raw", "") or "").strip()
         bl_mfr = str(bl.get("manufacturer", "") if bl is not None else "")
         manufacturer = normalize_manufacturer(
             bl_mfr,
-            mtm,
-            model_name or str(wd_row.get("mtm_raw", "") or ""),
+            receipt_mtm,
+            model_name or mtm_raw or bl_mtm,
         )
+        mtm = output_mtm(receipt_mtm, bl, manufacturer)
+        device_serial = output_device_serial(receipt_serial, bl, match_kind)
+
+        if is_hp_or_panasonic(manufacturer, mtm, model_name or bl_mtm):
+            if bl_mtm:
+                model_name = bl_mtm
+            elif mtm_raw:
+                model_name = mtm_raw
+            if system_version and not _looks_like_valid_family_label(system_version):
+                system_version = ""
+        elif not model_name and system_version and _looks_like_valid_family_label(system_version):
+            model_name = re.sub(
+                r"\s*Gen(?:eration)?\s*\d+\w*\s*$", "", system_version, flags=re.I
+            ).strip()
+        elif not model_name and mtm_raw and not is_lenovo_style_mtm(receipt_mtm):
+            model_name = mtm_raw
+
+        gen = parse_generation_from_system_version(
+            str(bl.get("blancco_title", "") or "") if bl is not None else ""
+        )
+        if not gen and lut_row is not None:
+            gen = str(lut_row.get("generation", "") or "").strip()
+        if is_hp_or_panasonic(manufacturer, mtm, model_name):
+            series = model_name or derive_product_name("", model_name, mtm, gen)
+        else:
+            series = derive_product_name(
+                str(bl.get("blancco_title", "") or "") if bl is not None else "",
+                model_name,
+                mtm,
+                gen,
+            )
 
         ssd_type = str(bl.get("ssd_type", "") if bl is not None else "")
         ssd_size = parse_size_gb(bl.get("disk_capacity", "") if bl is not None else "")
@@ -639,7 +761,7 @@ def merge_data(
 
         rows.append(
             {
-                "Serial": serial,
+                "Serial": device_serial,
                 "MTM": mtm,
                 "Model name": model_name,
                 "System version": system_version,

@@ -53,9 +53,9 @@ class ProductCsvImporter(models.AbstractModel):
                 for r in rows
                 if self._merged_str(r, "Status", default="SUCCESS").upper() != "SUCCESS"
             )
-            rows = self._merged_device_rows_to_import_rows(rows)
-            return self._run_import(
-                rows,
+            import_rows = self._merged_device_rows_to_import_rows(rows)
+            result = self._run_import(
+                import_rows,
                 additive=True,
                 import_source="merged_blancco",
                 source_stats={
@@ -63,6 +63,10 @@ class ProductCsvImporter(models.AbstractModel):
                     "failed_devices": failed_devices,
                 },
             )
+            units, _skipped = self._aggregate_rows(import_rows)
+            result.update(self.reconcile_merge_serial_catalog(units, dry_run=False))
+            self.env.cr.commit()
+            return result
         else:
             required = {"section", "default_code", "title_raw", "cost_ex"}
             missing = required - headers
@@ -688,10 +692,14 @@ class ProductCsvImporter(models.AbstractModel):
                 "• Existing products updated (name + Blancco attrs + stock): %(updated)s\n"
                 "• Serial stock lines added: %(stock_batches)s\n"
                 "• Serials skipped (already in stock): %(skipped_serials)s\n"
+                "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
+                "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
+                "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
-                "Specs (CPU / RAM / Storage) come from Blancco columns in the merge "
-                "file — not from product titles. Re-upload is safe: SKUs not in "
-                "this file are untouched."
+                "Merge file is the source of truth for serial numbers and qty. "
+                "Re-upload refreshes Blancco name/attrs and sets stock to exactly "
+                "the SUCCESS serial list per SKU. Monitors, bags, and services "
+                "are not in this file and are untouched."
             ) % {
                 "devices_in_file": result.get("devices_in_file", 0),
                 "failed_devices": result.get("failed_devices", 0),
@@ -700,6 +708,9 @@ class ProductCsvImporter(models.AbstractModel):
                 "updated": result.get("updated", 0),
                 "stock_batches": result.get("stock_batches", 0),
                 "skipped_serials": result.get("skipped_serials", 0),
+                "reconcile_skus": result.get("reconcile_skus", 0),
+                "serials_zeroed": result.get("serials_zeroed", 0),
+                "orphan_skus": result.get("orphan_skus", 0),
                 "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
             }
         return _(
@@ -2617,6 +2628,364 @@ class ProductCsvImporter(models.AbstractModel):
             "fixed_quants": fixed_quants,
             "lots_created": lots_created,
             "moved_lots": moved_lots,
+        }
+
+    @api.model
+    def _extract_serials_from_unit(self, unit):
+        serials = []
+        for u_str in unit.get("unit_ids") or []:
+            for part in str(u_str).replace("|", "/").split("/"):
+                sn = part.strip().upper()
+                if sn:
+                    serials.append(sn)
+        return sorted(set(serials))
+
+    @api.model
+    def _refurb_serial_template_domain(self):
+        cat_l = self.env.ref("quote_manage_ui.public_cat_laptops").id
+        cat_d = self.env.ref("quote_manage_ui.public_cat_desktops").id
+        return [
+            ("type", "=", "product"),
+            ("tracking", "=", "serial"),
+            ("active", "=", True),
+            ("public_categ_ids", "in", [cat_l, cat_d]),
+        ]
+
+    @api.model
+    def _serial_stock_snapshot(self, sku):
+        code = self._canonical_sku_code(sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {
+                "found": False,
+                "sku": code,
+                "on_hand": 0,
+                "website_qty": 0,
+                "lots_in_stock": [],
+                "no_lot_qty": 0,
+            }
+        variant = self._stock_variant_for_unit(tmpl, code)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        lots = []
+        no_lot_qty = 0.0
+        if variant and wh:
+            for quant in self.env["stock.quant"].sudo().search(
+                [
+                    ("product_id", "=", variant.id),
+                    ("location_id", "child_of", wh.lot_stock_id.id),
+                    ("quantity", ">", 0),
+                ]
+            ):
+                if quant.lot_id:
+                    lots.append(quant.lot_id.name.upper())
+                else:
+                    no_lot_qty += quant.quantity
+        return {
+            "found": True,
+            "sku": code,
+            "on_hand": variant.qty_available if variant else 0,
+            "website_qty": tmpl._rw_website_available_qty(),
+            "lots_in_stock": sorted(set(lots)),
+            "no_lot_qty": no_lot_qty,
+        }
+
+    @api.model
+    def _orphan_serial_refurb_report(self, merge_skus):
+        """Serial-tracked Laptops/Desktops in DB but absent from merge CSV."""
+        PT = self.env["product.template"].sudo()
+        orphans = []
+        for tmpl in PT.search(self._refurb_serial_template_domain()):
+            code = self._canonical_sku_code(tmpl.default_code or "")
+            if not code or code in merge_skus:
+                continue
+            snap = self._serial_stock_snapshot(code)
+            if snap["on_hand"] > 0 or snap["lots_in_stock"]:
+                orphans.append(snap)
+        return orphans
+
+    @api.model
+    def reconcile_merge_serial_catalog(self, units, dry_run=False):
+        """Align warehouse serial stock + qty with merge CSV per SKU.
+
+        Uses ``sync_serial_stock_allowlist``: keeps only listed serials at qty 1,
+        zeros auto ``S/N-{SKU}-NNN`` placeholders and any extra/wrong lots.
+        """
+        merge_skus = set()
+        sku_results = []
+        serials_zeroed = 0
+        for unit in units:
+            code = self._canonical_sku_code(unit["code"])
+            serials = self._extract_serials_from_unit(unit)
+            if not serials:
+                continue
+            merge_skus.add(code)
+            if dry_run:
+                snap = self._serial_stock_snapshot(code)
+                expected = set(serials)
+                actual = set(snap.get("lots_in_stock") or [])
+                sku_results.append(
+                    {
+                        **snap,
+                        "expected_serials": serials,
+                        "expected_qty": len(serials),
+                        "extra_serials": sorted(actual - expected),
+                        "missing_serials": sorted(expected - actual),
+                        "needs_sync": (
+                            snap.get("no_lot_qty", 0) > 0
+                            or actual != expected
+                            or snap.get("on_hand", 0) != len(serials)
+                        ),
+                    }
+                )
+            else:
+                sync = self.sync_serial_stock_allowlist(code, serials)
+                serials_zeroed += len(sync.get("zeroed_other") or [])
+                sku_results.append(sync)
+
+        orphans = self._orphan_serial_refurb_report(merge_skus)
+        return {
+            "reconcile_skus": len(sku_results),
+            "serials_zeroed": serials_zeroed,
+            "orphan_skus": len(orphans),
+            "orphan_serial_products": orphans,
+            "sku_reconcile": sku_results,
+        }
+
+    @api.model
+    def reconcile_from_merge_csv_text(self, text, dry_run=False, refresh_products=True):
+        """Full SN catalog fix from MERGED import-ready CSV.
+
+        *refresh_products*: update names + Blancco attrs (additive import).
+        *dry_run*: preview drift only — no DB writes.
+        """
+        text = (text or "").lstrip("\ufeff")
+        reader = csv.DictReader(io.StringIO(text))
+        if not reader.fieldnames:
+            raise UserError(_("Could not read CSV column headers."))
+        headers = {h.strip() for h in reader.fieldnames if h}
+        if not self._is_merged_device_export(headers):
+            raise UserError(
+                _("Expected MERGED import-ready CSV (Serial + MTM columns).")
+            )
+        device_rows = list(reader)
+        import_rows = self._merged_device_rows_to_import_rows(device_rows)
+        units, skipped_blocked = self._aggregate_rows(import_rows)
+        out = {
+            "skipped_blocked_skus": skipped_blocked,
+            "devices_in_file": len(device_rows),
+            "failed_devices": sum(
+                1
+                for r in device_rows
+                if self._merged_str(r, "Status", default="SUCCESS").upper() != "SUCCESS"
+            ),
+        }
+        if refresh_products and not dry_run:
+            out.update(
+                self._run_import(
+                    import_rows,
+                    additive=True,
+                    import_source="merged_blancco",
+                    source_stats={
+                        "devices_in_file": out["devices_in_file"],
+                        "failed_devices": out["failed_devices"],
+                    },
+                )
+            )
+        out.update(self.reconcile_merge_serial_catalog(units, dry_run=dry_run))
+        if not dry_run:
+            self.env.cr.commit()
+        return out
+
+    @api.model
+    def _auto_serial_lot_pattern(self, sku):
+        code = re.escape(self._canonical_sku_code(sku))
+        return re.compile(rf"^S/N-{code}-\d{{3}}$", re.I)
+
+    @api.model
+    def _is_auto_generated_serial_lot(self, lot_name, sku):
+        return bool(self._auto_serial_lot_pattern(sku).match((lot_name or "").strip()))
+
+    @api.model
+    def purge_auto_generated_serial_stock(self, sku):
+        """Zero WH stock for placeholder lots ``S/N-{SKU}-NNN`` only.
+
+        Blancco / merge-import serials are never touched.
+        """
+        code = self._canonical_sku_code(sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {"error": "product_not_found", "sku": sku}
+        variant = self._stock_variant_for_unit(tmpl, code)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not variant or not wh:
+            return {"error": "variant_or_warehouse_missing", "sku": code}
+        Quant = self.env["stock.quant"].sudo()
+        stock_root = wh.lot_stock_id
+        purged = []
+        for quant in Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("lot_id", "!=", False),
+                ("quantity", ">", 0),
+            ]
+        ):
+            if self._is_auto_generated_serial_lot(quant.lot_id.name, code):
+                purged.append(quant.lot_id.name)
+                quant.with_context(inventory_mode=True).write(
+                    {"inventory_quantity_auto_apply": 0.0}
+                )
+        variant.invalidate_recordset()
+        tmpl.invalidate_recordset()
+        return {
+            "sku": code,
+            "purged_auto_lots": purged,
+            "on_hand": variant.qty_available,
+            "website_qty": tmpl._rw_website_available_qty(),
+        }
+
+    @api.model
+    def sync_serial_stock_allowlist(self, sku, serial_names):
+        """Set warehouse stock to exactly these serial numbers (merge CSV truth).
+
+        Creates missing lots, ensures qty=1 each, zeros every other on-hand
+        serial row for this SKU (including auto ``S/N-{SKU}-NNN`` placeholders).
+        """
+        code = self._canonical_sku_code(sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {"error": "product_not_found", "sku": sku}
+        if tmpl.tracking != "serial":
+            tmpl.tracking = "serial"
+        variant = self._stock_variant_for_unit(tmpl, code)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not variant or not wh:
+            return {"error": "variant_or_warehouse_missing", "sku": code}
+        allow = {
+            str(s).strip().upper()
+            for s in (serial_names or [])
+            if str(s).strip()
+        }
+        if not allow:
+            return {"error": "empty_serial_list", "sku": code}
+
+        Quant = self.env["stock.quant"].sudo()
+        Lot = self.env["stock.lot"].sudo()
+        stock_root = wh.lot_stock_id
+        kept = []
+        for serial in sorted(allow):
+            lot = self._find_or_create_lot(variant, serial)
+            self._set_serial_stock_one(variant, lot, wh)
+            kept.append(serial)
+
+        zeroed = []
+        for quant in Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("lot_id", "!=", False),
+                ("quantity", ">", 0),
+            ]
+        ):
+            if quant.lot_id.name.upper() not in allow:
+                zeroed.append(quant.lot_id.name)
+                quant.with_context(inventory_mode=True).write(
+                    {"inventory_quantity_auto_apply": 0.0}
+                )
+
+        for quant in Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("lot_id", "=", False),
+                ("quantity", ">", 0),
+            ]
+        ):
+            quant.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 0.0}
+            )
+            zeroed.append("(no-lot quant)")
+
+        variant.invalidate_recordset()
+        tmpl.invalidate_recordset()
+        return {
+            "sku": code,
+            "kept_serials": kept,
+            "zeroed_other": zeroed,
+            "on_hand": variant.qty_available,
+            "website_qty": tmpl._rw_website_available_qty(),
+        }
+
+    @api.model
+    def trim_serial_stock_to_count(self, sku, target_count):
+        """DEPRECATED — prefer sync_serial_stock_allowlist with merge serials.
+
+        Blunt count trim can keep wrong placeholder SNs; kept for emergencies only.
+        """
+        """Keep ``target_count`` serial units in warehouse stock; zero the rest."""
+        target_count = int(target_count)
+        if target_count < 0:
+            raise UserError(_("target_count must be >= 0"))
+        code = self._canonical_sku_code(sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {"error": "product_not_found", "sku": sku}
+        variant = self._stock_variant_for_unit(tmpl, code)
+        if not variant:
+            return {"error": "variant_not_found", "sku": sku}
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not wh:
+            return {"error": "no_warehouse"}
+        Quant = self.env["stock.quant"].sudo()
+        stock_root = wh.lot_stock_id
+        with_lot = Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("lot_id", "!=", False),
+                ("quantity", ">", 0),
+            ]
+        ).sorted(key=lambda q: q.lot_id.name)
+        no_lot = Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("lot_id", "=", False),
+                ("quantity", ">", 0),
+            ]
+        )
+        removed_lots = []
+        for i, quant in enumerate(with_lot):
+            if i < target_count:
+                if quant.quantity != 1:
+                    quant.with_context(inventory_mode=True).write(
+                        {"inventory_quantity_auto_apply": 1.0}
+                    )
+            else:
+                removed_lots.append(quant.lot_id.name)
+                quant.with_context(inventory_mode=True).write(
+                    {"inventory_quantity_auto_apply": 0.0}
+                )
+        for quant in no_lot:
+            quant.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 0.0}
+            )
+        variant.invalidate_recordset()
+        return {
+            "sku": code,
+            "target": target_count,
+            "kept_lots": [q.lot_id.name for q in with_lot[:target_count]],
+            "zeroed_lots": removed_lots,
+            "on_hand": variant.qty_available,
+            "website_qty": tmpl._rw_website_available_qty(),
         }
 
     @api.model
