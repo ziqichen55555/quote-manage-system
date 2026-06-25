@@ -53,6 +53,7 @@ if ($LASTEXITCODE -ne 0) { throw "docker compose cp (script) failed" }
 docker compose exec -T db sh "$RestoreScript" "$Database" "$ContainerPath"
 if ($LASTEXITCODE -ne 0) { throw "restore_db_inside.sh failed" }
 
-Write-Host "[restore] Starting web..."
+Write-Host "[restore] Starting web..."curl -I https://www.reware-project.com/
+
 docker compose start web
 Write-Host "[restore] Done. Upgrade quote_manage_ui, then re-upload MERGED CSV (additive)."
