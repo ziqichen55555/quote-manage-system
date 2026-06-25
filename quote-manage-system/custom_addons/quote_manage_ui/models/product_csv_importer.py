@@ -1456,6 +1456,11 @@ class ProductCsvImporter(models.AbstractModel):
             self._sync_product_images(tmpl, tmpl.name)
         except Exception as exc:
             _logger.warning("Image sync failed for %s: %s", tmpl.name, exc)
+        if not tmpl.image_1920:
+            try:
+                self.env["product.template"].quote_inherit_image_from_donor(code)
+            except Exception as exc:
+                _logger.warning("Image inherit failed for %s: %s", code, exc)
 
         variant = self._stock_variant_for_unit(tmpl, code)
         if (

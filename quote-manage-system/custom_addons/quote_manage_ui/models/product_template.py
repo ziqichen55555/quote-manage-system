@@ -151,6 +151,95 @@ class ProductTemplate(models.Model):
             results.append({"sku": code, "status": "copied", "gallery": len(src.product_template_image_ids)})
         return {"source": src.default_code, "results": results}
 
+    def _quote_image_donor_for(self):
+        """Find a catalog product with photos for the same model (base MTM or name)."""
+        self.ensure_one()
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        code = (self.default_code or "").strip()
+        base = self._rw_shop_display_code(code).upper()
+        name = (self.name or "").strip()
+
+        if base:
+            exact = PT.search(
+                [
+                    ("id", "!=", self.id),
+                    ("default_code", "=ilike", base),
+                    ("image_1920", "!=", False),
+                ],
+                limit=1,
+            )
+            if exact:
+                return exact
+            for donor in PT.search([("id", "!=", self.id), ("image_1920", "!=", False)]):
+                if self._rw_shop_display_code(donor.default_code or "").upper() == base:
+                    return donor
+
+        if name:
+            by_name = PT.search(
+                [
+                    ("id", "!=", self.id),
+                    ("name", "=", name),
+                    ("image_1920", "!=", False),
+                ],
+                limit=1,
+            )
+            if by_name:
+                return by_name
+        return PT.browse()
+
+    @api.model
+    def quote_inherit_image_from_donor(self, target_code, overwrite=False):
+        """Copy main + gallery images onto one SKU from base-MTM or same-name donor."""
+        PT = self.sudo().with_context(active_test=False)
+        tgt = PT.search([("default_code", "=ilike", (target_code or "").strip())], limit=1)
+        if not tgt:
+            return {"error": "target_not_found", "sku": target_code}
+        if tgt.image_1920 and not overwrite:
+            return {"skipped": "already_has_image", "sku": tgt.default_code}
+        donor = tgt._quote_image_donor_for()
+        if not donor:
+            return {"skipped": "no_donor", "sku": tgt.default_code, "name": tgt.name}
+        return self.quote_copy_product_images(
+            donor.default_code, [tgt.default_code], overwrite=True
+        )
+
+    @api.model
+    def quote_restore_missing_images(self, dry_run=False, sale_ok_only=True):
+        """Fill image-less shop products from same base MTM or same product name."""
+        domain = [("image_1920", "=", False), ("active", "=", True)]
+        if sale_ok_only:
+            domain.append(("sale_ok", "=", True))
+        targets = self.sudo().with_context(active_test=False).search(domain)
+        copied = []
+        no_donor = []
+        for tgt in targets:
+            donor = tgt._quote_image_donor_for()
+            if not donor:
+                no_donor.append({"sku": tgt.default_code, "name": tgt.name})
+                continue
+            if dry_run:
+                copied.append({
+                    "target": tgt.default_code,
+                    "name": tgt.name,
+                    "from": donor.default_code,
+                })
+                continue
+            self.quote_copy_product_images(
+                donor.default_code, [tgt.default_code], overwrite=True
+            )
+            copied.append({
+                "target": tgt.default_code,
+                "name": tgt.name,
+                "from": donor.default_code,
+            })
+        return {
+            "dry_run": dry_run,
+            "copied": len(copied),
+            "no_donor": len(no_donor),
+            "copied_details": copied,
+            "no_donor_details": no_donor,
+        }
+
     @api.model
     def _rw_shop_display_code(self, code):
         """Customer-facing MTM — strip internal -BT70 / -4G-256G-N inventory suffixes."""
