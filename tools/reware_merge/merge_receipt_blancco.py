@@ -657,7 +657,6 @@ def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receip
         (receipt_serial, by_serial, "system_serial"),
         (receipt_serial, by_sku, "system_sku"),
         (receipt_mtm, by_sku, "mtm_as_sku"),
-        (receipt_mtm, by_model, "system_model"),
     ):
         if not key or idx.empty or key not in idx.index:
             continue
@@ -665,6 +664,15 @@ def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receip
         if isinstance(row, pd.DataFrame):
             row = row.iloc[0]
         return row, kind
+    # MTM/model fallback: only for SKU-style receipts without a unit serial (HP/Dell/Panasonic).
+    # Never match Lenovo by MTM alone — would assign the wrong device SN/specs.
+    if receipt_mtm and receipt_mtm in by_model.index:
+        if receipt_serial and is_lenovo_style_mtm(receipt_mtm):
+            return None, ""
+        row = by_model.loc[receipt_mtm]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        return row, "system_model"
     return None, ""
 
 def output_device_serial(receipt_serial: str, bl_row, match_kind: str) -> str:
@@ -672,10 +680,12 @@ def output_device_serial(receipt_serial: str, bl_row, match_kind: str) -> str:
     if bl_row is None:
         return receipt_serial
     device = str(bl_row.get("serial", "") or "").strip().upper()
-    if match_kind in ("system_sku", "mtm_as_sku", "system_model") and device:
+    if match_kind in ("system_sku", "mtm_as_sku") and device:
         return device
     if match_kind == "system_serial" and device:
         return device
+    if match_kind == "system_model":
+        return receipt_serial
     return receipt_serial
 
 def output_mtm(receipt_mtm: str, bl_row, manufacturer: str) -> str:
@@ -819,8 +829,6 @@ def merge_data(
         uncollected = uncollected_map.get(receipt_serial, False)
         no_ssd = bool(wd_row.get("no_ssd", False))
         status, reason = classify_row(wd_row, bl, uncollected, no_ssd=no_ssd)
-        if bl is None and not uncollected:
-            reason = "Serial/SKU not found in Blancco (tried system serial, system SKU, system model)"
 
         lut_row = lut_idx.loc[receipt_mtm] if receipt_mtm in getattr(lut_idx, "index", []) else None
         if lut_row is not None and isinstance(lut_row, pd.DataFrame):
@@ -926,10 +934,14 @@ def build_analysis(merged: pd.DataFrame) -> pd.DataFrame:
     success = int((merged["Status"] == "SUCCESS").sum())
     failed = total - success
     rate = f"{(success / total * 100):.1f}%" if total else "0%"
+    unique_serials = int(merged["Serial"].nunique())
+    dup_serials = int(total - unique_serials)
 
     lines = [
         ["Metric", "Value"],
         ["Master rows", total],
+        ["Unique serials in output", unique_serials],
+        ["Duplicate serial rows", dup_serials],
         ["Matched (SUCCESS)", success],
         ["Failed", failed],
         ["Match rate", rate],
