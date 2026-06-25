@@ -66,7 +66,12 @@ class ProductCsvImporter(models.AbstractModel):
                 },
             )
             units, _skipped = self._aggregate_rows(import_rows)
-            result.update(self.reconcile_merge_serial_catalog(units, dry_run=False))
+            reconcile = self.reconcile_merge_serial_catalog(units, dry_run=False)
+            result.update(reconcile)
+            result["skipped_non_serial"] = (
+                result.get("skipped_non_serial", 0)
+                + reconcile.get("skipped_non_serial", 0)
+            )
             self.env.cr.commit()
             return result
         else:
@@ -224,8 +229,11 @@ class ProductCsvImporter(models.AbstractModel):
         return false
 
     @api.model
-    def _merged_section(self, model_name, mtm):
-        name = (model_name or "").lower()
+    def _merged_section(self, model_name, mtm, system_version=""):
+        name = f"{model_name or ''} {system_version or ''}".lower()
+        mtm_u = (mtm or "").upper()
+        if mtm_u.startswith(("10", "30")):
+            return "Desktops"
         desktop_kw = (
             "thinkcentre", "thinkstation", "optiplex", "prodesk",
             "elitedesk", "tiny", " sff", "desktop", "workstation",
@@ -237,9 +245,17 @@ class ProductCsvImporter(models.AbstractModel):
             "thinkpad", "latitude", "toughbook", "elitebook", "laptop", "panasonic",
         )):
             return "Laptops"
-        if (mtm or "").startswith("20") and len(mtm) == 10:
+        if mtm_u.startswith("20") and len(mtm_u) == 10:
             return "Laptops"
         return "Laptops"
+
+    @api.model
+    def _merged_row_section(self, row):
+        return self._merged_section(
+            self._merged_str(row, "Model name"),
+            self._merged_str(row, "MTM").upper(),
+            self._merged_str(row, "System version"),
+        )
 
     @api.model
     def _resolve_import_brand(self, mtm="", manufacturer="", model_name=""):
@@ -302,12 +318,13 @@ class ProductCsvImporter(models.AbstractModel):
 
     @api.model
     def _shop_model_subtitle(self, code, product_name=""):
-        """Sales description on shop = MTM / model code, not the product title."""
-        code = (code or "").strip()
+        """Sales description on shop = base MTM only (internal SKU suffixes hidden)."""
+        PT = self.env["product.template"]
+        display = PT._rw_shop_display_code(code)
         name = (product_name or "").strip()
-        if code and code != name and not code.startswith("RW-SERIES-"):
-            return code
-        return code or name
+        if display and display != name and not (code or "").startswith("RW-SERIES-"):
+            return display
+        return display or name or (code or "")
 
     @api.model
     def _merged_series_model_subtitle(self, group):
@@ -761,10 +778,7 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _merged_group_key(self, row):
         key = self._merged_config_key(row)
-        if self._merged_section(
-            self._merged_str(row, "Model name"),
-            self._merged_str(row, "MTM").upper(),
-        ) == "Laptops":
+        if self._merged_row_section(row) == "Laptops":
             key = key + (self._merged_battery_tier(row),)
         return key
 
@@ -805,7 +819,7 @@ class ProductCsvImporter(models.AbstractModel):
             mtm = self._merged_str(sample, "MTM").upper()
             gen = self._merged_str(sample, "Generation")
             model_name = self._merged_str(sample, "Model name")
-            section = self._merged_section(model_name, mtm)
+            section = self._merged_row_section(sample)
             is_laptop = section == "Laptops"
             tier_code = (
                 self._merged_battery_tier_code(self._merged_battery_tier(sample))
@@ -895,13 +909,15 @@ class ProductCsvImporter(models.AbstractModel):
                 "• Serial stock lines added: %(stock_batches)s\n"
                 "• Serials skipped (already in stock): %(skipped_serials)s\n"
                 "• Laptops/desktops skipped (no serial in file): %(skipped_no_serial)s\n"
+                "• SKUs skipped (not serial-tracked): %(skipped_non_serial)s\n"
                 "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
                 "Merge file is the source of truth for serial numbers and qty. "
                 "Re-upload refreshes Blancco name/attrs and sets stock to exactly "
-                "the SUCCESS serial list per SKU. Monitors, bags, and services "
+                "the SUCCESS serial list per SKU (serial-tracked products only). "
+                "Monitors, bags, and services "
                 "are not in this file and are untouched."
             ) % {
                 "devices_in_file": result.get("devices_in_file", 0),
@@ -912,6 +928,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "stock_batches": result.get("stock_batches", 0),
                 "skipped_serials": result.get("skipped_serials", 0),
                 "skipped_no_serial": result.get("skipped_no_serial", 0),
+                "skipped_non_serial": result.get("skipped_non_serial", 0),
                 "reconcile_skus": result.get("reconcile_skus", 0),
                 "serials_zeroed": result.get("serials_zeroed", 0),
                 "orphan_skus": result.get("orphan_skus", 0),
@@ -955,7 +972,8 @@ class ProductCsvImporter(models.AbstractModel):
 
         # Additive import: only SKUs present in the CSV are touched. No archiving,
         # no zeroing stock for absent SKUs. Merge uploads also refresh name/attrs.
-        created = updated = stock_batches = skipped_serials = skipped_no_serial = 0
+        created = updated = stock_batches = skipped_serials = 0
+        skipped_no_serial = skipped_non_serial = 0
 
         for unit in units:
             sec_key = self._unit_section_key(unit)
@@ -985,6 +1003,7 @@ class ProductCsvImporter(models.AbstractModel):
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
             "skipped_no_serial": skipped_no_serial,
+            "skipped_non_serial": skipped_non_serial,
             "skipped_blocked_skus": skipped_blocked_skus,
             "sku_count": len(units),
             "import_source": import_source,
@@ -1359,7 +1378,12 @@ class ProductCsvImporter(models.AbstractModel):
                 )
                 updated += 1
             variant = self._stock_variant_for_unit(tmpl, code)
-            if ptype == "product" and unit["qty"] > 0 and variant:
+            if (
+                ptype == "product"
+                and unit["qty"] > 0
+                and variant
+                and self._stock_update_allowed(tmpl)
+            ):
                 applied, skipped = self._apply_stock(
                     variant, unit, additive=True
                 )
@@ -1434,7 +1458,12 @@ class ProductCsvImporter(models.AbstractModel):
             _logger.warning("Image sync failed for %s: %s", tmpl.name, exc)
 
         variant = self._stock_variant_for_unit(tmpl, code)
-        if ptype == "product" and unit["qty"] > 0 and variant:
+        if (
+            ptype == "product"
+            and unit["qty"] > 0
+            and variant
+            and self._stock_update_allowed(tmpl)
+        ):
             applied, skipped = self._apply_stock(
                 variant, unit, additive=bool(created)
             )
@@ -1465,6 +1494,11 @@ class ProductCsvImporter(models.AbstractModel):
         if (sec_key or "").lower() not in SERIAL_TRACK_SECTIONS:
             return False
         return int(qty or 0) > 0 and not self._has_unit_serial(unit_ids)
+
+    @api.model
+    def _stock_update_allowed(self, tmpl):
+        """CSV / merge import must never change qty on non-serial products."""
+        return bool(tmpl) and tmpl.tracking == "serial"
 
     @api.model
     def _resolve_tracking(self, ptype, sec_key, unit_ids, categ_id=None):
@@ -1723,17 +1757,14 @@ class ProductCsvImporter(models.AbstractModel):
         if not wh:
             return 0, 0
         tmpl = variant.product_tmpl_id
+        if not self._stock_update_allowed(tmpl):
+            _logger.info(
+                "Skipping stock update for %s (tracking is not serial)",
+                tmpl.default_code or variant.display_name,
+            )
+            return 0, 0
         sec_key = (unit["sections"][-1] if unit.get("sections") else "accessories").lower()
-        want_serial = self._resolve_tracking(
-            tmpl.type,
-            sec_key,
-            unit.get("unit_ids", []),
-            categ_id=tmpl.categ_id.id,
-        )
         tracking = tmpl.tracking
-        if want_serial == "serial" and tracking != "serial":
-            tmpl.tracking = "serial"
-            tracking = "serial"
 
         applied = skipped = 0
         Lot = self.env["stock.lot"].sudo()
@@ -2987,10 +3018,19 @@ class ProductCsvImporter(models.AbstractModel):
         merge_skus = set()
         sku_results = []
         serials_zeroed = 0
+        skipped_non_serial = 0
         for unit in units:
             code = self._canonical_sku_code(unit["code"])
             serials = self._extract_serials_from_unit(unit)
             if not serials:
+                continue
+            tmpl, code = self._find_product_by_sku(code)
+            if tmpl and not self._stock_update_allowed(tmpl):
+                skipped_non_serial += 1
+                sku_results.append({
+                    "sku": code,
+                    "skipped": "not_serial_tracked",
+                })
                 continue
             merge_skus.add(code)
             if dry_run:
@@ -3020,6 +3060,7 @@ class ProductCsvImporter(models.AbstractModel):
         return {
             "reconcile_skus": len(sku_results),
             "serials_zeroed": serials_zeroed,
+            "skipped_non_serial": skipped_non_serial,
             "orphan_skus": len(orphans),
             "orphan_serial_products": orphans,
             "sku_reconcile": sku_results,
@@ -3082,6 +3123,13 @@ class ProductCsvImporter(models.AbstractModel):
         tmpl, code = self._find_product_by_sku(code)
         if not tmpl:
             return {"error": "product_not_found", "sku": sku}
+        if not self._stock_update_allowed(tmpl):
+            variant = self._stock_variant_for_unit(tmpl, code)
+            return {
+                "skipped": "not_serial_tracked",
+                "sku": code,
+                "on_hand": variant.qty_available if variant else 0,
+            }
         variant = self._stock_variant_for_unit(tmpl, code)
         wh = self.env["stock.warehouse"].search(
             [("company_id", "=", self.env.company.id)], limit=1
@@ -3193,8 +3241,13 @@ class ProductCsvImporter(models.AbstractModel):
         tmpl, code = self._find_product_by_sku(code)
         if not tmpl:
             return {"error": "product_not_found", "sku": sku}
-        if tmpl.tracking != "serial":
-            tmpl.tracking = "serial"
+        if not self._stock_update_allowed(tmpl):
+            variant = self._stock_variant_for_unit(tmpl, code)
+            return {
+                "skipped": "not_serial_tracked",
+                "sku": code,
+                "on_hand": variant.qty_available if variant else 0,
+            }
         variant = self._stock_variant_for_unit(tmpl, code)
         wh = self.env["stock.warehouse"].search(
             [("company_id", "=", self.env.company.id)], limit=1

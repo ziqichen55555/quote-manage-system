@@ -151,25 +151,42 @@ class ProductTemplate(models.Model):
             results.append({"sku": code, "status": "copied", "gallery": len(src.product_template_image_ids)})
         return {"source": src.default_code, "results": results}
 
+    @api.model
+    def _rw_shop_display_code(self, code):
+        """Customer-facing MTM — strip internal -BT70 / -4G-256G-N inventory suffixes."""
+        code = (code or "").strip()
+        if not code or code.startswith("RW-SERIES-"):
+            return code
+        for suffix in ("-BT70", "-BTU70"):
+            if code.endswith(suffix):
+                code = code[: -len(suffix)]
+                break
+        m = re.match(r"^(.+)-\d+G-\d+G-[TN]$", code, re.I)
+        if m:
+            code = m.group(1)
+        return code
+
     def _rw_shop_model_label(self):
         """MTM / model code shown under the product name on the shop (not the product title)."""
         self.ensure_one()
         name = (self.name or "").strip()
         desc = (self.description_sale or "").strip()
-        if desc and desc != name and not desc.lower().startswith("imported sheet"):
-            return desc
+        display_desc = self._rw_shop_display_code(desc) if desc else ""
+        if display_desc and display_desc != name and not desc.lower().startswith("imported sheet"):
+            return display_desc
 
-        code = (self.default_code or "").strip()
-        if code and not code.startswith("RW-SERIES-") and code != name:
+        code = self._rw_shop_display_code(self.default_code or "")
+        if code and code != name:
             return code
 
         variant_codes = sorted(
             {
-                c.strip()
+                self._rw_shop_display_code(c)
                 for c in self.product_variant_ids.mapped("default_code")
-                if c and not c.startswith("RW-SERIES-") and c.strip() != name
+                if c and not c.startswith("RW-SERIES-")
             }
         )
+        variant_codes = [c for c in variant_codes if c and c != name]
         if len(variant_codes) == 1:
             return variant_codes[0]
         if variant_codes:
@@ -177,7 +194,7 @@ class ProductTemplate(models.Model):
 
         m = re.search(r"SKU\s+(\S+)", desc, re.I)
         if m:
-            return m.group(1)
+            return self._rw_shop_display_code(m.group(1))
         return code or ""
 
     def _rw_website_available_qty(self, variant=None):

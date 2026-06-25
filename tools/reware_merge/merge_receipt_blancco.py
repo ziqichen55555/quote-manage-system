@@ -234,8 +234,16 @@ def battery_tier_code(tier_label: str) -> str:
     return "BT70" if tier_label == "70%+" else "BTU70"
 
 
-def is_laptop_product(model_name: str, mtm: str) -> bool:
-    name = (model_name or "").lower()
+def is_desktop_mtm(mtm: str) -> bool:
+  """Lenovo ThinkCentre / ThinkStation MTMs (10*, 30*)."""
+  mtm_u = (mtm or "").strip().upper()
+  return bool(mtm_u.startswith(("10", "30")))
+
+
+def is_laptop_product(model_name: str, mtm: str, system_version: str = "") -> bool:
+    if is_desktop_mtm(mtm):
+        return False
+    name = f"{model_name or ''} {system_version or ''}".lower()
     desktop_kw = (
         "thinkcentre", "thinkstation", "optiplex", "prodesk",
         "elitedesk", "tiny", " sff", "desktop", "workstation",
@@ -983,7 +991,7 @@ def merge_data(
         battery_display = battery_display_label(battery_percents)
         battery_tier = battery_tier_label(battery_percents)
         tier_code = battery_tier_code(battery_tier)
-        if is_laptop_product(model_name, mtm):
+        if is_laptop_product(model_name, mtm, system_version):
             shop_sku = f"{mtm}-{tier_code}"
         else:
             shop_sku = mtm
