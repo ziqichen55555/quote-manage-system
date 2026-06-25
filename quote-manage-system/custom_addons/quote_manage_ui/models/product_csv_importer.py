@@ -23,6 +23,7 @@ SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 # Auto-generated test SKUs — never create or stock via CSV import.
 BLOCKED_SKU_PREFIXES = ("IMPORT-",)
 BATTERY_TIER_THRESHOLD = 70
+BATTERY_TIER_SUFFIXES = ("-BT70", "-BTU70")
 # Legacy refurb prefix on product_import_ready.csv (stripped → real MTM on import).
 LEGACY_RW_PRODUCT_PREFIX = "RW-"
 
@@ -150,6 +151,50 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _merged_battery_tier_code(self, tier_label):
         return "BT70" if tier_label == "70%+" else "BTU70"
+
+    @api.model
+    def _battery_tier_base_sku(self, code):
+        c = (code or "").strip()
+        for suffix in BATTERY_TIER_SUFFIXES:
+            if c.endswith(suffix):
+                return c[: -len(suffix)]
+        return ""
+
+    @api.model
+    def _inherit_battery_tier_base_vals(self, code, existing_tmpl=None):
+        """Price + shop category from MTM base when battery-tier SKU has no CSV price."""
+        base_code = self._battery_tier_base_sku(code)
+        if not base_code:
+            return {}
+        base_tmpl, _ = self._find_product_by_sku(base_code)
+        if not base_tmpl or base_tmpl == existing_tmpl:
+            return {}
+        vals = {}
+        if base_tmpl.list_price:
+            vals["list_price"] = base_tmpl.list_price
+            vals["standard_price"] = base_tmpl.standard_price
+        pub_ids = base_tmpl.public_categ_ids.ids
+        if pub_ids:
+            vals["public_categ_ids"] = [(6, 0, pub_ids)]
+        if base_tmpl.categ_id:
+            vals["categ_id"] = base_tmpl.categ_id.id
+        return vals
+
+    @api.model
+    def _maybe_apply_battery_tier_price_inherit(self, tmpl, code, csv_price):
+        """Fill $0 battery-tier listings from the base MTM product."""
+        if csv_price and csv_price > 0:
+            tmpl.write({
+                "list_price": csv_price,
+                "standard_price": csv_price,
+            })
+            return
+        if tmpl.list_price:
+            return
+        inherited = self._inherit_battery_tier_base_vals(code, existing_tmpl=tmpl)
+        if not inherited.get("list_price"):
+            return
+        tmpl.write(inherited)
 
     @api.model
     def _merged_bucket_battery_display(self, rows):
@@ -849,6 +894,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "• Existing products updated (name + Blancco attrs + stock): %(updated)s\n"
                 "• Serial stock lines added: %(stock_batches)s\n"
                 "• Serials skipped (already in stock): %(skipped_serials)s\n"
+                "• Laptops/desktops skipped (no serial in file): %(skipped_no_serial)s\n"
                 "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
@@ -865,6 +911,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "updated": result.get("updated", 0),
                 "stock_batches": result.get("stock_batches", 0),
                 "skipped_serials": result.get("skipped_serials", 0),
+                "skipped_no_serial": result.get("skipped_no_serial", 0),
                 "reconcile_skus": result.get("reconcile_skus", 0),
                 "serials_zeroed": result.get("serials_zeroed", 0),
                 "orphan_skus": result.get("orphan_skus", 0),
@@ -908,9 +955,20 @@ class ProductCsvImporter(models.AbstractModel):
 
         # Additive import: only SKUs present in the CSV are touched. No archiving,
         # no zeroing stock for absent SKUs. Merge uploads also refresh name/attrs.
-        created = updated = stock_batches = skipped_serials = 0
+        created = updated = stock_batches = skipped_serials = skipped_no_serial = 0
 
         for unit in units:
+            sec_key = self._unit_section_key(unit)
+            if self._refurb_computer_requires_serial(
+                sec_key, unit.get("qty"), unit.get("unit_ids")
+            ):
+                _logger.warning(
+                    "Skipping stock for %s: laptop/desktop qty=%s but no serials",
+                    unit.get("code"),
+                    unit.get("qty"),
+                )
+                unit = dict(unit, qty=0)
+                skipped_no_serial += 1
             c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
@@ -926,6 +984,7 @@ class ProductCsvImporter(models.AbstractModel):
             "archived_skus": 0,
             "stock_batches": stock_batches,
             "skipped_serials": skipped_serials,
+            "skipped_no_serial": skipped_no_serial,
             "skipped_blocked_skus": skipped_blocked_skus,
             "sku_count": len(units),
             "import_source": import_source,
@@ -1295,6 +1354,9 @@ class ProductCsvImporter(models.AbstractModel):
                 self._refresh_existing_from_merge_unit(
                     tmpl, unit, code, brand, titles, ptype, config_attr
                 )
+                self._maybe_apply_battery_tier_price_inherit(
+                    tmpl, code, unit.get("price") or 0.0
+                )
                 updated += 1
             variant = self._stock_variant_for_unit(tmpl, code)
             if ptype == "product" and unit["qty"] > 0 and variant:
@@ -1306,11 +1368,16 @@ class ProductCsvImporter(models.AbstractModel):
             return created, updated, stock_batches, skipped_serials
 
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
+        inherited = (
+            self._inherit_battery_tier_base_vals(code, existing_tmpl=tmpl)
+            if price <= 0 and not tmpl
+            else {}
+        )
         vals = {
             "name": product_name,
             "default_code": code,
-            "categ_id": categ_id,
-            "public_categ_ids": public_cmds,
+            "categ_id": inherited.get("categ_id") or categ_id,
+            "public_categ_ids": inherited.get("public_categ_ids") or public_cmds,
             "product_tag_ids": [(5, 0, 0)] if ptype == "product" else tag_cmds,
             "type": ptype,
             "tracking": tracking,
@@ -1328,6 +1395,9 @@ class ProductCsvImporter(models.AbstractModel):
         elif tmpl:
             vals["list_price"] = tmpl.list_price
             vals["standard_price"] = tmpl.standard_price
+        elif inherited.get("list_price"):
+            vals["list_price"] = inherited["list_price"]
+            vals["standard_price"] = inherited.get("standard_price") or inherited["list_price"]
         else:
             vals["list_price"] = 0.0
             vals["standard_price"] = 0.0
@@ -1384,6 +1454,17 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _has_unit_serial(self, unit_ids):
         return bool("".join(unit_ids or []).strip())
+
+    @api.model
+    def _unit_section_key(self, unit):
+        return (unit["sections"][-1] if unit.get("sections") else "accessories").lower()
+
+    @api.model
+    def _refurb_computer_requires_serial(self, sec_key, qty, unit_ids):
+        """Laptops/desktops with stock must list real Blancco serials — no placeholders."""
+        if (sec_key or "").lower() not in SERIAL_TRACK_SECTIONS:
+            return False
+        return int(qty or 0) > 0 and not self._has_unit_serial(unit_ids)
 
     @api.model
     def _resolve_tracking(self, ptype, sec_key, unit_ids, categ_id=None):
@@ -1662,8 +1743,27 @@ class ProductCsvImporter(models.AbstractModel):
                 units.extend(
                     [x.strip() for x in u_str.replace("|", "/").split("/") if x.strip()]
                 )
-            for i in range(int(unit["qty"])):
-                lot_name = units[i] if i < len(units) else f"S/N-{unit['code']}-{i+1:03d}"
+            qty = int(unit["qty"])
+            if self._refurb_computer_requires_serial(sec_key, qty, unit.get("unit_ids")):
+                _logger.warning(
+                    "Refusing stock for %s: %s units but no real serial numbers",
+                    unit.get("code"),
+                    qty,
+                )
+                return 0, 0
+            if qty > len(units) and (sec_key or "").lower() in SERIAL_TRACK_SECTIONS:
+                _logger.warning(
+                    "Refusing stock for %s: %s units but only %s serials",
+                    unit.get("code"),
+                    qty,
+                    len(units),
+                )
+                return 0, 0
+            for i in range(qty):
+                if i >= len(units):
+                    lot_name = f"S/N-{unit['code']}-{i+1:03d}"
+                else:
+                    lot_name = units[i]
                 if additive:
                     existing = Lot.search(
                         [("name", "=", lot_name), ("company_id", "=", self.env.company.id)],
@@ -2736,7 +2836,16 @@ class ProductCsvImporter(models.AbstractModel):
 
         fixed_quants = lots_created = 0
         stock_root = wh.lot_stock_id
+        serial_categ_ids = self._serial_tracking_categ_ids()
         for tmpl in PT.search(domain):
+            if tmpl.categ_id.id in serial_categ_ids or any(
+                c.id in serial_categ_ids for c in tmpl.public_categ_ids
+            ):
+                _logger.info(
+                    "Skipping auto S/N repair for %s — use merge CSV with real serials",
+                    tmpl.default_code,
+                )
+                continue
             for variant in tmpl.product_variant_ids.filtered(lambda v: v.active):
                 quants = Quant.search(
                     [
@@ -2967,6 +3076,68 @@ class ProductCsvImporter(models.AbstractModel):
         return re.compile(rf"^S/N-{code}-\d{{3}}$", re.I)
 
     @api.model
+    def _zero_all_serial_stock(self, sku):
+        """Zero every on-hand serial row for a SKU (obsolete base MTM cleanup)."""
+        code = self._canonical_sku_code(sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {"error": "product_not_found", "sku": sku}
+        variant = self._stock_variant_for_unit(tmpl, code)
+        wh = self.env["stock.warehouse"].search(
+            [("company_id", "=", self.env.company.id)], limit=1
+        )
+        if not variant or not wh:
+            return {"error": "variant_or_warehouse_missing", "sku": code}
+        Quant = self.env["stock.quant"].sudo()
+        stock_root = wh.lot_stock_id
+        zeroed = []
+        for quant in Quant.search(
+            [
+                ("product_id", "=", variant.id),
+                ("location_id", "child_of", stock_root.id),
+                ("quantity", ">", 0),
+            ]
+        ):
+            label = quant.lot_id.name if quant.lot_id else "(no-lot quant)"
+            zeroed.append(label)
+            quant.with_context(inventory_mode=True).write(
+                {"inventory_quantity_auto_apply": 0.0}
+            )
+        variant.invalidate_recordset()
+        tmpl.invalidate_recordset()
+        return {
+            "sku": code,
+            "kept_serials": [],
+            "zeroed_other": zeroed,
+            "on_hand": variant.qty_available,
+            "website_qty": tmpl._rw_website_available_qty(),
+        }
+
+    @api.model
+    def archive_obsolete_base_mtm_listing(self, base_sku):
+        """Unpublish base MTM when battery-tier SKU holds the stock."""
+        code = self._canonical_sku_code(base_sku)
+        tmpl, code = self._find_product_by_sku(code)
+        if not tmpl:
+            return {"error": "product_not_found", "sku": code}
+        tier_codes = [f"{code}{sfx}" for sfx in BATTERY_TIER_SUFFIXES]
+        tier_tmps = self.env["product.template"].sudo().search(
+            [("default_code", "in", tier_codes)]
+        )
+        if not tier_tmps:
+            return {"error": "no_battery_tier_skus", "sku": code}
+        self._zero_all_serial_stock(code)
+        tmpl.write({
+            "is_published": False,
+            "sale_ok": False,
+        })
+        return {
+            "sku": code,
+            "archived": True,
+            "tier_skus": tier_tmps.mapped("default_code"),
+        }
+
+    @api.model
     def _is_auto_generated_serial_lot(self, lot_name, sku):
         return bool(self._auto_serial_lot_pattern(sku).match((lot_name or "").strip()))
 
@@ -3036,7 +3207,7 @@ class ProductCsvImporter(models.AbstractModel):
             if str(s).strip()
         }
         if not allow:
-            return {"error": "empty_serial_list", "sku": code}
+            return self._zero_all_serial_stock(sku)
 
         Quant = self.env["stock.quant"].sudo()
         Lot = self.env["stock.lot"].sudo()

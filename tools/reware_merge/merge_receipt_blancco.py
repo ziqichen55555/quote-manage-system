@@ -25,6 +25,9 @@ OUTPUT_PREFIX = "MERGED import-ready"
 OUTPUT_SKIP_PREFIXES = (OUTPUT_PREFIX.lower(), "merged import-ready")
 
 SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
+SCAN_SERIAL_TAIL_RE = re.compile(r"(?P<serial>(?:PC|PF|GM|R)[A-Z0-9]{6,})$", re.I)
+LENOVO_MTM_RE = re.compile(r"^\d{2}[A-Z0-9]{8}$", re.I)
+PORTAL_SCAN_NAME_MARKERS = ("scanned stock", "portal")
 GEN_RE = re.compile(r"gen\s*(\d+\w*)", re.I)
 SYSVER_GEN_RE = re.compile(r"Gen(?:eration)?\s*(\d+\w*)", re.I)
 
@@ -74,6 +77,82 @@ def normalize_mtm(value) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return ""
     return str(value).strip().upper()
+
+
+def _is_portal_scan_noise(text: str) -> bool:
+    s = (text or "").strip().upper()
+    if not s or s == "NAN":
+        return True
+    if s in ("MONITORS", "QTY"):
+        return True
+    return "SAMSUNG" in s
+
+
+def parse_portal_scan_row(col0, col1="") -> tuple[str, str]:
+    """Split portal scanner rows (1S+MTM+SN glued, or MTM|SN columns)."""
+    c0 = str(col0 or "").strip()
+    c1 = str(col1 or "").strip()
+    if _is_portal_scan_noise(c0):
+        return "", ""
+    if c0.upper().startswith("1S"):
+        c0 = c0[2:]
+    if c1 and c1.lower() != "nan":
+        mtm = normalize_mtm(c0)
+        serial = normalize_serial(c1)
+        if mtm and serial:
+            return mtm, serial
+    blob = c0.upper().replace(" ", "")
+    if len(blob) > 10 and LENOVO_MTM_RE.match(blob[:10]):
+        serial = normalize_serial(blob[10:])
+        if serial:
+            return blob[:10], serial
+    m = SCAN_SERIAL_TAIL_RE.search(blob)
+    if m:
+        serial = normalize_serial(m.group("serial"))
+        mtm_part = blob[: m.start()]
+        if mtm_part and serial:
+            return normalize_mtm(mtm_part), serial
+    if LENOVO_MTM_RE.match(blob):
+        return blob, ""
+    return "", ""
+
+
+def looks_like_portal_scan_stock(path: Path) -> bool:
+    """SCANNED STOCK FOR PORTAL export: 2 columns, often 1S{MTM}{SN} in one cell."""
+    name = path.name.lower()
+    if all(marker in name for marker in PORTAL_SCAN_NAME_MARKERS):
+        return True
+    try:
+        df = read_tabular(path, nrows=40)
+    except Exception:
+        return False
+    if df.shape[1] != 2:
+        return False
+    hits = 0
+    for _, row in df.iterrows():
+        c0 = str(row.iloc[0] if pd.notna(row.iloc[0]) else "").strip()
+        if not c0 or _is_portal_scan_noise(c0):
+            continue
+        cu = c0.upper()
+        if cu.startswith("1S") or re.match(r"^\d{2}[A-Z0-9]{8}(?:PC|PF|GM|R)", cu):
+            hits += 1
+    return hits >= 3
+
+
+def load_portal_scan_stock(path: Path) -> pd.DataFrame:
+    df = read_tabular(path)
+    if df.shape[1] < 2:
+        raise ValueError(f"Portal scan file needs 2 columns. Found: {list(df.columns)}")
+    rows = []
+    for _, row in df.iterrows():
+        mtm, serial = parse_portal_scan_row(row.iloc[0], row.iloc[1] if len(row) > 1 else "")
+        if mtm and serial:
+            rows.append({"mtm": mtm, "serial": serial, "no_ssd": False, "mtm_raw": mtm})
+    if not rows:
+        raise ValueError("Portal scan file has no parseable laptop/desktop rows.")
+    out = pd.DataFrame(rows)
+    out = out.drop_duplicates(subset=["serial"], keep="first")
+    return out.reset_index(drop=True)
 
 def normalize_manufacturer(raw: str, mtm: str = "", model_hint: str = "") -> str:
     """Map Blancco / inferred text to LENOVO|DELL|HP|PANASONIC."""
@@ -315,6 +394,12 @@ def looks_like_product_list(cols: list[str]) -> bool:
         return True
     return len(cols) == 2
 
+
+def is_product_list_file(path: Path) -> bool:
+    if looks_like_portal_scan_stock(path):
+        return True
+    return classify_file(path) == "product"
+
 def looks_like_blancco(cols: list[str]) -> bool:
     """Detailed Blancco export: serial + many spec columns."""
     col_map = _col_lookup(cols)
@@ -361,18 +446,19 @@ def scan_folder(folder: Path) -> tuple[Path | None, Path | None]:
         if is_output_file(path):
             continue
         try:
-            kind = classify_file(path)
+            if is_product_list_file(path):
+                products.append(path)
+            elif classify_file(path) == "blancco":
+                blanccos.append(path)
         except Exception:
             continue
-        if kind == "product":
-            products.append(path)
-        elif kind == "blancco":
-            blanccos.append(path)
     product = max(products, key=lambda p: p.stat().st_mtime) if products else None
     blancco = max(blanccos, key=lambda p: p.stat().st_mtime) if blanccos else None
     return product, blancco
 
 def master_label(path: Path) -> str:
+    if looks_like_portal_scan_stock(path):
+        return "Portal scan stock"
     return file_type_label(classify_file(path))
 
 def _ask_open_file(title: str, folder: Path) -> Path | None:
@@ -486,19 +572,19 @@ def validate_merge_inputs(product_path: Path, blancco_path: Path) -> None:
     product_kind = classify_file(product_path)
     blancco_kind = classify_file(blancco_path)
 
-    if product_kind == "blancco" and blancco_kind == "product":
+    if product_kind == "blancco" and (blancco_kind == "product" or is_product_list_file(blancco_path)):
         raise ValueError(
             "Files look swapped.\n\n"
             f"First file '{product_path.name}' looks like a Blancco report.\n"
             f"Second file '{blancco_path.name}' looks like a product list.\n\n"
             "Run again and pick product list first, then Blancco report."
         )
-    if product_kind != "product":
+    if not is_product_list_file(product_path):
         cols = column_names(product_path)
         raise ValueError(
             f"'{product_path.name}' does not look like a product list.\n"
             f"Found {len(cols)} column(s): {', '.join(cols[:6])}{'...' if len(cols) > 6 else ''}\n\n"
-            "Expected a simple file with model/MTM + serial (about 2 columns)."
+            "Expected model/MTM + serial, or SCANNED STOCK FOR PORTAL (1S scan rows)."
         )
     if blancco_kind != "blancco":
         cols = column_names(blancco_path)
@@ -509,6 +595,8 @@ def validate_merge_inputs(product_path: Path, blancco_path: Path) -> None:
         )
 
 def load_product_list(path: Path) -> pd.DataFrame:
+    if looks_like_portal_scan_stock(path):
+        return load_portal_scan_stock(path)
     df = read_tabular(path)
     df.columns = [str(c).strip() for c in df.columns]
     col_map = _col_lookup(list(df.columns))
@@ -542,10 +630,10 @@ def load_product_list(path: Path) -> pd.DataFrame:
 
 def load_master(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load product list; optional sheet-2 metadata from legacy delivery receipts."""
-    if classify_file(path) != "product":
+    if not is_product_list_file(path):
         raise ValueError(
             f"'{path.name}' is not a product list. "
-            "Use the simple file with model/MTM + serial columns."
+            "Use the simple file with model/MTM + serial columns, or SCANNED STOCK FOR PORTAL."
         )
     wd = load_product_list(path)
     uncollected_df = pd.DataFrame(columns=["serial", "uncollected"])
