@@ -22,6 +22,7 @@ CONFIG_ATTR_XMLID = "quote_manage_ui.attr_configuration"
 SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 # Auto-generated test SKUs — never create or stock via CSV import.
 BLOCKED_SKU_PREFIXES = ("IMPORT-",)
+BATTERY_TIER_THRESHOLD = 70
 # Legacy refurb prefix on product_import_ready.csv (stripped → real MTM on import).
 LEGACY_RW_PRODUCT_PREFIX = "RW-"
 
@@ -108,6 +109,66 @@ class ProductCsvImporter(models.AbstractModel):
         if n in self._cpu_model_storage_false_positives(s):
             return "0"
         return str(n)
+
+    @api.model
+    def _merged_battery_percents(self, row):
+        raw = self._merged_str(row, "Battery (%)", "Battery")
+        if not raw:
+            return []
+        out = []
+        for part in re.split(r"[;/,|]+", raw):
+            m = re.search(r"(\d+)", (part or "").strip())
+            if not m:
+                continue
+            n = int(m.group(1))
+            if 0 < n <= 200:
+                out.append(n)
+        return out
+
+    @api.model
+    def _merged_battery_display(self, row):
+        display = self._merged_str(row, "Battery display")
+        if display:
+            return display
+        percents = self._merged_battery_percents(row)
+        if not percents:
+            return "Unknown"
+        return " / ".join(f"{p}%" for p in percents)
+
+    @api.model
+    def _merged_battery_tier(self, row):
+        tier = self._merged_str(row, "Battery tier")
+        if tier in ("70%+", "Under 70%"):
+            return tier
+        percents = self._merged_battery_percents(row)
+        if not percents:
+            return "Under 70%"
+        if min(percents) >= BATTERY_TIER_THRESHOLD:
+            return "70%+"
+        return "Under 70%"
+
+    @api.model
+    def _merged_battery_tier_code(self, tier_label):
+        return "BT70" if tier_label == "70%+" else "BTU70"
+
+    @api.model
+    def _merged_bucket_battery_display(self, rows):
+        displays = {
+            self._merged_battery_display(r)
+            for r in rows
+            if self._merged_battery_display(r) != "Unknown"
+        }
+        if len(displays) == 1:
+            return displays.pop()
+        mins = []
+        for row in rows:
+            percents = self._merged_battery_percents(row)
+            if percents:
+                mins.append(min(percents))
+        if not mins:
+            return "Unknown"
+        lo, hi = min(mins), max(mins)
+        return f"{lo}%" if lo == hi else f"{lo}%-{hi}%"
 
     @api.model
     def _cpu_model_storage_false_positives(self, text):
@@ -496,6 +557,7 @@ class ProductCsvImporter(models.AbstractModel):
         wan,
         model_name="",
         manufacturer="",
+        battery_display="",
     ):
         resolved_brand = self._resolve_import_brand(
             mtm=mtm,
@@ -516,6 +578,8 @@ class ProductCsvImporter(models.AbstractModel):
             specs["touch"] = "Yes"
         if (wan or "").strip().lower() == "yes":
             specs["wan"] = "Yes"
+        if (battery_display or "").strip():
+            specs["battery"] = battery_display.strip()
         series = self._shop_filter_series(
             mtm=mtm,
             model_name=model_name,
@@ -637,7 +701,7 @@ class ProductCsvImporter(models.AbstractModel):
         return ""
 
     @api.model
-    def _merged_group_key(self, row):
+    def _merged_config_key(self, row):
         return (
             self._merged_str(row, "MTM").upper(),
             self._merged_str(row, "Generation"),
@@ -648,6 +712,16 @@ class ProductCsvImporter(models.AbstractModel):
             self._merged_str(row, "WAN"),
             self._merged_str(row, "CPU"),
         )
+
+    @api.model
+    def _merged_group_key(self, row):
+        key = self._merged_config_key(row)
+        if self._merged_section(
+            self._merged_str(row, "Model name"),
+            self._merged_str(row, "MTM").upper(),
+        ) == "Laptops":
+            key = key + (self._merged_battery_tier(row),)
+        return key
 
     @api.model
     def _merged_sku_code(self, mtm, model_name, ram, ssd, touch):
@@ -673,7 +747,7 @@ class ProductCsvImporter(models.AbstractModel):
         for row in ok:
             mtm = self._merged_str(row, "MTM").upper()
             gen = self._merged_str(row, "Generation")
-            by_mtm_configs[(mtm, gen)].add(self._merged_group_key(row))
+            by_mtm_configs[(mtm, gen)].add(self._merged_config_key(row))
 
         buckets = defaultdict(list)
         for row in ok:
@@ -686,16 +760,30 @@ class ProductCsvImporter(models.AbstractModel):
             mtm = self._merged_str(sample, "MTM").upper()
             gen = self._merged_str(sample, "Generation")
             model_name = self._merged_str(sample, "Model name")
+            section = self._merged_section(model_name, mtm)
+            is_laptop = section == "Laptops"
+            tier_code = (
+                self._merged_battery_tier_code(self._merged_battery_tier(sample))
+                if is_laptop
+                else ""
+            )
             if len(by_mtm_configs.get((mtm, gen), set())) == 1:
-                code = mtm
+                base_code = mtm
             else:
-                code = self._merged_sku_code(
+                base_code = self._merged_sku_code(
                     mtm,
                     model_name,
                     self._merged_str(sample, "RAM (GB)", "RAM"),
                     self._merged_str(sample, "SSD size (GB)", "SSD size"),
                     self._merged_str(sample, "Touch"),
                 )
+            if is_laptop and tier_code:
+                code = f"{base_code}-{tier_code}"
+            else:
+                code = base_code
+            battery_display = (
+                self._merged_bucket_battery_display(group) if is_laptop else ""
+            )
             serials = sorted({
                 self._merged_str(r, "Serial").upper()
                 for r in group
@@ -722,7 +810,7 @@ class ProductCsvImporter(models.AbstractModel):
             if product_key and product_key.lower() not in title.lower():
                 title = f"Re-Ware {product_key}, {title.replace('Re-Ware ', '', 1)}"
             out.append({
-                "section": self._merged_section(model_name, mtm),
+                "section": section,
                 "default_code": code,
                 "title_raw": title,
                 "brand": brand,
@@ -737,6 +825,8 @@ class ProductCsvImporter(models.AbstractModel):
                 "ssd_gb": self._merged_str(sample, "SSD size (GB)", "SSD size"),
                 "touch_val": self._merged_str(sample, "Touch"),
                 "wan_val": self._merged_str(sample, "WAN"),
+                "battery_display": battery_display,
+                "battery_tier": self._merged_battery_tier(sample) if is_laptop else "",
                 "quantity": str(len(serials)),
                 "cost_ex": price,
                 "condition_note": self._merged_str(sample, "Mobo status"),
@@ -906,6 +996,7 @@ class ProductCsvImporter(models.AbstractModel):
                     "ssd_gb": (r.get("ssd_gb") or "").strip(),
                     "touch": (r.get("touch_val") or "").strip(),
                     "wan": (r.get("wan_val") or "").strip(),
+                    "battery_display": (r.get("battery_display") or "").strip(),
                 })
             for key, col in (
                 ("conditions", "condition_note"),
@@ -937,6 +1028,7 @@ class ProductCsvImporter(models.AbstractModel):
                     mf["wan"],
                     model_name=mf.get("model_name") or "",
                     manufacturer=mf.get("manufacturer") or "",
+                    battery_display=mf.get("battery_display") or "",
                 )
             else:
                 specs = self._parse_specs(brand, titles)
@@ -1416,6 +1508,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "quote_manage_ui.attr_storage",
                 "quote_manage_ui.attr_touchscreen",
                 "quote_manage_ui.attr_wan",
+                "quote_manage_ui.attr_battery",
             )
         ]
         self.env["product.template.attribute.line"].sudo().search(
@@ -2070,6 +2163,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "quote_manage_ui.attr_storage",
                 "quote_manage_ui.attr_touchscreen",
                 "quote_manage_ui.attr_wan",
+                "quote_manage_ui.attr_battery",
             )
         ]
         Line.search(
@@ -2110,6 +2204,8 @@ class ProductCsvImporter(models.AbstractModel):
             add_line("quote_manage_ui.attr_touchscreen", "Yes")
         if specs.get("wan"):
             add_line("quote_manage_ui.attr_wan", "Enabled")
+        if specs.get("battery"):
+            add_line("quote_manage_ui.attr_battery", specs["battery"])
         return specs.get("series")
 
     # ------------------------------------------- merge existing DB products

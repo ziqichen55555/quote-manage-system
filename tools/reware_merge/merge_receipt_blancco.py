@@ -28,6 +28,8 @@ SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
 GEN_RE = re.compile(r"gen\s*(\d+\w*)", re.I)
 SYSVER_GEN_RE = re.compile(r"Gen(?:eration)?\s*(\d+\w*)", re.I)
 
+BATTERY_TIER_THRESHOLD = 70
+
 OUTPUT_COLUMNS = [
     "Serial",
     "MTM",
@@ -42,6 +44,9 @@ OUTPUT_COLUMNS = [
     "SSD type",
     "SSD size (GB)",
     "Battery (%)",
+    "Battery display",
+    "Battery tier",
+    "Shop SKU",
     "GPU",
     "Mobo status",
     "Blancco date",
@@ -111,6 +116,97 @@ def parse_size_gb(text) -> str:
     s = str(text).strip()
     m = re.search(r"(\d+)", s)
     return m.group(1) if m else ""
+
+
+def parse_battery_percents(text) -> list[int]:
+    """Parse one or more battery health % values (e.g. '91;92' dual-battery)."""
+    if text is None or (isinstance(text, float) and pd.isna(text)):
+        return []
+    s = str(text).strip()
+    if not s:
+        return []
+    out = []
+    for part in re.split(r"[;/,|]+", s):
+        m = re.search(r"(\d+)", part.strip())
+        if not m:
+            continue
+        n = int(m.group(1))
+        if 0 < n <= 200:
+            out.append(n)
+    return out
+
+
+def battery_display_label(percents: list[int]) -> str:
+    if not percents:
+        return "Unknown"
+    return " / ".join(f"{p}%" for p in percents)
+
+
+def battery_tier_label(percents: list[int]) -> str:
+    """70%+ when min valid % >= 70; missing/unknown -> Under 70%."""
+    if not percents:
+        return "Under 70%"
+    if min(percents) >= BATTERY_TIER_THRESHOLD:
+        return "70%+"
+    return "Under 70%"
+
+
+def battery_tier_code(tier_label: str) -> str:
+    return "BT70" if tier_label == "70%+" else "BTU70"
+
+
+def is_laptop_product(model_name: str, mtm: str) -> bool:
+    name = (model_name or "").lower()
+    desktop_kw = (
+        "thinkcentre", "thinkstation", "optiplex", "prodesk",
+        "elitedesk", "tiny", " sff", "desktop", "workstation",
+        "m70", "m73", "m910", "m920", "m93",
+    )
+    if any(k in name for k in desktop_kw):
+        return False
+    return True
+
+
+def _pick_battery_col(col_map: dict[str, str]) -> str | None:
+    disk_col = _pick_col(col_map, "disk capacity", "disk capacit")
+    for name in (
+        "battery 2 capacity",
+        "battery 1 capacity",
+        "battery capacity",
+        "battery health",
+        "battery (%)",
+        "battery percentage",
+        "battery",
+        "capacity",
+    ):
+        col = _pick_col(col_map, name)
+        if not col or col == disk_col:
+            continue
+        return col
+    return None
+
+
+def _battery_raw_from_row(row, battery_col: str | None, extra_battery_cols: list[str]) -> str:
+    parts = []
+    for col in extra_battery_cols:
+        val = str(row.get(col, "") or "").strip()
+        if val:
+            parts.append(val)
+    if battery_col:
+        val = str(row.get(battery_col, "") or "").strip()
+        if val:
+            if parts:
+                parts.insert(0, val)
+            else:
+                return val
+    if not parts:
+        return ""
+    merged = []
+    for part in parts:
+        merged.extend(parse_battery_percents(part))
+    if not merged:
+        return ""
+    return ";".join(str(p) for p in merged)
 
 def parse_name_attrs(name: str) -> dict:
     n = (name or "").strip()
@@ -624,6 +720,16 @@ def load_blancco(path: Path) -> pd.DataFrame:
     if not serial_col:
         raise ValueError(f"Blancco file needs a serial column. Found: {list(df.columns)}")
 
+    battery_col = _pick_battery_col(col_map)
+    battery_extra_cols = [
+        c
+        for c in (
+            _pick_col(col_map, "battery 1 capacity"),
+            _pick_col(col_map, "battery 2 capacity"),
+        )
+        if c
+    ]
+
     mapping = {
         "blancco_date": _pick_col(col_map, "creation date"),
         "blancco_title": _pick_col(col_map, "system version"),
@@ -632,7 +738,6 @@ def load_blancco(path: Path) -> pd.DataFrame:
         "disk_capacity": _pick_col(col_map, "disk capacity", "disk capacit"),
         "ssd_type": _pick_col(col_map, "disk interface type"),
         "ram": _pick_col(col_map, "physical_memory", "physical memory", "ram"),
-        "battery": _pick_col(col_map, "capacity"),
         "gpu": _pick_col(col_map, "video card model", "gpu"),
         "mobo_status": _pick_col(col_map, "motherboard test status", "cmos condition"),
         "manufacturer": _pick_col(col_map, "system manufacturer", "manufacturer"),
@@ -643,6 +748,10 @@ def load_blancco(path: Path) -> pd.DataFrame:
     out["sku_number"] = df[sku_col].map(normalize_sku) if sku_col else ""
     for key, col in mapping.items():
         out[key] = df[col] if col else ""
+    out["battery"] = df.apply(
+        lambda row: _battery_raw_from_row(row, battery_col, battery_extra_cols),
+        axis=1,
+    )
     if "blancco_mtm" in out.columns:
         out["blancco_mtm"] = out["blancco_mtm"].map(normalize_mtm)
     out = out[out["serial"] != ""]
@@ -773,6 +882,16 @@ def merge_data(
             ssd_type = ""
             ssd_size = ""
 
+        battery_raw = str(bl.get("battery", "") if bl is not None else "")
+        battery_percents = parse_battery_percents(battery_raw)
+        battery_display = battery_display_label(battery_percents)
+        battery_tier = battery_tier_label(battery_percents)
+        tier_code = battery_tier_code(battery_tier)
+        if is_laptop_product(model_name, mtm):
+            shop_sku = f"{mtm}-{tier_code}"
+        else:
+            shop_sku = mtm
+
         rows.append(
             {
                 "Serial": device_serial,
@@ -787,7 +906,10 @@ def merge_data(
                 "RAM (GB)": parse_size_gb(bl.get("ram", "") if bl is not None else ""),
                 "SSD type": ssd_type,
                 "SSD size (GB)": ssd_size,
-                "Battery (%)": str(bl.get("battery", "") if bl is not None else ""),
+                "Battery (%)": battery_raw,
+                "Battery display": battery_display,
+                "Battery tier": battery_tier,
+                "Shop SKU": shop_sku,
                 "GPU": str(bl.get("gpu", "") if bl is not None else ""),
                 "Mobo status": str(bl.get("mobo_status", "") if bl is not None else ""),
                 "Blancco date": str(bl.get("blancco_date", "") if bl is not None else ""),

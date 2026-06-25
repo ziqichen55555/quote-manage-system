@@ -2,6 +2,7 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 echo Re-Ware: merging product list + Blancco report...
+echo (includes laptop battery tier: 70%%+ / Under 70%%)
 echo.
 
 py --version >nul 2>&1
