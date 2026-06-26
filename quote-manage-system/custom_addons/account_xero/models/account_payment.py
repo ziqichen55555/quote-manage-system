@@ -19,8 +19,8 @@ class AccountPayment(models.Model):
     xero_sync_message = fields.Text(string='Xero Sync Message', copy=False, readonly=True)
 
     def action_post(self):
-        posted = super().action_post()
-        for payment in posted:
+        super().action_post()
+        for payment in self.filtered(lambda p: p.state == 'posted'):
             company = payment.company_id
             if company.xero_enabled and company.xero_connected:
                 ok, message = company._xero_sync_payment_safe(payment)
@@ -28,7 +28,7 @@ class AccountPayment(models.Model):
                     lambda m: m.move_type == 'out_invoice'
                 ):
                     invoice._xero_post_chatter(_('Xero payment'), ok, message)
-        return posted
+        return True
 
     def action_xero_sync(self):
         self.ensure_one()
