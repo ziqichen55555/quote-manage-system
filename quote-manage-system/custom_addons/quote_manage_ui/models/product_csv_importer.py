@@ -948,6 +948,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
                 "• Delivered serials skipped (not restocked): %(skipped_delivered)s\n"
+                "• Held off shop (no CMOS yet): %(unpublished_pending_cmos)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
                 "Merge file is the source of truth for serial numbers and qty. "
@@ -968,6 +969,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "reconcile_skus": result.get("reconcile_skus", 0),
                 "serials_zeroed": result.get("serials_zeroed", 0),
                 "skipped_delivered": result.get("skipped_delivered", 0),
+                "unpublished_pending_cmos": result.get("unpublished_pending_cmos", 0),
                 "orphan_skus": result.get("orphan_skus", 0),
                 "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
             }
@@ -1010,7 +1012,7 @@ class ProductCsvImporter(models.AbstractModel):
         # Additive import: only SKUs present in the CSV are touched. No archiving,
         # no zeroing stock for absent SKUs. Merge uploads also refresh name/attrs.
         created = updated = stock_batches = skipped_serials = 0
-        skipped_no_serial = skipped_non_serial = 0
+        skipped_no_serial = skipped_non_serial = unpublished_pending_cmos = 0
 
         for unit in units:
             sec_key = self._unit_section_key(unit)
@@ -1024,11 +1026,12 @@ class ProductCsvImporter(models.AbstractModel):
                 )
                 unit = dict(unit, qty=0)
                 skipped_no_serial += 1
-            c, u, s, sk = self._import_single_unit(unit, sections, additive=additive)
+            c, u, s, sk, unpub = self._import_single_unit(unit, sections, additive=additive)
             created += c
             updated += u
             stock_batches += s
             skipped_serials += sk
+            unpublished_pending_cmos += unpub
 
         self.env.cr.commit()
         stats = source_stats or {}
@@ -1046,6 +1049,7 @@ class ProductCsvImporter(models.AbstractModel):
             "import_source": import_source,
             "devices_in_file": stats.get("devices_in_file", 0),
             "failed_devices": stats.get("failed_devices", 0),
+            "unpublished_pending_cmos": unpublished_pending_cmos,
         }
 
     @api.model
@@ -1306,17 +1310,29 @@ class ProductCsvImporter(models.AbstractModel):
         return created, updated, archived, stock_batches
 
     @api.model
-    def _ensure_published(self, tmpl):
-        """Restore shop visibility only — never change name, price, or attributes."""
-        updates = {}
-        if not tmpl.active:
-            updates["active"] = True
-        if not tmpl.website_published:
-            updates["website_published"] = True
-        if not tmpl.sale_ok:
-            updates["sale_ok"] = True
-        if updates:
-            tmpl.write(updates)
+    def _unit_shop_ready(self, unit, ptype="product"):
+        """Merge import: CMOS must be known before the product is shop-visible."""
+        if ptype != "product":
+            return True
+        if not self._is_merged_unit(unit):
+            return True
+        return bool((unit.get("specs") or {}).get("cmos"))
+
+    @api.model
+    def _shop_visibility_vals(self, unit, ptype="product"):
+        if self._unit_shop_ready(unit, ptype=ptype):
+            return {"website_published": True, "sale_ok": True, "active": True}
+        return {"website_published": False, "sale_ok": False, "active": True}
+
+    @api.model
+    def _apply_shop_visibility_from_unit(self, tmpl, unit, ptype="product"):
+        """Stock may exist in WH/Stock; shop visibility follows CMOS (scheme A)."""
+        vals = self._shop_visibility_vals(unit, ptype=ptype)
+        if tmpl.active != vals.get("active", True) or tmpl.website_published != vals[
+            "website_published"
+        ] or tmpl.sale_ok != vals["sale_ok"]:
+            tmpl.write(vals)
+        return not vals["website_published"]
 
     @api.model
     def _is_merged_unit(self, unit):
@@ -1362,7 +1378,7 @@ class ProductCsvImporter(models.AbstractModel):
         match = variants.filtered(lambda v: (v.default_code or "").strip() == code)
         to_activate = match or (variants if len(variants) == 1 else variants[:1])
         if to_activate:
-            to_activate.write({"active": True, "sale_ok": True})
+            to_activate.write({"active": True})
         return to_activate[:1]
 
     @api.model
@@ -1380,6 +1396,7 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _import_single_unit(self, unit, sections, additive=False):
         created = updated = stock_batches = skipped_serials = 0
+        unpublished_pending = 0
         code = self._canonical_sku_code(unit["code"])
         unit["code"] = code
         sec_key = (unit["sections"][-1] if unit["sections"] else "accessories").lower()
@@ -1406,7 +1423,6 @@ class ProductCsvImporter(models.AbstractModel):
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
 
         if tmpl and additive:
-            self._ensure_published(tmpl)
             self._ensure_active_variant(tmpl, code)
             if self._is_merged_unit(unit):
                 self._refresh_existing_from_merge_unit(
@@ -1428,7 +1444,9 @@ class ProductCsvImporter(models.AbstractModel):
                 )
                 stock_batches += applied
                 skipped_serials += skipped
-            return created, updated, stock_batches, skipped_serials
+            if self._apply_shop_visibility_from_unit(tmpl, unit, ptype=ptype):
+                unpublished_pending = 1
+            return created, updated, stock_batches, skipped_serials, unpublished_pending
 
         price = unit["price"] if unit.get("price", 0) > 0 else 0.0
         inherited = (
@@ -1436,6 +1454,7 @@ class ProductCsvImporter(models.AbstractModel):
             if price <= 0 and not tmpl
             else {}
         )
+        visibility = self._shop_visibility_vals(unit, ptype=ptype)
         vals = {
             "name": product_name,
             "default_code": code,
@@ -1444,9 +1463,9 @@ class ProductCsvImporter(models.AbstractModel):
             "product_tag_ids": [(5, 0, 0)] if ptype == "product" else tag_cmds,
             "type": ptype,
             "tracking": tracking,
-            "website_published": True,
-            "sale_ok": True,
-            "active": True,
+            "website_published": visibility["website_published"],
+            "sale_ok": visibility["sale_ok"],
+            "active": visibility["active"],
             "description_sale": self._shop_model_subtitle(code, product_name)[:500],
             "allow_out_of_stock_order": ptype != "product",
             "show_availability": ptype == "product",
@@ -1514,7 +1533,10 @@ class ProductCsvImporter(models.AbstractModel):
             stock_batches += applied
             skipped_serials += skipped
 
-        return created, updated, stock_batches, skipped_serials
+        if self._apply_shop_visibility_from_unit(tmpl, unit, ptype=ptype):
+            unpublished_pending = 1
+
+        return created, updated, stock_batches, skipped_serials, unpublished_pending
 
     # ------------------------------------------------------------- helpers
     @api.model
