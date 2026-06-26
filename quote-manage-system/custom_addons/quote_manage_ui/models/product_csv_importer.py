@@ -947,6 +947,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "• SKUs skipped (not serial-tracked): %(skipped_non_serial)s\n"
                 "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
+                "• Delivered serials skipped (not restocked): %(skipped_delivered)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
                 "Merge file is the source of truth for serial numbers and qty. "
@@ -966,6 +967,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "skipped_non_serial": result.get("skipped_non_serial", 0),
                 "reconcile_skus": result.get("reconcile_skus", 0),
                 "serials_zeroed": result.get("serials_zeroed", 0),
+                "skipped_delivered": result.get("skipped_delivered", 0),
                 "orphan_skus": result.get("orphan_skus", 0),
                 "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
             }
@@ -1674,8 +1676,47 @@ class ProductCsvImporter(models.AbstractModel):
         ).unlink()
 
     @api.model
+    def _serial_is_delivered(self, serial_name, product_id=None):
+        """True when this serial left the warehouse on a done customer delivery."""
+        serial = (serial_name or "").strip()
+        if not serial:
+            return False
+        Lot = self.env["stock.lot"].sudo()
+        MoveLine = self.env["stock.move.line"].sudo()
+        lot_domain = [
+            ("name", "=ilike", serial),
+            ("company_id", "=", self.env.company.id),
+        ]
+        if product_id:
+            lot_domain.append(("product_id", "=", product_id))
+        lots = Lot.search(lot_domain)
+        if not lots:
+            return False
+        return bool(
+            MoveLine.search_count(
+                [
+                    ("lot_id", "in", lots.ids),
+                    ("state", "=", "done"),
+                    ("location_dest_id.usage", "=", "customer"),
+                ],
+                limit=1,
+            )
+        )
+
+    @api.model
     def _set_serial_stock_one(self, variant, lot, wh):
-        """Ensure exactly one unit in stock for a serial lot (idempotent re-import)."""
+        """Ensure exactly one unit in stock for a serial lot (idempotent re-import).
+
+        Skips serials already delivered to a customer — merge re-import must not
+        put sold units back on the website.
+        """
+        if lot and self._serial_is_delivered(lot.name, variant.id):
+            _logger.info(
+                "Skipping restock for delivered serial %s (%s)",
+                lot.name,
+                variant.display_name,
+            )
+            return 0, 1
         Quant = self.env["stock.quant"].sudo()
         sq = Quant.search(
             [
@@ -3066,6 +3107,7 @@ class ProductCsvImporter(models.AbstractModel):
         merge_skus = set()
         sku_results = []
         serials_zeroed = 0
+        skipped_delivered = 0
         skipped_non_serial = 0
         for unit in units:
             code = self._canonical_sku_code(unit["code"])
@@ -3102,12 +3144,14 @@ class ProductCsvImporter(models.AbstractModel):
             else:
                 sync = self.sync_serial_stock_allowlist(code, serials)
                 serials_zeroed += len(sync.get("zeroed_other") or [])
+                skipped_delivered += len(sync.get("skipped_delivered") or [])
                 sku_results.append(sync)
 
         orphans = self._orphan_serial_refurb_report(merge_skus)
         return {
             "reconcile_skus": len(sku_results),
             "serials_zeroed": serials_zeroed,
+            "skipped_delivered": skipped_delivered,
             "skipped_non_serial": skipped_non_serial,
             "orphan_skus": len(orphans),
             "orphan_serial_products": orphans,
@@ -3314,7 +3358,11 @@ class ProductCsvImporter(models.AbstractModel):
         Lot = self.env["stock.lot"].sudo()
         stock_root = wh.lot_stock_id
         kept = []
+        skipped_delivered = []
         for serial in sorted(allow):
+            if self._serial_is_delivered(serial, variant.id):
+                skipped_delivered.append(serial)
+                continue
             lot = self._find_or_create_lot(variant, serial)
             self._set_serial_stock_one(variant, lot, wh)
             kept.append(serial)
@@ -3352,6 +3400,7 @@ class ProductCsvImporter(models.AbstractModel):
         return {
             "sku": code,
             "kept_serials": kept,
+            "skipped_delivered": skipped_delivered,
             "zeroed_other": zeroed,
             "on_hand": variant.qty_available,
             "website_qty": tmpl._rw_website_available_qty(),
