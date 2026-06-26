@@ -24,6 +24,8 @@ SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 BLOCKED_SKU_PREFIXES = ("IMPORT-",)
 BATTERY_TIER_THRESHOLD = 70
 BATTERY_TIER_SUFFIXES = ("-BT70", "-BTU70")
+CMOS_TIER_SUFFIXES = ("-CMOSP", "-CMOSFL")
+INTERNAL_SHOP_SUFFIXES = BATTERY_TIER_SUFFIXES + CMOS_TIER_SUFFIXES
 # Legacy refurb prefix on product_import_ready.csv (stripped → real MTM on import).
 LEGACY_RW_PRODUCT_PREFIX = "RW-"
 
@@ -158,12 +160,24 @@ class ProductCsvImporter(models.AbstractModel):
         return "BT70" if tier_label == "70%+" else "BTU70"
 
     @api.model
+    def _strip_internal_shop_suffixes(self, code):
+        code = (code or "").strip()
+        changed = True
+        while changed:
+            changed = False
+            for suffix in INTERNAL_SHOP_SUFFIXES:
+                if code.endswith(suffix):
+                    code = code[: -len(suffix)]
+                    changed = True
+                    break
+        m = re.match(r"^(.+)-\d+G-\d+G-[TN]$", code, re.I)
+        if m:
+            code = m.group(1)
+        return code
+
+    @api.model
     def _battery_tier_base_sku(self, code):
-        c = (code or "").strip()
-        for suffix in BATTERY_TIER_SUFFIXES:
-            if c.endswith(suffix):
-                return c[: -len(suffix)]
-        return ""
+        return self._strip_internal_shop_suffixes(code)
 
     @api.model
     def _inherit_battery_tier_base_vals(self, code, existing_tmpl=None):
@@ -237,18 +251,33 @@ class ProductCsvImporter(models.AbstractModel):
         return self._merged_str(row, "CMOS", "Mobo status")
 
     @api.model
+    def _merged_cmos_tier(self, row):
+        norm = self._normalize_cmos(self._merged_cmos_raw(row))
+        if norm == "Successful":
+            return "Pass"
+        if norm == "Failed":
+            return "Fail"
+        return ""
+
+    @api.model
+    def _merged_cmos_tier_code(self, tier_label):
+        if tier_label == "Pass":
+            return "CMOSP"
+        if tier_label == "Fail":
+            return "CMOSFL"
+        return ""
+
+    @api.model
     def _merged_bucket_cmos_display(self, rows):
-        """Any failed unit in the SKU bucket → Failed; else Successful."""
-        statuses = set()
-        for row in rows:
-            norm = self._normalize_cmos(self._merged_cmos_raw(row))
-            if norm:
-                statuses.add(norm)
-        if not statuses:
-            return ""
-        if "Failed" in statuses:
-            return "Failed"
-        return "Successful"
+        """Per-device CMOS; bucket is split by tier so values should agree."""
+        statuses = {
+            self._normalize_cmos(self._merged_cmos_raw(r))
+            for r in rows
+        }
+        statuses.discard("")
+        if len(statuses) == 1:
+            return statuses.pop()
+        return ""
 
     @api.model
     def _cpu_model_storage_false_positives(self, text):
@@ -813,6 +842,9 @@ class ProductCsvImporter(models.AbstractModel):
         key = self._merged_config_key(row)
         if self._merged_row_section(row) == "Laptops":
             key = key + (self._merged_battery_tier(row),)
+        cmos_tier = self._merged_cmos_tier(row)
+        if cmos_tier:
+            key = key + (cmos_tier,)
         return key
 
     @api.model
@@ -873,6 +905,11 @@ class ProductCsvImporter(models.AbstractModel):
                 code = f"{base_code}-{tier_code}"
             else:
                 code = base_code
+            cmos_tier_code = self._merged_cmos_tier_code(
+                self._merged_cmos_tier(sample)
+            )
+            if cmos_tier_code:
+                code = f"{code}-{cmos_tier_code}"
             battery_display = (
                 self._merged_bucket_battery_display(group) if is_laptop else ""
             )
@@ -948,7 +985,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "• SN catalog reconciled (SKUs): %(reconcile_skus)s\n"
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
                 "• Delivered serials skipped (not restocked): %(skipped_delivered)s\n"
-                "• Held off shop (no CMOS yet): %(unpublished_pending_cmos)s\n"
+                "• Held off shop (CMOS failed / missing): %(unpublished_pending_cmos)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
                 "Merge file is the source of truth for serial numbers and qty. "
@@ -1311,12 +1348,12 @@ class ProductCsvImporter(models.AbstractModel):
 
     @api.model
     def _unit_shop_ready(self, unit, ptype="product"):
-        """Merge import: CMOS must be known before the product is shop-visible."""
+        """Only CMOS-pass merge products go on the shop; failed/unknown stay in WH/Stock."""
         if ptype != "product":
             return True
         if not self._is_merged_unit(unit):
             return True
-        return bool((unit.get("specs") or {}).get("cmos"))
+        return (unit.get("specs") or {}).get("cmos") == "Successful"
 
     @api.model
     def _shop_visibility_vals(self, unit, ptype="product"):

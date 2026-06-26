@@ -246,10 +246,14 @@ class ProductTemplate(models.Model):
         code = (code or "").strip()
         if not code or code.startswith("RW-SERIES-"):
             return code
-        for suffix in ("-BT70", "-BTU70"):
-            if code.endswith(suffix):
-                code = code[: -len(suffix)]
-                break
+        changed = True
+        while changed:
+            changed = False
+            for suffix in ("-BT70", "-BTU70", "-CMOSP", "-CMOSFL"):
+                if code.endswith(suffix):
+                    code = code[: -len(suffix)]
+                    changed = True
+                    break
         m = re.match(r"^(.+)-\d+G-\d+G-[TN]$", code, re.I)
         if m:
             code = m.group(1)

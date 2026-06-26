@@ -234,6 +234,19 @@ def battery_tier_code(tier_label: str) -> str:
     return "BT70" if tier_label == "70%+" else "BTU70"
 
 
+def normalize_cmos_tier(mobo_status) -> str:
+    s = str(mobo_status or "").strip().lower()
+    if s in ("successful", "pass", "passed", "ok"):
+        return "Pass"
+    if s in ("failed", "fail", "error"):
+        return "Fail"
+    return ""
+
+
+def cmos_tier_code(tier_label: str) -> str:
+    return {"Pass": "CMOSP", "Fail": "CMOSFL"}.get(tier_label, "")
+
+
 def is_desktop_mtm(mtm: str) -> bool:
   """Lenovo ThinkCentre / ThinkStation MTMs (10*, 30*)."""
   mtm_u = (mtm or "").strip().upper()
@@ -991,10 +1004,16 @@ def merge_data(
         battery_display = battery_display_label(battery_percents)
         battery_tier = battery_tier_label(battery_percents)
         tier_code = battery_tier_code(battery_tier)
+        cmos_tier = normalize_cmos_tier(
+            bl.get("mobo_status", "") if bl is not None else ""
+        )
+        cmos_code = cmos_tier_code(cmos_tier)
         if is_laptop_product(model_name, mtm, system_version):
             shop_sku = f"{mtm}-{tier_code}"
         else:
             shop_sku = mtm
+        if cmos_code:
+            shop_sku = f"{shop_sku}-{cmos_code}"
 
         rows.append(
             {
