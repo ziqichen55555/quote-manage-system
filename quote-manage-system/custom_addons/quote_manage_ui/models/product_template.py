@@ -264,13 +264,39 @@ class ProductTemplate(models.Model):
         return val
 
     def _rw_sync_shop_from_cmos(self):
-        """CMOS Successful → shop on; Failed / empty → stock only (manual CMOS edit triggers this)."""
+        """CMOS gate + CMOSFL approval merges stock into -CMOSP shop master."""
+        Importer = self.env["product.csv.importer"]
         for tmpl in self.with_context(rw_skip_cmos_shop_sync=True):
             if tmpl.type != "product":
                 continue
             status = tmpl._rw_cmos_status()
             if status is None:
                 continue
+            code = (tmpl.default_code or "").strip()
+
+            if Importer._is_cmos_fail_bucket_sku(code):
+                if status == "Successful":
+                    Importer.transfer_cmos_fail_bucket_to_pass(tmpl)
+                elif (
+                    tmpl.website_published
+                    or tmpl.sale_ok
+                ):
+                    tmpl.write({"website_published": False, "sale_ok": False})
+                continue
+
+            if Importer._is_cmos_pass_bucket_sku(code):
+                publish = status == "Successful" and tmpl.qty_available > 0
+                vals = {
+                    "website_published": publish,
+                    "sale_ok": publish,
+                }
+                if (
+                    tmpl.website_published != vals["website_published"]
+                    or tmpl.sale_ok != vals["sale_ok"]
+                ):
+                    tmpl.write(vals)
+                continue
+
             if status == "Successful":
                 vals = {"website_published": True, "sale_ok": True}
             else:

@@ -1347,12 +1347,124 @@ class ProductCsvImporter(models.AbstractModel):
         return created, updated, archived, stock_batches
 
     @api.model
+    def _is_cmos_fail_bucket_sku(self, code):
+        return (code or "").strip().upper().endswith("-CMOSFL")
+
+    @api.model
+    def _is_cmos_pass_bucket_sku(self, code):
+        return (code or "").strip().upper().endswith("-CMOSP")
+
+    @api.model
+    def _cmos_pass_code_for_fail(self, fail_code):
+        code = (fail_code or "").strip()
+        if not self._is_cmos_fail_bucket_sku(code):
+            return code
+        return code[: -len("-CMOSFL")] + "-CMOSP"
+
+    @api.model
+    def _set_cmos_attribute_value(self, tmpl, value_name):
+        """Update only the CMOS attribute line (other attrs untouched)."""
+        attr = self.env.ref("quote_manage_ui.attr_cmos", raise_if_not_found=False)
+        if not attr or not value_name:
+            return
+        val = self.env["product.attribute.value"].sudo().search(
+            [("attribute_id", "=", attr.id), ("name", "=ilike", value_name)],
+            limit=1,
+        )
+        if not val:
+            val = self.env["product.attribute.value"].sudo().create(
+                {"attribute_id": attr.id, "name": value_name[:128]}
+            )
+        line = tmpl.attribute_line_ids.filtered(lambda l: l.attribute_id == attr)
+        vals = {"value_ids": [(6, 0, [val.id])]}
+        if line:
+            line.with_context(rw_skip_cmos_shop_sync=True).write(vals)
+        else:
+            self.env["product.template.attribute.line"].sudo().create(
+                {
+                    "product_tmpl_id": tmpl.id,
+                    "attribute_id": attr.id,
+                    **vals,
+                }
+            )
+
+    @api.model
+    def _ensure_cmos_pass_bucket_product(self, fail_tmpl):
+        """CMOSP shop master for a -CMOSFL warehouse bucket."""
+        fail_code = (fail_tmpl.default_code or "").strip()
+        pass_code = self._cmos_pass_code_for_fail(fail_code)
+        pass_tmpl, pass_code = self._find_product_by_sku(pass_code)
+        if pass_tmpl:
+            return pass_tmpl, pass_code
+        pass_tmpl = fail_tmpl.copy(
+            {
+                "default_code": pass_code,
+                "barcode": pass_code,
+                "website_published": False,
+                "sale_ok": False,
+            }
+        )
+        self._ensure_active_variant(pass_tmpl, pass_code)
+        variant = self._stock_variant_for_unit(pass_tmpl, pass_code)
+        if variant and (variant.default_code or "").strip() != pass_code:
+            variant.write({"default_code": pass_code})
+        self._set_cmos_attribute_value(pass_tmpl, "Successful")
+        return pass_tmpl, pass_code
+
+    @api.model
+    def transfer_cmos_fail_bucket_to_pass(self, fail_tmpl):
+        """Move -CMOSFL serial stock onto -CMOSP shop master (scheme B)."""
+        fail_tmpl.ensure_one()
+        fail_code = (fail_tmpl.default_code or "").strip()
+        if not self._is_cmos_fail_bucket_sku(fail_code):
+            return {"skipped": "not_cmos_fail_bucket", "sku": fail_code}
+
+        pass_tmpl, pass_code = self._ensure_cmos_pass_bucket_product(fail_tmpl)
+        fail_var = self._stock_variant_for_unit(fail_tmpl, fail_code)
+        pass_var = self._stock_variant_for_unit(pass_tmpl, pass_code)
+        moved = 0
+        if fail_var and pass_var:
+            moved = self._migrate_variant_stock(fail_var, pass_var)
+
+        ctx = {"rw_skip_cmos_shop_sync": True}
+        self._set_cmos_attribute_value(fail_tmpl.with_context(ctx), "Failed")
+        fail_tmpl.with_context(ctx).write(
+            {"website_published": False, "sale_ok": False}
+        )
+
+        pass_tmpl.invalidate_recordset()
+        publish = pass_tmpl.qty_available > 0
+        self._set_cmos_attribute_value(pass_tmpl.with_context(ctx), "Successful")
+        pass_tmpl.with_context(ctx).write(
+            {
+                "website_published": publish,
+                "sale_ok": publish,
+            }
+        )
+
+        if moved == 0 and not publish:
+            _logger.warning(
+                "CMOSFL→CMOSP transfer for %s moved no stock; left on fail bucket.",
+                fail_code,
+            )
+
+        return {
+            "fail_sku": fail_code,
+            "pass_sku": pass_code,
+            "serials_moved": moved,
+            "pass_on_hand": int(pass_tmpl.qty_available),
+            "pass_published": publish,
+        }
+
+    @api.model
     def _unit_shop_ready(self, unit, ptype="product"):
         """Only CMOS-pass merge products go on the shop; failed/unknown stay in WH/Stock."""
         if ptype != "product":
             return True
         if not self._is_merged_unit(unit):
             return True
+        if self._is_cmos_fail_bucket_sku(unit.get("code") or ""):
+            return False
         return (unit.get("specs") or {}).get("cmos") == "Successful"
 
     @api.model
