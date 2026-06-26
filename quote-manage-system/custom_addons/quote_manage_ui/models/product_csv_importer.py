@@ -18,6 +18,18 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 CONFIG_ATTR_XMLID = "quote_manage_ui.attr_configuration"
+FILTER_ATTR_XMLIDS = (
+    "quote_manage_ui.attr_brand",
+    "quote_manage_ui.attr_series",
+    "quote_manage_ui.attr_generation",
+    "quote_manage_ui.attr_cpu",
+    "quote_manage_ui.attr_ram",
+    "quote_manage_ui.attr_storage",
+    "quote_manage_ui.attr_touchscreen",
+    "quote_manage_ui.attr_wan",
+    "quote_manage_ui.attr_battery",
+    "quote_manage_ui.attr_cmos",
+)
 # Refurb computers imported via CSV — always serial-tracked.
 SERIAL_TRACK_SECTIONS = frozenset({"laptops", "desktops"})
 # Auto-generated test SKUs — never create or stock via CSV import.
@@ -628,6 +640,26 @@ class ProductCsvImporter(models.AbstractModel):
         return ""
 
     @api.model
+    def _normalize_generation_label(
+        self,
+        generation="",
+        system_version="",
+        product_name="",
+        model_name="",
+    ):
+        """Shop sidebar Generation filter — Gen 1, Gen 2i, …"""
+        for src in (generation, system_version, product_name, model_name):
+            s = (src or "").strip()
+            if not s:
+                continue
+            m = re.search(r"Gen\s*(\d+\w*)", s, re.I)
+            if m:
+                return f"Gen {m.group(1)}"
+            if re.fullmatch(r"\d+\w*", s, re.I):
+                return f"Gen {s}"
+        return ""
+
+    @api.model
     def _normalize_filter_series(self, series):
         """Map legacy / verbose series strings to shop filter labels."""
         s = (series or "").strip()
@@ -680,6 +712,8 @@ class ProductCsvImporter(models.AbstractModel):
         manufacturer="",
         battery_display="",
         cmos="",
+        generation="",
+        system_version="",
     ):
         resolved_brand = self._resolve_import_brand(
             mtm=mtm,
@@ -712,6 +746,14 @@ class ProductCsvImporter(models.AbstractModel):
         )
         if series:
             specs["series"] = series
+        gen_label = self._normalize_generation_label(
+            generation=generation,
+            system_version=system_version,
+            product_name="",
+            model_name=model_name,
+        )
+        if gen_label:
+            specs["generation"] = gen_label
         self._validate_merged_specs(specs, mtm or "")
         return specs
 
@@ -958,6 +1000,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "battery_display": battery_display,
                 "battery_tier": self._merged_battery_tier(sample) if is_laptop else "",
                 "cmos_display": cmos_display,
+                "generation": gen,
                 "quantity": str(len(serials)),
                 "cost_ex": price,
                 "condition_note": cmos_display or self._merged_str(sample, "CMOS", "Mobo status"),
@@ -1154,6 +1197,8 @@ class ProductCsvImporter(models.AbstractModel):
                     "wan": (r.get("wan_val") or "").strip(),
                     "battery_display": (r.get("battery_display") or "").strip(),
                     "cmos": (r.get("cmos_display") or "").strip(),
+                    "generation": (r.get("generation") or "").strip(),
+                    "system_version": (r.get("system_version") or "").strip(),
                 })
             for key, col in (
                 ("conditions", "condition_note"),
@@ -1187,6 +1232,8 @@ class ProductCsvImporter(models.AbstractModel):
                     manufacturer=mf.get("manufacturer") or "",
                     battery_display=mf.get("battery_display") or "",
                     cmos=mf.get("cmos") or "",
+                    generation=mf.get("generation") or "",
+                    system_version=mf.get("system_version") or "",
                 )
             else:
                 specs = self._parse_specs(brand, titles)
@@ -1196,6 +1243,12 @@ class ProductCsvImporter(models.AbstractModel):
                     )
                     if filter_series:
                         specs["series"] = filter_series
+                if not specs.get("generation"):
+                    gen = self._normalize_generation_label(
+                        product_name=" ".join(titles),
+                    )
+                    if gen:
+                        specs["generation"] = gen
             series_key = ""
             if a["product_keys"]:
                 series_key = self._normalize_product_name(a["product_keys"][0])
@@ -1830,17 +1883,7 @@ class ProductCsvImporter(models.AbstractModel):
     def _clear_managed_attribute_lines(self, tmpl):
         managed = [
             self.env.ref(x).id
-            for x in (
-                "quote_manage_ui.attr_brand",
-                "quote_manage_ui.attr_series",
-                "quote_manage_ui.attr_cpu",
-                "quote_manage_ui.attr_ram",
-                "quote_manage_ui.attr_storage",
-                "quote_manage_ui.attr_touchscreen",
-                "quote_manage_ui.attr_wan",
-                "quote_manage_ui.attr_battery",
-                "quote_manage_ui.attr_cmos",
-            )
+            for x in FILTER_ATTR_XMLIDS
         ]
         self.env["product.template.attribute.line"].sudo().search(
             [("product_tmpl_id", "=", tmpl.id), ("attribute_id", "in", managed)]
@@ -2347,6 +2390,10 @@ class ProductCsvImporter(models.AbstractModel):
         if "WAN" in t_up or " LTE" in t_up:
             specs["wan"] = "Yes"
 
+        gen = self._normalize_generation_label(product_name=blob)
+        if gen:
+            specs["generation"] = gen
+
         return specs
 
     @api.model
@@ -2539,20 +2586,7 @@ class ProductCsvImporter(models.AbstractModel):
         if not specs:
             specs = self._parse_specs(brand, titles)
         Line = self.env["product.template.attribute.line"].sudo()
-        managed = [
-            self.env.ref(x).id
-            for x in (
-                "quote_manage_ui.attr_brand",
-                "quote_manage_ui.attr_series",
-                "quote_manage_ui.attr_cpu",
-                "quote_manage_ui.attr_ram",
-                "quote_manage_ui.attr_storage",
-                "quote_manage_ui.attr_touchscreen",
-                "quote_manage_ui.attr_wan",
-                "quote_manage_ui.attr_battery",
-                "quote_manage_ui.attr_cmos",
-            )
-        ]
+        managed = [self.env.ref(x).id for x in FILTER_ATTR_XMLIDS]
         Line.search(
             [("product_tmpl_id", "=", tmpl.id), ("attribute_id", "in", managed)]
         ).unlink()
@@ -2581,6 +2615,8 @@ class ProductCsvImporter(models.AbstractModel):
             add_line("quote_manage_ui.attr_brand", specs["brand"])
         if specs.get("series"):
             add_line("quote_manage_ui.attr_series", specs["series"])
+        if specs.get("generation"):
+            add_line("quote_manage_ui.attr_generation", specs["generation"])
         if specs.get("cpu"):
             add_line("quote_manage_ui.attr_cpu", specs["cpu"])
         if specs.get("ram"):

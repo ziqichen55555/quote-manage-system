@@ -248,7 +248,7 @@
             </p>
             <div class="qm-shop-spec-tags d-flex flex-wrap gap-1 mb-2 small" t-if="product.valid_product_template_attribute_line_ids">
                 <t t-foreach="product.valid_product_template_attribute_line_ids" t-as="spec_line">
-                    <t t-if="spec_line.value_ids and not (spec_line.attribute_id.name == 'Series' and spec_line.value_ids[0].name == product.name)">
+                    <t t-if="spec_line.value_ids and spec_line.attribute_id.name not in ('CMOS', 'Configuration') and not (spec_line.attribute_id.name == 'Series' and spec_line.value_ids[0].name == product.name)">
                         <span class="badge rounded-pill fw-normal">
                             <span t-field="spec_line.attribute_id.name"/>: <t t-esc="', '.join(spec_line.value_ids.mapped('name'))"/>
                         </span>
