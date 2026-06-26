@@ -425,6 +425,20 @@ class ResCompany(models.Model):
             }],
         }
 
+    def _xero_find_invoice_id(self, move):
+        """Find an existing Xero sales invoice by our invoice number."""
+        self.ensure_one()
+        number = self._xero_invoice_number(move).replace('"', '\\"').strip()
+        if not number:
+            return False
+        result = self._xero_request('GET', 'Invoices', params={
+            'where': f'InvoiceNumber=="{number}"',
+        })
+        invoices = result.get('Invoices') or []
+        if invoices:
+            return invoices[0]['InvoiceID']
+        return False
+
     def _xero_sync_invoice(self, move):
         self.ensure_one()
         if move.xero_invoice_id:
@@ -446,6 +460,23 @@ class ResCompany(models.Model):
             return False
 
         contact_id = self._xero_sync_contact(move.partner_id)
+        existing_id = self._xero_find_invoice_id(move)
+        if existing_id:
+            invoice_number = self._xero_invoice_number(move)
+            message = _(
+                'Linked to existing Xero invoice %(number)s (ID: %(xero_id)s). '
+                'It was already in Xero from a previous sync.',
+                number=invoice_number,
+                xero_id=existing_id,
+            )
+            move.sudo().write({
+                'xero_invoice_id': existing_id,
+                'xero_sync_status': 'synced',
+                'xero_sync_message': message,
+            })
+            self._xero_log('invoice', 'account.move', move.id, 'synced', message, existing_id)
+            return existing_id
+
         payload = self._xero_build_invoice_payload(move, contact_id)
         result = self._xero_request('POST', 'Invoices', payload)
         invoices = result.get('Invoices') or []
@@ -514,10 +545,30 @@ class ResCompany(models.Model):
 
         invoice = invoices.filtered('xero_invoice_id')[:1]
         if not invoice:
+            names = ', '.join(invoices.mapped('display_name'))
             raise UserError(_(
-                'Payment %(payment)s is linked to invoices that could not be synced to Xero.',
+                'Payment %(payment)s is linked to invoice(s) %(invoices)s that are '
+                'not in Xero yet. Open each invoice and click Push to Xero first.',
                 payment=payment.display_name,
+                invoices=names,
             ))
+
+        detail = self._xero_request('GET', f'Invoices/{invoice.xero_invoice_id}')
+        xero_invoice = (detail.get('Invoices') or [{}])[0]
+        if xero_invoice.get('Status') == 'PAID' or not float(xero_invoice.get('AmountDue') or 0):
+            existing_payments = xero_invoice.get('Payments') or []
+            xero_payment_id = existing_payments[0].get('PaymentID') if existing_payments else False
+            message = _(
+                'Invoice %(invoice)s is already Paid in Xero (no duplicate payment created).',
+                invoice=invoice.display_name,
+            )
+            payment.sudo().write({
+                'xero_payment_id': xero_payment_id or False,
+                'xero_sync_status': 'synced',
+                'xero_sync_message': message,
+            })
+            self._xero_log('payment', 'account.payment', payment.id, 'synced', message, xero_payment_id)
+            return xero_payment_id or True
 
         payment_date = fields.Date.to_string(payment.date)
         payload = {

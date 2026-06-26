@@ -20,6 +20,11 @@ def xero_client_notification(title, message, notification_type='success', sticky
 def xero_short_api_error(message):
     """Trim long Xero JSON errors for UI display."""
     text = message or ''
+    if 'InvoiceNumber' in text and 'ValidationException' in text:
+        return _(
+            'This invoice number already exists in Xero. '
+            'Click Push to Xero again to link the existing invoice.'
+        )
     if 'ValidationErrors' in text and 'Message' in text:
         for needle in ('Account could not be found', 'Contact name must be unique'):
             if needle in text:
