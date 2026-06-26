@@ -39,7 +39,7 @@ docker compose -f docker-compose.prod.yml --env-file .env restart web
 
    `https://www.reware-project.com/xero/oauth/callback`
 
-3. Scopes: `openid profile email offline_access accounting.contacts accounting.transactions accounting.settings.read`
+3. Scopes: `openid profile email offline_access accounting.contacts accounting.invoices accounting.payments accounting.settings.read`
 4. In Xero → **Settings → Advanced → Tracking categories**, create:
    - Category: `Sales Channel`
    - Option: `Re-Ware`

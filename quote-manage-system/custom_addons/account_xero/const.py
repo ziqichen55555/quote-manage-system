@@ -12,7 +12,9 @@ OAUTH_SCOPES = ' '.join([
     'email',
     'offline_access',
     'accounting.contacts',
-    'accounting.transactions',
+    # Broad accounting.transactions is rejected for apps created after Mar 2026.
+    'accounting.invoices',
+    'accounting.payments',
     'accounting.settings.read',
 ])
 
