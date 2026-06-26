@@ -1,5 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Larger logo in report header (all external layouts). -->
+    <template id="external_layout_standard_reware_logo"
+              inherit_id="web.external_layout_standard">
+        <xpath expr="//div[hasclass('col-3')][hasclass('mb4')]/img[@alt='Logo']" position="attributes">
+            <attribute name="class">o_reware_report_logo</attribute>
+            <attribute name="style"/>
+        </xpath>
+        <xpath expr="//ul[@name='company_address_list']" position="inside">
+            <li t-if="company.vat" class="mt-1 reware-company-abn">
+                <t t-if="company.country_id.code == 'AU'">ABN</t>
+                <t t-else=""><t t-esc="company.country_id.vat_label or 'Tax ID'"/></t>:
+                <span t-field="company.vat"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="external_layout_boxed_reware_logo"
+              inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[hasclass('o_boxed_header')]//img[@alt='Logo']" position="attributes">
+            <attribute name="class">o_reware_report_logo</attribute>
+        </xpath>
+        <xpath expr="//ul[@name='company_address_list']" position="inside">
+            <li t-if="company.vat" class="mt-1 reware-company-abn">
+                <t t-if="company.country_id.code == 'AU'">ABN</t>
+                <t t-else=""><t t-esc="company.country_id.vat_label or 'Tax ID'"/></t>:
+                <span t-field="company.vat"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="external_layout_bold_reware_logo"
+              inherit_id="web.external_layout_bold">
+        <xpath expr="//div[hasclass('o_clean_header')]//img[@alt='Logo']" position="attributes">
+            <attribute name="class">o_reware_report_logo</attribute>
+        </xpath>
+        <xpath expr="//ul[@name='company_address_list']" position="inside">
+            <li t-if="company.vat" class="mt-1 reware-company-abn">
+                <t t-if="company.country_id.code == 'AU'">ABN</t>
+                <t t-else=""><t t-esc="company.country_id.vat_label or 'Tax ID'"/></t>:
+                <span t-field="company.vat"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="external_layout_striped_reware_logo"
+              inherit_id="web.external_layout_striped">
+        <xpath expr="//img[@alt='Logo'][hasclass('float-start')]" position="attributes">
+            <attribute name="class">float-start o_reware_report_logo</attribute>
+        </xpath>
+        <xpath expr="//ul[@name='company_address_list']" position="inside">
+            <li t-if="company.vat" class="mt-1 reware-company-abn">
+                <t t-if="company.country_id.code == 'AU'">ABN</t>
+                <t t-else=""><t t-esc="company.country_id.vat_label or 'Tax ID'"/></t>:
+                <span t-field="company.vat"/>
+            </li>
+        </xpath>
+    </template>
+
     <!-- Append Co-Creative IT payment details (bank / BSB / account) to customer invoices.
          Data comes from the invoice Recipient Bank, or the company's first bank account. -->
     <template id="report_invoice_document_payment_details"

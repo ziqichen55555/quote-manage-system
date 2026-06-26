@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.137',
+    'version': '1.0.138',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -45,6 +45,9 @@
         'data/zz_lock_module_archs.xml',
     ],
     'assets': {
+        'web.report_assets_common': [
+            'quote_manage_ui/static/src/scss/report_invoice.scss',
+        ],
         'web.assets_backend': [
             'quote_manage_ui/static/src/scss/backend_style.scss',
         ],

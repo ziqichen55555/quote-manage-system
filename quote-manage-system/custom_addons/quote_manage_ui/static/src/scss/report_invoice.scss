@@ -1,0 +1,27 @@
+// Re-Ware invoice / report header: logo fills the top-left column.
+.header img.o_reware_report_logo {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 100px;
+    object-fit: contain;
+    object-position: left top;
+}
+
+.header .col-3.mb4 {
+    min-height: 100px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.header .row > .col-6:first-child img.o_reware_report_logo {
+    max-height: 120px;
+    max-width: 280px;
+}
+
+.o_background_header > img.o_reware_report_logo {
+    max-height: 100px;
+    max-width: 220px;
+    margin-right: 1rem;
+}
