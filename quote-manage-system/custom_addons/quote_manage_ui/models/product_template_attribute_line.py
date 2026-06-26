@@ -7,6 +7,36 @@ from odoo import models
 class ProductTemplateAttributeLine(models.Model):
     _inherit = "product.template.attribute.line"
 
+    def _rw_sync_cmos_shop_on_templates(self):
+        attr = self.env["product.template"]._rw_cmos_attr()
+        if not attr:
+            return
+        self.filtered(lambda l: l.attribute_id == attr).mapped(
+            "product_tmpl_id"
+        )._rw_sync_shop_from_cmos()
+
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        lines._rw_sync_cmos_shop_on_templates()
+        return lines
+
+    def write(self, vals):
+        res = super().write(vals)
+        if "value_ids" in vals or "attribute_id" in vals:
+            self._rw_sync_cmos_shop_on_templates()
+        return res
+
+    def unlink(self):
+        attr = self.env["product.template"]._rw_cmos_attr()
+        tmpls = self.browse()
+        if attr:
+            tmpls = self.filtered(lambda l: l.attribute_id == attr).mapped(
+                "product_tmpl_id"
+            )
+        res = super().unlink()
+        tmpls._rw_sync_shop_from_cmos()
+        return res
+
     def _prepare_single_value_for_display(self):
         """Deduplicate attribute lines that share the same attribute and same value.
 

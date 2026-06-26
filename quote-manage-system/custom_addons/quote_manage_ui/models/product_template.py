@@ -241,6 +241,53 @@ class ProductTemplate(models.Model):
         }
 
     @api.model
+    def _rw_cmos_attr(self):
+        return self.env.ref("quote_manage_ui.attr_cmos", raise_if_not_found=False)
+
+    def _rw_cmos_status(self):
+        """Return CMOS gate for shop sync: None = no CMOS line (leave publish alone)."""
+        self.ensure_one()
+        attr = self._rw_cmos_attr()
+        if not attr:
+            return None
+        line = self.attribute_line_ids.filtered(lambda l: l.attribute_id == attr)[:1]
+        if not line:
+            return None
+        names = [n for n in line.value_ids.mapped("name") if n]
+        if not names:
+            return ""
+        val = names[0]
+        if val == "Successful":
+            return "Successful"
+        if val == "Failed":
+            return "Failed"
+        return val
+
+    def _rw_sync_shop_from_cmos(self):
+        """CMOS Successful → shop on; Failed / empty → stock only (manual CMOS edit triggers this)."""
+        for tmpl in self.with_context(rw_skip_cmos_shop_sync=True):
+            if tmpl.type != "product":
+                continue
+            status = tmpl._rw_cmos_status()
+            if status is None:
+                continue
+            if status == "Successful":
+                vals = {"website_published": True, "sale_ok": True}
+            else:
+                vals = {"website_published": False, "sale_ok": False}
+            if (
+                tmpl.website_published != vals["website_published"]
+                or tmpl.sale_ok != vals["sale_ok"]
+            ):
+                tmpl.write(vals)
+
+    def write(self, vals):
+        res = super().write(vals)
+        if not self.env.context.get("rw_skip_cmos_shop_sync") and "attribute_line_ids" in vals:
+            self._rw_sync_shop_from_cmos()
+        return res
+
+    @api.model
     def _rw_shop_display_code(self, code):
         """Customer-facing MTM — strip internal -BT70 / -4G-256G-N inventory suffixes."""
         code = (code or "").strip()
