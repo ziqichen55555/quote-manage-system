@@ -29,6 +29,20 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
             keep_ids.append(c.id)
         return Category.browse(keep_ids)
 
+    def _get_additional_shop_values(self, values):
+        res = super()._get_additional_shop_values(values)
+        search_product = values.get("search_product")
+        attrib_set = values.get("attrib_set") or set()
+        if search_product is not None:
+            lines = request.env["product.template.attribute.line"].sudo().search(
+                [("product_tmpl_id", "in", search_product.ids)]
+            )
+            in_use = set(lines.mapped("value_ids").ids)
+            res["quote_attrib_value_ids"] = in_use | set(attrib_set)
+        else:
+            res["quote_attrib_value_ids"] = set(attrib_set)
+        return res
+
     def _get_additional_extra_shop_values(self, values, **post):
         res = super()._get_additional_extra_shop_values(values, **post)
         values["categories"] = lazy(lambda: self._quote_wsale_root_categories_with_products())

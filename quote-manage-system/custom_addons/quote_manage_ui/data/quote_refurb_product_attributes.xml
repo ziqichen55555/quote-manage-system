@@ -61,6 +61,7 @@
             <field name="create_variant">no_variant</field>
             <field name="display_type">radio</field>
             <field name="sequence">99</field>
+            <field name="visibility">hidden</field>
         </record>
         <record id="attr_configuration" model="product.attribute">
             <field name="name">Configuration</field>

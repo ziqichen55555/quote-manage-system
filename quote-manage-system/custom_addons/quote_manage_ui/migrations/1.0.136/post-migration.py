@@ -26,7 +26,12 @@ def migrate(cr, version):
     ):
         attr = env.ref(xid, raise_if_not_found=False)
         if attr and attr.create_variant != "no_variant":
-            attr.write({"create_variant": "no_variant"})
+            try:
+                attr.write({"create_variant": "no_variant"})
+            except Exception as exc:
+                _logger.warning(
+                    "1.0.136: skip create_variant on %s (%s)", xid, exc
+                )
 
     gen_attr = env.ref("quote_manage_ui.attr_generation", raise_if_not_found=False)
     if not gen_attr:

@@ -2530,32 +2530,96 @@ class ProductCsvImporter(models.AbstractModel):
         return True
 
     @api.model
+    def _set_filter_generation(self, tmpl, gen_label):
+        """Update only the Generation attribute line (shop sidebar filter)."""
+        gen_label = (gen_label or "").strip()
+        if not gen_label or tmpl.type != "product":
+            return False
+        gen_attr = self.env.ref("quote_manage_ui.attr_generation", raise_if_not_found=False)
+        if not gen_attr:
+            return False
+        Line = self.env["product.template.attribute.line"].sudo()
+        val = self.env["product.attribute.value"].sudo().search(
+            [("attribute_id", "=", gen_attr.id), ("name", "=ilike", gen_label)],
+            limit=1,
+        )
+        if not val:
+            val = self.env["product.attribute.value"].sudo().create(
+                {"attribute_id": gen_attr.id, "name": gen_label[:128]}
+            )
+        existing = Line.search(
+            [
+                ("product_tmpl_id", "=", tmpl.id),
+                ("attribute_id", "=", gen_attr.id),
+            ],
+            limit=1,
+        )
+        if existing and set(existing.value_ids.ids) == {val.id}:
+            return False
+        if existing:
+            existing.write({"value_ids": [(6, 0, [val.id])]})
+        else:
+            Line.create(
+                {
+                    "product_tmpl_id": tmpl.id,
+                    "attribute_id": gen_attr.id,
+                    "value_ids": [(6, 0, [val.id])],
+                }
+            )
+        return True
+
+    @api.model
     def repair_shop_filter_series(self):
         """Re-map Series filter attrs from SKU (fix Gen-suffixed / missing values)."""
+        fixed_series, _gen = self.repair_shop_sidebar_filters()
+        return fixed_series
+
+    @api.model
+    def repair_shop_sidebar_filters(self):
+        """Normalize Series (no Gen suffix) and backfill Generation on all products."""
         PT = self.env["product.template"].sudo().with_context(active_test=False)
         config_attr = self.env.ref(CONFIG_ATTR_XMLID)
-        fixed = 0
-        for tmpl in PT.search([("sale_ok", "=", True), ("type", "=", "product")]):
+        series_attr = self.env.ref("quote_manage_ui.attr_series")
+        gen_attr = self.env.ref("quote_manage_ui.attr_generation", raise_if_not_found=False)
+        fixed_series = fixed_gen = 0
+        for tmpl in PT.search([("type", "=", "product"), ("active", "=", True)]):
             if self._is_configuration_only_product(tmpl, config_attr):
                 continue
             code = (tmpl.default_code or "").strip()
-            if not code:
-                continue
             haystack = " ".join(
-                x
-                for x in (tmpl.name, tmpl.description_sale, code)
-                if x
+                x for x in (tmpl.name, tmpl.description_sale, code) if x
+            )
+            series_line = tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id == series_attr
+            )
+            legacy_series = (
+                series_line.value_ids[0].name
+                if series_line and series_line.value_ids
+                else ""
             )
             series = self._shop_filter_series(
                 mtm=code,
                 model_name=haystack,
                 titles=[haystack],
             )
-            if not series:
+            if not series and legacy_series:
+                series = self._normalize_filter_series(legacy_series)
+            if series and self._set_filter_series(tmpl, series):
+                fixed_series += 1
+            if not gen_attr:
                 continue
-            if self._set_filter_series(tmpl, series):
-                fixed += 1
-        return fixed
+            gen = self._normalize_generation_label(
+                product_name=tmpl.name,
+                model_name=haystack,
+            )
+            if not gen and legacy_series:
+                gen = self._normalize_generation_label(product_name=legacy_series)
+            if gen and not tmpl.attribute_line_ids.filtered(
+                lambda l: l.attribute_id == gen_attr
+            ):
+                if self._set_filter_generation(tmpl, gen):
+                    fixed_gen += 1
+        return fixed_series, fixed_gen
 
     @api.model
     def fix_thinkcentre_m910_series(self):
