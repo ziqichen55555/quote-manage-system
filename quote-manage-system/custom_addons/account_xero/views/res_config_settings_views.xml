@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_xero" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.xero</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='account']" position="inside">
+                <block title="Xero Integration" name="xero_integration_settings">
+                    <setting string="Sync Re-Ware sales to Xero"
+                             help="Push posted customer invoices and payments to the existing Co-Creative IT Xero organisation.">
+                        <field name="xero_enabled"/>
+                        <div class="content-group mt16" invisible="not xero_enabled">
+                            <div class="row">
+                                <label for="xero_client_id" class="col-lg-3 o_light_label"/>
+                                <field name="xero_client_id" password="True"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_client_secret" class="col-lg-3 o_light_label"/>
+                                <field name="xero_client_secret" password="True"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_tenant_name" class="col-lg-3 o_light_label"/>
+                                <field name="xero_tenant_name" readonly="1"/>
+                                <field name="xero_connected" invisible="1"/>
+                            </div>
+                            <div class="mt16 d-flex gap-2">
+                                <button name="action_xero_connect"
+                                        type="object"
+                                        string="Connect to Xero"
+                                        class="btn-primary"
+                                        invisible="xero_connected"/>
+                                <button name="action_xero_test_connection"
+                                        type="object"
+                                        string="Test connection"
+                                        class="btn-secondary"
+                                        invisible="not xero_connected"/>
+                                <button name="action_xero_disconnect"
+                                        type="object"
+                                        string="Disconnect"
+                                        class="btn-secondary"
+                                        invisible="not xero_connected"/>
+                            </div>
+                            <div class="row mt16">
+                                <label for="xero_tracking_category_name" class="col-lg-3 o_light_label"/>
+                                <field name="xero_tracking_category_name"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_tracking_option_name" class="col-lg-3 o_light_label"/>
+                                <field name="xero_tracking_option_name"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_invoice_prefix" class="col-lg-3 o_light_label"/>
+                                <field name="xero_invoice_prefix"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_revenue_account_code" class="col-lg-3 o_light_label"/>
+                                <field name="xero_revenue_account_code"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_bank_account_code" class="col-lg-3 o_light_label"/>
+                                <field name="xero_bank_account_code"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_default_tax_type" class="col-lg-3 o_light_label"/>
+                                <field name="xero_default_tax_type"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="xero_line_amount_types" class="col-lg-3 o_light_label"/>
+                                <field name="xero_line_amount_types"/>
+                            </div>
+                            <div class="alert alert-info mt16" role="alert">
+                                OAuth redirect URI for the Xero app:
+                                <code>https://www.reware-project.com/xero/oauth/callback</code>
+                                (or your Odoo web.base.url + <code>/xero/oauth/callback</code>)
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
