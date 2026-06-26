@@ -221,6 +221,36 @@ class ProductCsvImporter(models.AbstractModel):
         return f"{lo}%" if lo == hi else f"{lo}%-{hi}%"
 
     @api.model
+    def _normalize_cmos(self, raw):
+        """Blancco motherboard / CMOS test → shop filter label."""
+        s = (raw or "").strip().lower()
+        if s in ("successful", "pass", "passed", "ok"):
+            return "Successful"
+        if s in ("failed", "fail", "error"):
+            return "Failed"
+        if s in ("", "nan", "none", "unknown"):
+            return ""
+        return (raw or "").strip()[:128]
+
+    @api.model
+    def _merged_cmos_raw(self, row):
+        return self._merged_str(row, "CMOS", "Mobo status")
+
+    @api.model
+    def _merged_bucket_cmos_display(self, rows):
+        """Any failed unit in the SKU bucket → Failed; else Successful."""
+        statuses = set()
+        for row in rows:
+            norm = self._normalize_cmos(self._merged_cmos_raw(row))
+            if norm:
+                statuses.add(norm)
+        if not statuses:
+            return ""
+        if "Failed" in statuses:
+            return "Failed"
+        return "Successful"
+
+    @api.model
     def _cpu_model_storage_false_positives(self, text):
         """Digits from CPU strings like i5-1135G7 — must not be treated as SSD GB."""
         blob = text or ""
@@ -620,6 +650,7 @@ class ProductCsvImporter(models.AbstractModel):
         model_name="",
         manufacturer="",
         battery_display="",
+        cmos="",
     ):
         resolved_brand = self._resolve_import_brand(
             mtm=mtm,
@@ -642,6 +673,8 @@ class ProductCsvImporter(models.AbstractModel):
             specs["wan"] = "Yes"
         if (battery_display or "").strip():
             specs["battery"] = battery_display.strip()
+        if (cmos or "").strip():
+            specs["cmos"] = cmos.strip()
         series = self._shop_filter_series(
             mtm=mtm,
             model_name=model_name,
@@ -843,6 +876,7 @@ class ProductCsvImporter(models.AbstractModel):
             battery_display = (
                 self._merged_bucket_battery_display(group) if is_laptop else ""
             )
+            cmos_display = self._merged_bucket_cmos_display(group)
             serials = sorted({
                 self._merged_str(r, "Serial").upper()
                 for r in group
@@ -886,9 +920,10 @@ class ProductCsvImporter(models.AbstractModel):
                 "wan_val": self._merged_str(sample, "WAN"),
                 "battery_display": battery_display,
                 "battery_tier": self._merged_battery_tier(sample) if is_laptop else "",
+                "cmos_display": cmos_display,
                 "quantity": str(len(serials)),
                 "cost_ex": price,
-                "condition_note": self._merged_str(sample, "Mobo status"),
+                "condition_note": cmos_display or self._merged_str(sample, "CMOS", "Mobo status"),
                 "unit_identifiers": "|".join(serials),
                 "row_note": "merged_blancco",
             })
@@ -1075,6 +1110,7 @@ class ProductCsvImporter(models.AbstractModel):
                     "touch": (r.get("touch_val") or "").strip(),
                     "wan": (r.get("wan_val") or "").strip(),
                     "battery_display": (r.get("battery_display") or "").strip(),
+                    "cmos": (r.get("cmos_display") or "").strip(),
                 })
             for key, col in (
                 ("conditions", "condition_note"),
@@ -1107,6 +1143,7 @@ class ProductCsvImporter(models.AbstractModel):
                     model_name=mf.get("model_name") or "",
                     manufacturer=mf.get("manufacturer") or "",
                     battery_display=mf.get("battery_display") or "",
+                    cmos=mf.get("cmos") or "",
                 )
             else:
                 specs = self._parse_specs(brand, titles)
@@ -1629,6 +1666,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "quote_manage_ui.attr_touchscreen",
                 "quote_manage_ui.attr_wan",
                 "quote_manage_ui.attr_battery",
+                "quote_manage_ui.attr_cmos",
             )
         ]
         self.env["product.template.attribute.line"].sudo().search(
@@ -2300,6 +2338,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "quote_manage_ui.attr_touchscreen",
                 "quote_manage_ui.attr_wan",
                 "quote_manage_ui.attr_battery",
+                "quote_manage_ui.attr_cmos",
             )
         ]
         Line.search(
@@ -2342,6 +2381,8 @@ class ProductCsvImporter(models.AbstractModel):
             add_line("quote_manage_ui.attr_wan", "Enabled")
         if specs.get("battery"):
             add_line("quote_manage_ui.attr_battery", specs["battery"])
+        if specs.get("cmos"):
+            add_line("quote_manage_ui.attr_cmos", specs["cmos"])
         return specs.get("series")
 
     # ------------------------------------------- merge existing DB products
@@ -2650,6 +2691,8 @@ class ProductCsvImporter(models.AbstractModel):
             "Storage": "storage",
             "Touchscreen": "touch",
             "WAN": "wan",
+            "Battery": "battery",
+            "CMOS": "cmos",
         }
         specs = {}
         for line in tmpl.attribute_line_ids:

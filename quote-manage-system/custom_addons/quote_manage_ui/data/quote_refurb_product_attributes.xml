@@ -42,6 +42,11 @@
             <field name="create_variant">always</field>
             <field name="display_type">radio</field>
         </record>
+        <record id="attr_cmos" model="product.attribute">
+            <field name="name">CMOS</field>
+            <field name="create_variant">always</field>
+            <field name="display_type">radio</field>
+        </record>
         <record id="attr_configuration" model="product.attribute">
             <field name="name">Configuration</field>
             <field name="create_variant">always</field>
