@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="action_xero_integration_settings" model="ir.actions.act_window">
+        <field name="name">Xero Integration</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'account'}</field>
+    </record>
+
+    <menuitem id="menu_xero_integration"
+              name="Xero Integration"
+              parent="account.menu_finance_configuration"
+              action="account_xero.action_xero_integration_settings"
+              sequence="1"
+              groups="account.group_account_manager"/>
+
     <menuitem id="menu_xero_sync_log"
               name="Xero Sync Logs"
               parent="account.menu_finance_configuration"
