@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
+from odoo import _, fields, models
 
 from odoo.addons.account_xero import const
+from odoo.addons.account_xero.models.xero_notify import xero_client_notification
 
 
 class AccountPayment(models.Model):
@@ -18,16 +19,33 @@ class AccountPayment(models.Model):
     xero_sync_message = fields.Text(string='Xero Sync Message', copy=False, readonly=True)
 
     def action_post(self):
-        super().action_post()
-        for payment in self:
+        posted = super().action_post()
+        for payment in posted:
             company = payment.company_id
             if company.xero_enabled and company.xero_connected:
-                company._xero_sync_payment_safe(payment)
+                ok, message = company._xero_sync_payment_safe(payment)
+                for invoice in payment.reconciled_invoice_ids.filtered(
+                    lambda m: m.move_type == 'out_invoice'
+                ):
+                    invoice._xero_post_chatter(_('Xero payment'), ok, message)
+        return posted
 
     def action_xero_sync(self):
-        for payment in self:
-            if payment.state != 'posted':
-                payment.action_post()
-            else:
-                payment.company_id._xero_sync_payment_safe(payment)
-        return True
+        self.ensure_one()
+        if self.state != 'posted':
+            self.action_post()
+            return xero_client_notification(
+                _('Xero payment synced') if self.xero_sync_status == 'synced' else _('Xero payment not synced'),
+                self.xero_sync_message or _('Payment posted; see message on linked invoice.'),
+                'success' if self.xero_sync_status == 'synced' else 'danger',
+            )
+        ok, message = self.company_id._xero_sync_payment_safe(self)
+        for invoice in self.reconciled_invoice_ids.filtered(
+            lambda m: m.move_type == 'out_invoice'
+        ):
+            invoice._xero_post_chatter(_('Xero payment (manual)'), ok, message)
+        return xero_client_notification(
+            _('Xero payment synced') if ok else _('Xero payment not synced'),
+            message,
+            'success' if ok else 'danger',
+        )

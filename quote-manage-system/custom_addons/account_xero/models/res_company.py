@@ -12,6 +12,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from odoo.addons.account_xero import const
+from odoo.addons.account_xero.models.xero_notify import xero_short_api_error
 
 _logger = logging.getLogger(__name__)
 
@@ -297,26 +298,57 @@ class ResCompany(models.Model):
             return []
         return [{'Name': category, 'Option': option}]
 
+    def _xero_find_contact_id(self, partner):
+        """Return an existing Xero contact ID if the partner already exists there."""
+        self.ensure_one()
+        partner = partner.commercial_partner_id
+        name = (partner.name or '').replace('"', '\\"').strip()
+        if name:
+            result = self._xero_request('GET', 'Contacts', params={'where': f'Name=="{name}"'})
+            contacts = result.get('Contacts') or []
+            if contacts:
+                return contacts[0]['ContactID']
+        email = (partner.email or '').strip()
+        if email:
+            safe_email = email.replace('"', '\\"')
+            result = self._xero_request('GET', 'Contacts', params={
+                'where': f'EmailAddress=="{safe_email}"',
+            })
+            contacts = result.get('Contacts') or []
+            if contacts:
+                return contacts[0]['ContactID']
+        return False
+
     def _xero_sync_contact(self, partner):
         self.ensure_one()
         partner = partner.commercial_partner_id
         if partner.xero_contact_id:
             return partner.xero_contact_id
 
-        payload = {
-            'Contacts': [{
-                'Name': partner.name or _('Customer'),
-                'EmailAddress': partner.email or False,
-                'ContactStatus': 'ACTIVE',
-            }],
+        existing_id = self._xero_find_contact_id(partner)
+        if existing_id:
+            partner.sudo().write({'xero_contact_id': existing_id})
+            self._xero_log(
+                'contact', 'res.partner', partner.id, 'synced',
+                _('Linked existing Xero contact for %s', partner.display_name),
+                existing_id,
+            )
+            return existing_id
+
+        contact_vals = {
+            'Name': partner.name or _('Customer'),
+            'ContactStatus': 'ACTIVE',
         }
+        email = (partner.email or '').strip()
+        if email:
+            contact_vals['EmailAddress'] = email
         if partner.phone:
-            payload['Contacts'][0]['Phones'] = [{
+            contact_vals['Phones'] = [{
                 'PhoneType': 'DEFAULT',
                 'PhoneNumber': partner.phone,
             }]
         if partner.street or partner.city or partner.zip:
-            payload['Contacts'][0]['Addresses'] = [{
+            contact_vals['Addresses'] = [{
                 'AddressType': 'STREET',
                 'AddressLine1': partner.street or '',
                 'City': partner.city or '',
@@ -325,7 +357,7 @@ class ResCompany(models.Model):
                 'Country': partner.country_id.code if partner.country_id else '',
             }]
 
-        result = self._xero_request('POST', 'Contacts', payload)
+        result = self._xero_request('POST', 'Contacts', {'Contacts': [contact_vals]})
         contacts = result.get('Contacts') or []
         if not contacts:
             raise UserError(_('Xero did not return a contact ID for %s', partner.display_name))
@@ -396,11 +428,20 @@ class ResCompany(models.Model):
     def _xero_sync_invoice(self, move):
         self.ensure_one()
         if move.xero_invoice_id:
+            message = _(
+                'Invoice already exists in Xero (ID: %(xero_id)s).',
+                xero_id=move.xero_invoice_id,
+            )
+            move.sudo().write({
+                'xero_sync_status': 'synced',
+                'xero_sync_message': message,
+            })
             return move.xero_invoice_id
         if move.move_type != 'out_invoice' or move.state != 'posted':
+            message = _('Only posted customer invoices can be synced to Xero.')
             move.sudo().write({
                 'xero_sync_status': 'skipped',
-                'xero_sync_message': _('Only posted customer invoices are synced.'),
+                'xero_sync_message': message,
             })
             return False
 
@@ -412,34 +453,58 @@ class ResCompany(models.Model):
             raise UserError(_('Xero did not return an invoice ID for %s', move.display_name))
 
         xero_invoice_id = invoices[0]['InvoiceID']
+        invoice_number = self._xero_invoice_number(move)
+        message = _(
+            'Invoice synced to Xero as %(number)s (ID: %(xero_id)s).',
+            number=invoice_number,
+            xero_id=xero_invoice_id,
+        )
         move.sudo().write({
             'xero_invoice_id': xero_invoice_id,
             'xero_sync_status': 'synced',
-            'xero_sync_message': False,
+            'xero_sync_message': message,
         })
-        self._xero_log('invoice', 'account.move', move.id, 'synced', move.display_name, xero_invoice_id)
+        self._xero_log('invoice', 'account.move', move.id, 'synced', message, xero_invoice_id)
         return xero_invoice_id
 
     def _xero_sync_payment(self, payment):
         self.ensure_one()
         if payment.xero_payment_id:
+            message = _(
+                'Payment already exists in Xero (ID: %(xero_id)s).',
+                xero_id=payment.xero_payment_id,
+            )
+            payment.sudo().write({
+                'xero_sync_status': 'synced',
+                'xero_sync_message': message,
+            })
             return payment.xero_payment_id
         if payment.payment_type != 'inbound' or payment.partner_type != 'customer':
+            message = _('Only inbound customer payments are synced to Xero.')
             payment.sudo().write({
                 'xero_sync_status': 'skipped',
-                'xero_sync_message': _('Only inbound customer payments are synced.'),
+                'xero_sync_message': message,
             })
             return False
         if payment.state != 'posted':
+            message = _('Payment must be posted in Odoo before syncing to Xero.')
+            payment.sudo().write({
+                'xero_sync_status': 'skipped',
+                'xero_sync_message': message,
+            })
             return False
 
         invoices = payment.reconciled_invoice_ids.filtered(
             lambda inv: inv.move_type == 'out_invoice' and inv.company_id == self
         )
         if not invoices:
+            message = _(
+                'No reconciled customer invoice found. Register the payment on the '
+                'invoice in Odoo first, then sync again.'
+            )
             payment.sudo().write({
                 'xero_sync_status': 'skipped',
-                'xero_sync_message': _('No reconciled customer invoice found.'),
+                'xero_sync_message': message,
             })
             return False
 
@@ -461,7 +526,7 @@ class ResCompany(models.Model):
                 'Account': {'Code': self.xero_bank_account_code},
                 'Date': payment_date,
                 'Amount': payment.amount,
-                'Reference': payment.memo or payment.name or invoice.name,
+                'Reference': payment.payment_reference or payment.name or invoice.name,
             }],
         }
         result = self._xero_request('POST', 'Payments', payload)
@@ -470,65 +535,93 @@ class ResCompany(models.Model):
             raise UserError(_('Xero did not return a payment ID for %s', payment.display_name))
 
         xero_payment_id = payments[0]['PaymentID']
+        message = _(
+            'Payment of %(amount)s synced to Xero for invoice %(invoice)s (ID: %(xero_id)s).',
+            amount=payment.amount,
+            invoice=invoice.display_name,
+            xero_id=xero_payment_id,
+        )
         payment.sudo().write({
             'xero_payment_id': xero_payment_id,
             'xero_sync_status': 'synced',
-            'xero_sync_message': False,
+            'xero_sync_message': message,
         })
         self._xero_log(
             'payment', 'account.payment', payment.id, 'synced',
-            payment.display_name, xero_payment_id,
+            message, xero_payment_id,
         )
         return xero_payment_id
 
     def _xero_sync_invoice_safe(self, move):
+        """Sync invoice to Xero. Returns (success, user_message)."""
         self.ensure_one()
-        if not self.xero_enabled or not self.xero_connected:
-            return False
+        if not self.xero_enabled:
+            message = _('Xero sync is turned off. Enable it under Accounting → Xero Integration.')
+            move.sudo().write({'xero_sync_status': 'skipped', 'xero_sync_message': message})
+            return False, message
+        if not self.xero_connected:
+            message = _('Xero is not connected. Open Settings and click Connect to Xero.')
+            move.sudo().write({'xero_sync_status': 'error', 'xero_sync_message': message})
+            return False, message
         try:
             with self.env.cr.savepoint():
-                return self._xero_sync_invoice(move)
+                xero_id = self._xero_sync_invoice(move)
+                move.invalidate_recordset(['xero_sync_status', 'xero_sync_message'])
+                if xero_id:
+                    return True, move.xero_sync_message or _('Invoice synced to Xero.')
+                return False, move.xero_sync_message or _('Invoice was not synced to Xero.')
         except UserError as exc:
+            message = xero_short_api_error(str(exc.args[0]))
             move.sudo().write({
                 'xero_sync_status': 'error',
-                'xero_sync_message': str(exc.args[0]),
+                'xero_sync_message': message,
             })
-            self._xero_log(
-                'invoice', 'account.move', move.id, 'error', str(exc.args[0]),
-            )
+            self._xero_log('invoice', 'account.move', move.id, 'error', message)
             _logger.warning('Xero invoice sync failed for %s: %s', move.display_name, exc)
+            return False, message
         except Exception as exc:  # noqa: BLE001
-            message = str(exc)
+            message = xero_short_api_error(str(exc))
             move.sudo().write({
                 'xero_sync_status': 'error',
                 'xero_sync_message': message,
             })
             self._xero_log('invoice', 'account.move', move.id, 'error', message)
             _logger.exception('Xero invoice sync failed for %s', move.display_name)
-        return False
+            return False, message
 
     def _xero_sync_payment_safe(self, payment):
+        """Sync payment to Xero. Returns (success, user_message)."""
         self.ensure_one()
-        if not self.xero_enabled or not self.xero_connected:
-            return False
+        if not self.xero_enabled:
+            message = _('Xero sync is turned off. Enable it under Accounting → Xero Integration.')
+            payment.sudo().write({'xero_sync_status': 'skipped', 'xero_sync_message': message})
+            return False, message
+        if not self.xero_connected:
+            message = _('Xero is not connected. Open Settings and click Connect to Xero.')
+            payment.sudo().write({'xero_sync_status': 'error', 'xero_sync_message': message})
+            return False, message
         try:
             with self.env.cr.savepoint():
-                return self._xero_sync_payment(payment)
+                xero_id = self._xero_sync_payment(payment)
+                payment.invalidate_recordset(['xero_sync_status', 'xero_sync_message'])
+                if xero_id:
+                    return True, payment.xero_sync_message or _('Payment synced to Xero.')
+                return False, payment.xero_sync_message or _('Payment was not synced to Xero.')
         except UserError as exc:
+            message = xero_short_api_error(str(exc.args[0]))
             payment.sudo().write({
                 'xero_sync_status': 'error',
-                'xero_sync_message': str(exc.args[0]),
+                'xero_sync_message': message,
             })
-            self._xero_log(
-                'payment', 'account.payment', payment.id, 'error', str(exc.args[0]),
-            )
+            self._xero_log('payment', 'account.payment', payment.id, 'error', message)
             _logger.warning('Xero payment sync failed for %s: %s', payment.display_name, exc)
+            return False, message
         except Exception as exc:  # noqa: BLE001
-            message = str(exc)
+            message = xero_short_api_error(str(exc))
             payment.sudo().write({
                 'xero_sync_status': 'error',
                 'xero_sync_message': message,
             })
             self._xero_log('payment', 'account.payment', payment.id, 'error', message)
             _logger.exception('Xero payment sync failed for %s', payment.display_name)
-        return False
+            return False, message

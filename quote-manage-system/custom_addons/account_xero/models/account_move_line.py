@@ -16,6 +16,9 @@ class AccountMoveLine(models.Model):
             if not company.xero_enabled or not company.xero_connected:
                 continue
             if not invoice.xero_invoice_id:
-                company._xero_sync_invoice_safe(invoice)
-            invoice._xero_sync_reconciled_payments()
+                ok, message = company._xero_sync_invoice_safe(invoice)
+                invoice._xero_post_chatter(_('Xero invoice'), ok, message)
+            pay_ok, pay_message = invoice._xero_sync_reconciled_payments()
+            if pay_message:
+                invoice._xero_post_chatter(_('Xero payment'), pay_ok, pay_message)
         return res
