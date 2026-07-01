@@ -17,4 +17,23 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Standard Odoo hides publish behind a small "Go to Website" stat button
+         (only when sale_ok). Show an explicit toggle on the product form. -->
+    <record id="product_template_form_quote_website_published" model="ir.ui.view">
+        <field name="name">product.template.form.quote.website.published</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="website_sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-flex ms-3" invisible="not sale_ok">
+                    <field name="is_published" widget="boolean_toggle"/>
+                    <label for="is_published" string="Published on Website" class="ms-2"/>
+                </span>
+            </xpath>
+            <xpath expr="//group[@name='shop']" position="inside">
+                <field name="is_published" string="Published on Website" widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
