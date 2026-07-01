@@ -22,7 +22,13 @@ PRODUCT_LIST_MAX_COLS = 6
 BLANCCO_MIN_COLS = 8
 MTM_LUT_FILE = SCRIPT_DIR / "mtm_lookup.csv"
 OUTPUT_PREFIX = "MERGED import-ready"
-OUTPUT_SKIP_PREFIXES = (OUTPUT_PREFIX.lower(), "merged import-ready")
+OUTPUT_NOT_READY_PREFIX = "MERGED import-not-ready"
+OUTPUT_SKIP_PREFIXES = (
+    OUTPUT_PREFIX.lower(),
+    "merged import-ready",
+    OUTPUT_NOT_READY_PREFIX.lower(),
+    "merged import-not-ready",
+)
 
 SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
 SCAN_SERIAL_TAIL_RE = re.compile(r"(?P<serial>(?:PC|PF|GM|R)[A-Z0-9]{6,})$", re.I)
@@ -1044,7 +1050,48 @@ def merge_data(
         )
     return pd.DataFrame(rows, columns=OUTPUT_COLUMNS)
 
-def build_analysis(merged: pd.DataFrame) -> pd.DataFrame:
+
+def classify_import_bucket(row) -> tuple[str, str]:
+    """Return ('ready'|'not_ready', reason). Only SUCCESS + CMOS Pass is import-ready."""
+    status = str(row.get("Status", "") or "").strip().upper()
+    cmos_tier = normalize_cmos_tier(row.get("CMOS", ""))
+    if status == "SUCCESS" and cmos_tier == "Pass":
+        return "ready", ""
+    if status == "FAILED":
+        reason = str(row.get("Failure reason", "") or "").strip()
+        return "not_ready", reason or "Blancco match failed"
+    if cmos_tier == "Fail":
+        return "not_ready", "CMOS Fail"
+    return "not_ready", "CMOS unknown"
+
+
+def split_import_ready_not_ready(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    ready_rows = []
+    not_ready_rows = []
+    for _, row in merged.iterrows():
+        bucket, reason = classify_import_bucket(row)
+        record = row.to_dict()
+        if bucket == "ready":
+            ready_rows.append(record)
+        else:
+            record["Not ready reason"] = reason
+            not_ready_rows.append(record)
+    ready_cols = list(OUTPUT_COLUMNS)
+    not_ready_cols = ready_cols + ["Not ready reason"]
+    ready = (
+        pd.DataFrame(ready_rows, columns=ready_cols)
+        if ready_rows
+        else pd.DataFrame(columns=ready_cols)
+    )
+    not_ready = (
+        pd.DataFrame(not_ready_rows, columns=not_ready_cols)
+        if not_ready_rows
+        else pd.DataFrame(columns=not_ready_cols)
+    )
+    return ready.reset_index(drop=True), not_ready.reset_index(drop=True)
+
+
+def build_analysis(merged: pd.DataFrame, ready: pd.DataFrame, not_ready: pd.DataFrame) -> pd.DataFrame:
     total = len(merged)
     success = int((merged["Status"] == "SUCCESS").sum())
     failed = total - success
@@ -1058,73 +1105,97 @@ def build_analysis(merged: pd.DataFrame) -> pd.DataFrame:
         ["Unique serials in output", unique_serials],
         ["Duplicate serial rows", dup_serials],
         ["Matched (SUCCESS)", success],
-        ["Failed", failed],
+        ["Blancco FAILED", failed],
         ["Match rate", rate],
         ["", ""],
-        ["Failure breakdown", "Count"],
+        ["Import-ready (SUCCESS + CMOS Pass)", len(ready)],
+        ["Import-not-ready", len(not_ready)],
+        ["", ""],
+        ["Not-ready breakdown", "Count"],
     ]
+    if not_ready.empty:
+        lines.append(["(none)", 0])
+    else:
+        for reason, cnt in not_ready["Not ready reason"].value_counts().items():
+            lines.append([reason, int(cnt)])
+    lines.append(["", ""])
+    lines.append(["Blancco failure breakdown", "Count"])
     if failed:
         for reason, cnt in merged.loc[merged["Status"] == "FAILED", "Failure reason"].value_counts().items():
             lines.append([reason, int(cnt)])
     else:
         lines.append(["(none)", 0])
-    lines.append(["", ""])
-    lines.append(["Failed serials (for investigation)", "MTM"])
-    for _, r in merged.loc[merged["Status"] == "FAILED"].iterrows():
-        lines.append([r["Serial"], r["MTM"]])
 
     return pd.DataFrame(lines)
 
-def write_output(merged: pd.DataFrame, analysis: pd.DataFrame, out_path: Path) -> None:
-    failed = merged.loc[merged["Status"] == "FAILED"]
-    with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
-        merged.to_excel(writer, sheet_name="Devices", index=False)
-        if not failed.empty:
-            failed.to_excel(writer, sheet_name="Failed", index=False)
-        analysis.to_excel(writer, sheet_name="Analysis", index=False, header=False)
 
-    wb = load_workbook(out_path)
-    ws = wb["Devices"]
+def _style_devices_sheet(ws, columns: list[str], highlight_col: str | None = None) -> None:
     for cell in ws[1]:
         cell.fill = HEADER_FILL
         cell.font = Font(bold=True)
-
-    status_col = OUTPUT_COLUMNS.index("Status") + 1
+    if not highlight_col or highlight_col not in columns:
+        return
+    hi_col = columns.index(highlight_col) + 1
     for row_idx in range(2, ws.max_row + 1):
-        if ws.cell(row=row_idx, column=status_col).value == "FAILED":
-            for col_idx in range(1, len(OUTPUT_COLUMNS) + 1):
+        if ws.cell(row=row_idx, column=hi_col).value:
+            for col_idx in range(1, len(columns) + 1):
                 ws.cell(row=row_idx, column=col_idx).fill = FAIL_FILL
 
-    if "Failed" in wb.sheetnames:
-        ws_fail = wb["Failed"]
-        for cell in ws_fail[1]:
-            cell.fill = HEADER_FILL
-            cell.font = Font(bold=True)
-        for row_idx in range(2, ws_fail.max_row + 1):
-            for col_idx in range(1, len(OUTPUT_COLUMNS) + 1):
-                ws_fail.cell(row=row_idx, column=col_idx).fill = FAIL_FILL
 
+def write_ready_output(ready: pd.DataFrame, analysis: pd.DataFrame, out_path: Path) -> None:
+    with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
+        ready.to_excel(writer, sheet_name="Devices", index=False)
+        analysis.to_excel(writer, sheet_name="Analysis", index=False, header=False)
+    wb = load_workbook(out_path)
+    _style_devices_sheet(wb["Devices"], list(OUTPUT_COLUMNS))
     wb.save(out_path)
 
-def failure_summary_text(merged: pd.DataFrame) -> str:
-    failed = merged[merged["Status"] == "FAILED"]
-    if failed.empty:
-        return ""
-    lines = ["\nFailure breakdown:"]
-    for reason, cnt in failed["Failure reason"].value_counts().items():
+
+def write_not_ready_output(not_ready: pd.DataFrame, out_path: Path) -> None:
+    not_ready_cols = list(OUTPUT_COLUMNS) + ["Not ready reason"]
+    cmos_fail = not_ready.loc[not_ready["Not ready reason"] == "CMOS Fail"]
+    with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
+        not_ready.to_excel(writer, sheet_name="Devices", index=False)
+        if not cmos_fail.empty:
+            cmos_fail.to_excel(writer, sheet_name="CMOS Fail", index=False)
+        if not not_ready.empty:
+            summary = not_ready["Not ready reason"].value_counts().reset_index()
+            summary.columns = ["Not ready reason", "Count"]
+            summary.to_excel(writer, sheet_name="By reason", index=False)
+    wb = load_workbook(out_path)
+    _style_devices_sheet(wb["Devices"], not_ready_cols, highlight_col="Not ready reason")
+    if "CMOS Fail" in wb.sheetnames:
+        _style_devices_sheet(wb["CMOS Fail"], not_ready_cols, highlight_col="Not ready reason")
+    wb.save(out_path)
+
+
+def split_summary_text(ready: pd.DataFrame, not_ready: pd.DataFrame) -> str:
+    lines = [
+        f"\nImport-ready (upload to Odoo): {len(ready)}",
+        f"Import-not-ready (manual follow-up): {len(not_ready)}",
+    ]
+    if not_ready.empty:
+        return "\n".join(lines)
+    lines.append("\nNot-ready breakdown:")
+    for reason, cnt in not_ready["Not ready reason"].value_counts().items():
         lines.append(f"  {reason}: {int(cnt)}")
-    lines.append("  (full failed list is in the Analysis sheet of the .xlsx)")
     return "\n".join(lines)
 
-def show_result_popup(summary: str, out_path: Path) -> None:
+
+def show_result_popup(summary: str, ready_path: Path, not_ready_path: Path) -> None:
     import tkinter as tk
     from tkinter import messagebox
 
     root = tk.Tk()
     root.withdraw()
     root.attributes("-topmost", True)
-    messagebox.showinfo("Re-Ware merge complete", summary + f"\n\nSaved:\n{out_path}")
+    messagebox.showinfo(
+        "Re-Ware merge complete",
+        summary
+        + f"\n\nSaved:\n  {ready_path.name}\n  {not_ready_path.name}",
+    )
     root.destroy()
+
 
 def main() -> int:
     folder = SCRIPT_DIR
@@ -1148,13 +1219,19 @@ def main() -> int:
     lut = ensure_mtm_lookup(product_path, wd, sheet2_names)
 
     merged = merge_data(wd, blancco, lut, uncollected_map)
+    ready, not_ready = split_import_ready_not_ready(merged)
 
     stamp = datetime.now().strftime("%Y-%m-%d")
-    xlsx_path = folder / f"{OUTPUT_PREFIX} {stamp}.xlsx"
-    csv_path = folder / f"{OUTPUT_PREFIX} {stamp}.csv"
-    analysis = build_analysis(merged)
-    write_output(merged, analysis, xlsx_path)
-    merged.to_csv(csv_path, index=False, encoding="utf-8-sig")
+    ready_xlsx = folder / f"{OUTPUT_PREFIX} {stamp}.xlsx"
+    ready_csv = folder / f"{OUTPUT_PREFIX} {stamp}.csv"
+    not_ready_xlsx = folder / f"{OUTPUT_NOT_READY_PREFIX} {stamp}.xlsx"
+    not_ready_csv = folder / f"{OUTPUT_NOT_READY_PREFIX} {stamp}.csv"
+
+    analysis = build_analysis(merged, ready, not_ready)
+    write_ready_output(ready, analysis, ready_xlsx)
+    write_not_ready_output(not_ready, not_ready_xlsx)
+    ready.to_csv(ready_csv, index=False, encoding="utf-8-sig")
+    not_ready.to_csv(not_ready_csv, index=False, encoding="utf-8-sig")
 
     total = len(merged)
     success = int((merged["Status"] == "SUCCESS").sum())
@@ -1162,24 +1239,24 @@ def main() -> int:
     summary = (
         f"Product list ({master_label(product_path)}): {total} rows\n"
         f"SUCCESS (Blancco data pulled): {success}\n"
-        f"FAILED: {failed}\n"
+        f"Blancco FAILED: {failed}\n"
         f"Match rate: {(success/total*100):.1f}%" if total else "No rows"
     )
-    summary += failure_summary_text(merged)
+    summary += split_summary_text(ready, not_ready)
     summary += (
-        f"\n\nSaved:\n"
-        f"  {xlsx_path.name}  — review (red = failed, see Analysis sheet)\n"
-        f"  {csv_path.name}  — all rows with Status / Failure reason\n"
-        f"\nUpload SUCCESS rows to Odoo:\n"
-        f"  Inventory -> Upload inventory CSV (after DB backup)"
+        f"\n\nUpload import-ready CSV to Odoo:\n"
+        f"  Inventory -> Upload inventory CSV (after DB backup)\n"
+        f"Do not upload import-not-ready — fix CMOS / Blancco, then add SN manually."
     )
     if "--yes" in sys.argv or "--auto" in sys.argv:
         print(summary)
-        print("Saved:", xlsx_path)
-        print("Saved:", csv_path)
+        print("Saved:", ready_xlsx)
+        print("Saved:", ready_csv)
+        print("Saved:", not_ready_xlsx)
+        print("Saved:", not_ready_csv)
     else:
-        show_result_popup(summary, xlsx_path)
-    return 0 if failed == 0 else 2
+        show_result_popup(summary, ready_xlsx, not_ready_xlsx)
+    return 0 if not_ready.empty and failed == 0 else 2
 
 if __name__ == "__main__":
     try:

@@ -1,0 +1,3586 @@
+{
+  "exported_at": "2026-07-01T06:05:41Z",
+  "database": "cocreativeit-quote",
+  "product_count": 113,
+  "serial_refurb_with_stock": 47,
+  "products": [
+    {
+      "id": 852,
+      "code": "",
+      "name": "20L8SDCE00-BTU70-CMOSP",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 802,
+      "code": "",
+      "name": "Dell K20A USB-C Dock",
+      "price": 90.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 853,
+      "code": "",
+      "name": "NEC ME41W projector",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 854,
+      "code": "",
+      "name": "[20NYS4CP00-8G-256G-T-BT70-CMOSFL] ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 851,
+      "code": "",
+      "name": "dual 22\" screen bundle",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 850,
+      "code": "",
+      "name": "duel 22\" screen bundle",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 849,
+      "code": "",
+      "name": "dula 22\" screen bundle",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "consu",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 99,
+      "code": "__WIPE_PLACEHOLDER__",
+      "name": "Catalog wipe placeholder (delivery carriers)",
+      "price": 1.0,
+      "standard_price": 0.0,
+      "type": "service",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "All",
+      "public_cats": "",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 717,
+      "code": "AG066A",
+      "name": "HP TFT7600 KVM",
+      "price": 150.0,
+      "standard_price": 150.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 5.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 718,
+      "code": "AIRCAP3502I-N-K9",
+      "name": "Cisco Access Point",
+      "price": 15.0,
+      "standard_price": 15.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 68.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 722,
+      "code": "CCITREWAREBAG",
+      "name": "Re-Ware Lenovo backpack",
+      "price": 40.0,
+      "standard_price": 40.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 724,
+      "code": "CISCO1941",
+      "name": "Cisco 1941 series Integrated Services Router",
+      "price": 90.0,
+      "standard_price": 90.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 725,
+      "code": "CISCO2911",
+      "name": "Cisco 2911 Integrated Services Router",
+      "price": 90.0,
+      "standard_price": 90.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 734,
+      "code": "MOUSE",
+      "name": "Lenovo wired mouse",
+      "price": 5.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 735,
+      "code": "MR18-HW",
+      "name": "Meraki MR18-HW",
+      "price": 28.62,
+      "standard_price": 28.62,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 98.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 736,
+      "code": "MR42-HW",
+      "name": "Meraki MR42-HW",
+      "price": 45.0,
+      "standard_price": 45.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 4.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 737,
+      "code": "MS220-24P",
+      "name": "Meraki MS220-24P",
+      "price": 60.0,
+      "standard_price": 60.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 738,
+      "code": "MS220-48P",
+      "name": "Meraki MS220-48P Switch",
+      "price": 80.0,
+      "standard_price": 80.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 8.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 739,
+      "code": "MTM7654",
+      "name": "Lenovo Wired Keyboard",
+      "price": 5.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 751,
+      "code": "WS-3750X-48P",
+      "name": "Cisco Switch WS-3750X-48-P",
+      "price": 25.0,
+      "standard_price": 25.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 45.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "PC Accessories",
+      "public_cats": "Accessories",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 763,
+      "code": "10A8A06QAU",
+      "name": "ThinkCentre M93p",
+      "price": 30.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 5.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M93p",
+        "cpu": "i5-4570 CPU @ 3.20GHz",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC04HDC3",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU"
+        },
+        {
+          "serial": "PC04HDCY",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU"
+        },
+        {
+          "serial": "PC0BC6XN",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU"
+        },
+        {
+          "serial": "PC0BC6Y4",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU"
+        },
+        {
+          "serial": "PC0D6AYM",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU"
+        }
+      ],
+      "serial_count": 5
+    },
+    {
+      "id": 822,
+      "code": "10A8A06QAU-CMOSP",
+      "name": "ThinkCentre M93p",
+      "price": 30.0,
+      "standard_price": 30.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 8.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M93p",
+        "cpu": "i5-4570",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PB01DJC4",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PB01DJCM",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC04HDC3",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC04HDCY",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC0BC6WX",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC0BC6XN",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC0BC6Y4",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        },
+        {
+          "serial": "PC0D6AYM",
+          "qty": 1.0,
+          "variant_code": "10A8A06QAU-CMOSP"
+        }
+      ],
+      "serial_count": 8
+    },
+    {
+      "id": 764,
+      "code": "10AXS27900",
+      "name": "ThinkCentre M73",
+      "price": 85.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M73",
+        "cpu": "i5-4570T CPU @ 2.90GHz",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "S4F94406",
+          "qty": 1.0,
+          "variant_code": "10AXS27900"
+        },
+        {
+          "serial": "S4F94497",
+          "qty": 1.0,
+          "variant_code": "10AXS27900"
+        },
+        {
+          "serial": "S4F94591",
+          "qty": 1.0,
+          "variant_code": "10AXS27900"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 803,
+      "code": "10FGA004AU",
+      "name": "ThinkCentre M900",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 823,
+      "code": "10FGA004AU-CMOSP",
+      "name": "ThinkCentre M900",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 4.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0JTQGA",
+          "qty": 1.0,
+          "variant_code": "10FGA004AU-CMOSP"
+        },
+        {
+          "serial": "PC0JTQH0",
+          "qty": 1.0,
+          "variant_code": "10FGA004AU-CMOSP"
+        },
+        {
+          "serial": "PC0JV3Y7",
+          "qty": 1.0,
+          "variant_code": "10FGA004AU-CMOSP"
+        },
+        {
+          "serial": "PC0LD3GH",
+          "qty": 1.0,
+          "variant_code": "10FGA004AU-CMOSP"
+        }
+      ],
+      "serial_count": 4
+    },
+    {
+      "id": 765,
+      "code": "10MLS15E00-4G-256G-N",
+      "name": "ThinkCentre M910s",
+      "price": 85.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "4GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 766,
+      "code": "10MLS15E00-8G-500G-N",
+      "name": "ThinkCentre M910s",
+      "price": 99.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 5.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 767,
+      "code": "10MLS1BU00",
+      "name": "ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 13.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MMR4N",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0MMR4Z",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0PDVKR",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0PDVKV",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0PDVKW",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YH2",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YH5",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YHL",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YJK",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YJS",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0Q4YJV",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0S68LV",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        },
+        {
+          "serial": "PC0MMR45",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00"
+        }
+      ],
+      "serial_count": 13
+    },
+    {
+      "id": 824,
+      "code": "10MLS1BU00-CMOSP",
+      "name": "ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 90.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 12.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MMR45",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0MMR4N",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0MMR4Z",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0PDVKR",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0PDVKW",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YH2",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YH5",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YHL",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YJK",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YJS",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0Q4YJV",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        },
+        {
+          "serial": "PC0S68LV",
+          "qty": 1.0,
+          "variant_code": "10MLS1BU00-CMOSP"
+        }
+      ],
+      "serial_count": 12
+    },
+    {
+      "id": 744,
+      "code": "10MLS5RS00",
+      "name": "Lenovo ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 804,
+      "code": "10MLS5RS00-4G-256G-N",
+      "name": "ThinkCentre M910s",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "4GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MLPES",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-4G-256G-N"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 825,
+      "code": "10MLS5RS00-4G-256G-N-CMOSP",
+      "name": "ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "4GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MLPES",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-4G-256G-N-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 805,
+      "code": "10MLS5RS00-8G-500G-N",
+      "name": "ThinkCentre M910s",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 4.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0XSULU",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N"
+        },
+        {
+          "serial": "PC0XSULV",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N"
+        },
+        {
+          "serial": "PC0XSULX",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N"
+        },
+        {
+          "serial": "PC0XSUM5",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N"
+        }
+      ],
+      "serial_count": 4
+    },
+    {
+      "id": 826,
+      "code": "10MLS5RS00-8G-500G-N-CMOSP",
+      "name": "ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 4.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s",
+        "cpu": "i5-6500",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0XSULU",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N-CMOSP"
+        },
+        {
+          "serial": "PC0XSULV",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N-CMOSP"
+        },
+        {
+          "serial": "PC0XSULX",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N-CMOSP"
+        },
+        {
+          "serial": "PC0XSUM5",
+          "qty": 1.0,
+          "variant_code": "10MLS5RS00-8G-500G-N-CMOSP"
+        }
+      ],
+      "serial_count": 4
+    },
+    {
+      "id": 745,
+      "code": "10SJ0004AU",
+      "name": "ThinkCentre M920s",
+      "price": 120.0,
+      "standard_price": 120.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "i5-8500",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 827,
+      "code": "10SJ0004AU-CMOSP",
+      "name": "ThinkCentre M920s",
+      "price": 120.0,
+      "standard_price": 120.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "i5-8500",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC10D9ST",
+          "qty": 1.0,
+          "variant_code": "10SJ0004AU-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 712,
+      "code": "30B4S1QA00",
+      "name": "Lenovo Thinkstation P510",
+      "price": 120.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "ram": "8GB",
+        "cpu": "Intel(R) Xeon(R) CPU E5-1620 v4 @ 3.50GHz",
+        "storage": "1TB HDD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 713,
+      "code": "30B4S3WF00",
+      "name": "Lenovo Thinkstation P510",
+      "price": 100.0,
+      "standard_price": 15.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "ram": "8GB",
+        "storage": "500GB HDD",
+        "cpu": "Intel(R) Xeon(R) CPU E5-1607 v4 @ 3.10GHz"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 821,
+      "code": "30B5S0PF00",
+      "name": "ThinkStation P510",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "Intel(R) Xeon(R) CPU E5-1607 v4 @ 3.10GHz",
+        "ram": "32GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MDC46",
+          "qty": 1.0,
+          "variant_code": "30B5S0PF00"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 848,
+      "code": "30B5S0PF00-CMOSP",
+      "name": "ThinkStation P510",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "Intel(R) Xeon(R) CPU E5-1607 v4 @ 3.10GHz",
+        "ram": "32GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC0MDC46",
+          "qty": 1.0,
+          "variant_code": "30B5S0PF00-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 776,
+      "code": "4518PT1",
+      "name": "ThinkCentre M91p SFF",
+      "price": 50.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M91p",
+        "cpu": "i5-2400 CPU @ 3.10GHz",
+        "ram": "8GB",
+        "storage": "250GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PBMDFX6",
+          "qty": 1.0,
+          "variant_code": "4518PT1"
+        },
+        {
+          "serial": "R8LD26K",
+          "qty": 1.0,
+          "variant_code": "4518PT1"
+        },
+        {
+          "serial": "PBMDFG4",
+          "qty": 1.0,
+          "variant_code": "4518PT1"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 777,
+      "code": "5536RE5",
+      "name": "Lenovo ThinkCentre M90P SFF",
+      "price": 20.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "ram": "4GB",
+        "storage": "250GB SSD",
+        "cpu": "i5 CPU 650 @ 3.20GHz"
+      },
+      "serials": [
+        {
+          "serial": "R8X18MA",
+          "qty": 1.0,
+          "variant_code": "5536RE5"
+        },
+        {
+          "serial": "R85PRX4",
+          "qty": 1.0,
+          "variant_code": "5536RE5"
+        },
+        {
+          "serial": "R89HGV2",
+          "qty": 1.0,
+          "variant_code": "5536RE5"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 742,
+      "code": "RW-10MLS15E00",
+      "name": "Lenovo ThinkCentre M910s SFF",
+      "price": 65.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 743,
+      "code": "RW-10MLS1BU00",
+      "name": "Lenovo ThinkCentre M910s",
+      "price": 90.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkCentre M910s"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 749,
+      "code": "Y3A52AV",
+      "name": "Hp Pro desk 600 G3 6th Gen",
+      "price": 80.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Desktops & Workstations",
+      "public_cats": "Desktops & Mini PCs",
+      "specs": {
+        "brand": "Lenovo",
+        "ram": "8GB",
+        "storage": "500GB HDD",
+        "cpu": "Intel(R) Core(TM) i5-6500T CPU @ 2.50GHz"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 711,
+      "code": "26D32AA",
+      "name": "HP G5 USB-C Dock",
+      "price": 80.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 9.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Docks & Port Replicators",
+      "public_cats": "Docks",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 714,
+      "code": "3FF69AA",
+      "name": "HP G4 USB-C Dock",
+      "price": 60.0,
+      "standard_price": 60.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Docks & Port Replicators",
+      "public_cats": "Docks",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 715,
+      "code": "40AF0135AU",
+      "name": "Lenovo THINKPAD HYBRID",
+      "price": 90.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Docks & Port Replicators",
+      "public_cats": "Docks",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 716,
+      "code": "40AJ0135AU",
+      "name": "Lenovo ThinkPad USB",
+      "price": 25.0,
+      "standard_price": 25.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Docks & Port Replicators",
+      "public_cats": "Docks",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 768,
+      "code": "20L8SBL100",
+      "name": "ThinkPad T480s",
+      "price": 180.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 806,
+      "code": "20L8SBL100-BTU70",
+      "name": "ThinkPad T480s",
+      "price": 180.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 2.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC13Z0XV",
+          "qty": 1.0,
+          "variant_code": "20L8SBL100-BTU70"
+        },
+        {
+          "serial": "PC13Z0YF",
+          "qty": 1.0,
+          "variant_code": "20L8SBL100-BTU70"
+        }
+      ],
+      "serial_count": 2
+    },
+    {
+      "id": 828,
+      "code": "20L8SBL100-BTU70-CMOSP",
+      "name": "ThinkPad T480s",
+      "price": 180.0,
+      "standard_price": 180.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 2.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC13Z0XV",
+          "qty": 1.0,
+          "variant_code": "20L8SBL100-BTU70-CMOSP"
+        },
+        {
+          "serial": "PC13Z0YF",
+          "qty": 1.0,
+          "variant_code": "20L8SBL100-BTU70-CMOSP"
+        }
+      ],
+      "serial_count": 2
+    },
+    {
+      "id": 701,
+      "code": "20L8SDCE00",
+      "name": "ThinkPad T480s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 807,
+      "code": "20L8SDCE00-BTU70",
+      "name": "ThinkPad T480s",
+      "price": 190.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC14S04N",
+          "qty": 1.0,
+          "variant_code": "20L8SDCE00-BTU70"
+        },
+        {
+          "serial": "PC14S09X",
+          "qty": 1.0,
+          "variant_code": "20L8SDCE00-BTU70"
+        },
+        {
+          "serial": "PC14S1KN",
+          "qty": 1.0,
+          "variant_code": "20L8SDCE00-BTU70"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 829,
+      "code": "20L8SDCE00-BTU70-CMOSP",
+      "name": "ThinkPad T480s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 2.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T480s",
+        "cpu": "i5-8250U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC14S04N",
+          "qty": 1.0,
+          "variant_code": "20L8SDCE00-BTU70-CMOSP"
+        },
+        {
+          "serial": "PC14S1KN",
+          "qty": 1.0,
+          "variant_code": "20L8SDCE00-BTU70-CMOSP"
+        }
+      ],
+      "serial_count": 2
+    },
+    {
+      "id": 702,
+      "code": "20NYS4CP00",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U @ 1.6GHz",
+        "ram": "8GB",
+        "touch": "Yes",
+        "wan": "Enabled"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 795,
+      "code": "20NYS4CP00-8G-256G-N",
+      "name": "ThinkPad T490s",
+      "price": 180.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 58.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 769,
+      "code": "20NYS4CP00-8G-256G-T",
+      "name": "ThinkPad T490s",
+      "price": 180.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 6.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 831,
+      "code": "20NYS4CP00-8G-256G-T-BT70-CMOSP",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1ACMYP",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-256G-T-BT70-CMOSP"
+        },
+        {
+          "serial": "PC1FVGHZ",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-256G-T-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 2
+    },
+    {
+      "id": 833,
+      "code": "20NYS4CP00-8G-256G-T-BTU70-CMOSP",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1ACMX6",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-256G-T-BTU70-CMOSP"
+        },
+        {
+          "serial": "PC1EYJX5",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-256G-T-BTU70-CMOSP"
+        },
+        {
+          "serial": "PC1FVETM",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-256G-T-BTU70-CMOSP"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 796,
+      "code": "20NYS4CP00-8G-512G-N",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "512GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 770,
+      "code": "20NYS4CP00-8G-512G-T",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 835,
+      "code": "20NYS4CP00-8G-512G-T-BT70-CMOSP",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1FVGKJ",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-512G-T-BT70-CMOSP"
+        },
+        {
+          "serial": "PC1FVGKV",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-512G-T-BT70-CMOSP"
+        },
+        {
+          "serial": "PC1FVGMV",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-512G-T-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 811,
+      "code": "20NYS4CP00-8G-512G-T-BTU70",
+      "name": "ThinkPad T490s",
+      "price": 150.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1ACZJE",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-512G-T-BTU70"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 836,
+      "code": "20NYS4CP00-8G-512G-T-BTU70-CMOSP",
+      "name": "ThinkPad T490s",
+      "price": 190.0,
+      "standard_price": 190.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T490s",
+        "cpu": "i5-8265U",
+        "ram": "8GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1ACZJE",
+          "qty": 1.0,
+          "variant_code": "20NYS4CP00-8G-512G-T-BTU70-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 703,
+      "code": "20T0003UAU",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 250.0,
+      "standard_price": 250.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "16GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 771,
+      "code": "20T0003UAU",
+      "name": "ThinkPad T14s Gen 1 ",
+      "price": 250.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "16GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 772,
+      "code": "20T1S6C300",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 230.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 704,
+      "code": "20T1S6C300",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 230.0,
+      "standard_price": 230.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 14.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 839,
+      "code": "20T1S6C300-BT70-CMOSP",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 230.0,
+      "standard_price": 230.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1PQ9M8",
+          "qty": 1.0,
+          "variant_code": "20T1S6C300-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 814,
+      "code": "20T1S6C300-BTU70",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 230.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1PQ9HY",
+          "qty": 1.0,
+          "variant_code": "20T1S6C300-BTU70"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 840,
+      "code": "20T1S6C300-BTU70-CMOSP",
+      "name": "ThinkPad T14s Gen 1",
+      "price": 230.0,
+      "standard_price": 230.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-10210U",
+        "ram": "8GB",
+        "storage": "256GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PC1PQ9HY",
+          "qty": 1.0,
+          "variant_code": "20T1S6C300-BTU70-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 815,
+      "code": "20TJS5WW00-BT70",
+      "name": "ThinkPad P1 Gen 3",
+      "price": 900.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": -1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i9-10885H",
+        "ram": "32GB",
+        "storage": "512GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 841,
+      "code": "20TJS5WW00-BT70-CMOSP",
+      "name": "ThinkPad P1 Gen 3",
+      "price": 900.0,
+      "standard_price": 10.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i9-10885H",
+        "ram": "32GB",
+        "storage": "512GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "R913RZGT",
+          "qty": 1.0,
+          "variant_code": "20TJS5WW00-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 706,
+      "code": "20W4004TAU",
+      "name": "ThinkPad T15 Gen 2i",
+      "price": 450.0,
+      "standard_price": 450.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T15",
+        "cpu": "i7-1165G7",
+        "ram": "16GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 816,
+      "code": "20W4004TAU-BT70",
+      "name": "ThinkPad T15 Gen 2i",
+      "price": 450.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 13.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T15",
+        "cpu": "i7-1165G7",
+        "ram": "16GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PF2V9RKC",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2W5DSV",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2W5NAE",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WGAF0",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WHM02",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WHQG8",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WHXNG",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WJ1M9",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WJ1P5",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WJ59L",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WJ8XG",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WJC5E",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        },
+        {
+          "serial": "PF2WHCQX",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70"
+        }
+      ],
+      "serial_count": 13
+    },
+    {
+      "id": 842,
+      "code": "20W4004TAU-BT70-CMOSP",
+      "name": "ThinkPad T15 Gen 2i",
+      "price": 450.0,
+      "standard_price": 450.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 12.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T15",
+        "cpu": "i7-1165G7",
+        "ram": "16GB",
+        "storage": "512GB SSD",
+        "touch": "Yes"
+      },
+      "serials": [
+        {
+          "serial": "PF2V9RKC",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2W5DSV",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WGAF0",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WHCQX",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WHM02",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WHQG8",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WHXNG",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WJ1M9",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WJ1P5",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WJ59L",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WJ8XG",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        },
+        {
+          "serial": "PF2WJC5E",
+          "qty": 1.0,
+          "variant_code": "20W4004TAU-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 12
+    },
+    {
+      "id": 773,
+      "code": "20WN0025AU",
+      "name": "ThinkPad T14s Gen 2I",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "11th Gen i5/i7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 707,
+      "code": "20WN0025AU",
+      "name": "ThinkPad T14s Gen 2i",
+      "price": 330.0,
+      "standard_price": 330.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 5.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-1145G7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 844,
+      "code": "20WN0025AU-BT70-CMOSP",
+      "name": "ThinkPad T14s Gen 2i",
+      "price": 330.0,
+      "standard_price": 330.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-1145G7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "PC27R4BT",
+          "qty": 1.0,
+          "variant_code": "20WN0025AU-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 774,
+      "code": "20WNA07YAU",
+      "name": "ThinkPad T14s Gen 2I",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "11th Gen i5/i7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 708,
+      "code": "20WNA07YAU",
+      "name": "ThinkPad T14s Gen 2i",
+      "price": 350.0,
+      "standard_price": 350.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 12.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-1135G7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 846,
+      "code": "20WNA07YAU-BT70-CMOSP",
+      "name": "ThinkPad T14s Gen 2i",
+      "price": 350.0,
+      "standard_price": 350.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 9.0,
+      "published": true,
+      "active": true,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-1135G7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "GM048THG",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048THM",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TJA",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TKC",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TKM",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TLA",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TLJ",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TMP",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        },
+        {
+          "serial": "GM048TNA",
+          "qty": 1.0,
+          "variant_code": "20WNA07YAU-BT70-CMOSP"
+        }
+      ],
+      "serial_count": 9
+    },
+    {
+      "id": 775,
+      "code": "20WNS6LL00",
+      "name": "ThinkPad T14s Gen 2I",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": false,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "11th Gen i5/i7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 709,
+      "code": "20WNS6LL00",
+      "name": "ThinkPad T14s Gen 2i",
+      "price": 355.0,
+      "standard_price": 355.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "ThinkPad T14s",
+        "cpu": "i5-1135G7",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 820,
+      "code": "30B5S0PF00-BTU70",
+      "name": "ThinkStation P510",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "cpu": "Intel(R) Xeon(R) CPU E5-1607 v4 @ 3.10GHz",
+        "ram": "32GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 723,
+      "code": "CF 54 Mk 3",
+      "name": "Panasonic Toughbook CF 54 Mk 3",
+      "price": 550.0,
+      "standard_price": 550.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "i5-7300U",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 778,
+      "code": "CF-52GCMBVAM",
+      "name": "Panasonic Toughbook Cf-54 (14.0\") Mk3 ",
+      "price": 180.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "Intel(R) Core(TM)2 Duo CPU P8400 @ 2.26GHz",
+        "ram": "4GB",
+        "storage": "250GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "9ETSA57811",
+          "qty": 1.0,
+          "variant_code": "CF-52GCMBVAM"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 779,
+      "code": "CF-54H1436VA",
+      "name": "Panasonic Toughbook Cf-54 (14.0\") Mk3",
+      "price": 575.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "i5-7300U",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "8FTSA41991",
+          "qty": 1.0,
+          "variant_code": "CF-54H1436VA"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 780,
+      "code": "CF-54J1436VA",
+      "name": "Panasonic Toughbook Cf-54 (14.0\") Mk3 ",
+      "price": 575.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 6.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "i5-7300U",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "9FTSC49439",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        },
+        {
+          "serial": "9FTSC49459",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        },
+        {
+          "serial": "9FTSC49536",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        },
+        {
+          "serial": "9FTSC49553",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        },
+        {
+          "serial": "9FTSC49592",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        },
+        {
+          "serial": "9FTSC49614",
+          "qty": 1.0,
+          "variant_code": "CF-54J1436VA"
+        }
+      ],
+      "serial_count": 6
+    },
+    {
+      "id": 781,
+      "code": "DELL D09U001-8G-256G-N",
+      "name": "DELL D09U001",
+      "price": 100.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 6.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell Optiplex",
+        "cpu": "i5-4590T",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "9S8FR42",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        },
+        {
+          "serial": "BQWJH62",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        },
+        {
+          "serial": "BQXHH62",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        },
+        {
+          "serial": "BQYBH62",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        },
+        {
+          "serial": "GV8FR42",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        },
+        {
+          "serial": "9W8FR42",
+          "qty": 1.0,
+          "variant_code": "DELL D09U001-8G-256G-N"
+        }
+      ],
+      "serial_count": 6
+    },
+    {
+      "id": 782,
+      "code": "DELL LATITUDE 5590-16G-256G-N",
+      "name": "Dell Latitude 5590",
+      "price": 200.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 5.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 5590",
+        "cpu": "i5-8250U",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "60T1QQ2",
+          "qty": 1.0,
+          "variant_code": "DELL LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "82T1QQ2",
+          "qty": 1.0,
+          "variant_code": "DELL LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "4MWWMV2",
+          "qty": 1.0,
+          "variant_code": "DELL LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "B7H8NV2",
+          "qty": 1.0,
+          "variant_code": "DELL LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "CYPWMV2",
+          "qty": 1.0,
+          "variant_code": "DELL LATITUDE 5590-16G-256G-N"
+        }
+      ],
+      "serial_count": 5
+    },
+    {
+      "id": 783,
+      "code": "FZ-55C0018VA",
+      "name": "Panasonic Toughbook FZ 55 mk 1",
+      "price": 400.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "i5-8365U",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "0HTSA62413",
+          "qty": 1.0,
+          "variant_code": "FZ-55C0018VA"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 727,
+      "code": "FZ55-1",
+      "name": "Panasonic Toughbook FZ 55 mk 1",
+      "price": 600.0,
+      "standard_price": 600.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Panasonic",
+        "series": "Toughbook",
+        "cpu": "i5-8365U",
+        "ram": "8GB",
+        "storage": "500GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 730,
+      "code": "LAT3301",
+      "name": "Dell Latitude 3301",
+      "price": 170.0,
+      "standard_price": 7.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 3301",
+        "cpu": "i7-8565U",
+        "ram": "8GB",
+        "storage": "512GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 731,
+      "code": "LAT5590",
+      "name": "Dell Latitude 5590 Laptop",
+      "price": 200.0,
+      "standard_price": 200.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 5590",
+        "ram": "16GB",
+        "storage": "256GB SSD",
+        "cpu": "Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 732,
+      "code": "LAT5591",
+      "name": "Dell Latitude 5590 15\" Laptop 8GB",
+      "price": 180.0,
+      "standard_price": 180.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": false,
+      "active": false,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 5590",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 733,
+      "code": "LATE7470",
+      "name": "Dell E7470",
+      "price": 100.0,
+      "standard_price": 100.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Lenovo",
+        "series": "Dell E7470",
+        "cpu": "i5-6200U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 784,
+      "code": "LATITUDE 3301",
+      "name": "Dell Latitude 3301",
+      "price": 170.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 7.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 3301",
+        "cpu": "i7-8565U",
+        "ram": "8GB",
+        "storage": "512GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "1BNFNW2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "35LRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "4FKRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "55LRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "7SKRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "GNKRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        },
+        {
+          "serial": "JCKRLT2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 3301"
+        }
+      ],
+      "serial_count": 7
+    },
+    {
+      "id": 797,
+      "code": "LATITUDE 5590-16G-256G-N",
+      "name": "DELL LATITUDE 5590",
+      "price": 200.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 5.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 5590",
+        "cpu": "i5-8250U",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "60T1QQ2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "82T1QQ2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "4MWWMV2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "B7H8NV2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 5590-16G-256G-N"
+        },
+        {
+          "serial": "CYPWMV2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE 5590-16G-256G-N"
+        }
+      ],
+      "serial_count": 5
+    },
+    {
+      "id": 798,
+      "code": "LATITUDE E7440-16G-256G-N",
+      "name": "Latitude E7470",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 7440",
+        "cpu": "i5-4310U",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "DFDZN32",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7440-16G-256G-N"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 799,
+      "code": "LATITUDE E7440-8G-256G-N",
+      "name": "Latitude E7470",
+      "price": 0.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell 7440",
+        "cpu": "i5-4310U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "BJDZN32",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7440-8G-256G-N"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 800,
+      "code": "LATITUDE E7470",
+      "name": "Latitude E7470",
+      "price": 120.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 2.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell E7470",
+        "cpu": "i5-6200U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "64M3Q72",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470"
+        },
+        {
+          "serial": "7213YF2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470"
+        }
+      ],
+      "serial_count": 2
+    },
+    {
+      "id": 785,
+      "code": "LATITUDE E7470-16G-256G-N",
+      "name": "LATITUDE E7470",
+      "price": 100.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell E7470",
+        "cpu": "i5-6200U CPU @ 2.30GHz",
+        "ram": "16GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "DFDZN32",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470-16G-256G-N"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 786,
+      "code": "LATITUDE E7470-8G-256G-N",
+      "name": "LATITUDE E7470",
+      "price": 120.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "series": "Dell E7470",
+        "cpu": "i5-6200U",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "BJDZN32",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470-8G-256G-N"
+        },
+        {
+          "serial": "7213YF2",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470-8G-256G-N"
+        },
+        {
+          "serial": "64M3Q72",
+          "qty": 1.0,
+          "variant_code": "LATITUDE E7470-8G-256G-N"
+        }
+      ],
+      "serial_count": 3
+    },
+    {
+      "id": 801,
+      "code": "OPTIPLEX 9020M",
+      "name": "Dell Optiplex 9020M",
+      "price": 100.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 6.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "Dell",
+        "cpu": "i5-4590T",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "9S8FR42",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        },
+        {
+          "serial": "9W8FR42",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        },
+        {
+          "serial": "BQWJH62",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        },
+        {
+          "serial": "BQXHH62",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        },
+        {
+          "serial": "BQYBH62",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        },
+        {
+          "serial": "GV8FR42",
+          "qty": 1.0,
+          "variant_code": "OPTIPLEX 9020M"
+        }
+      ],
+      "serial_count": 6
+    },
+    {
+      "id": 787,
+      "code": "T1D55PA#ABG",
+      "name": "KBC Version 05.36",
+      "price": 100.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "serial",
+      "on_hand": 1.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Computer Systems",
+      "public_cats": "Laptops",
+      "specs": {
+        "brand": "HP",
+        "series": "KBC Version 05.36",
+        "cpu": "i7-6700",
+        "ram": "8GB",
+        "storage": "256GB SSD"
+      },
+      "serials": [
+        {
+          "serial": "AUD7020F4Y",
+          "qty": 1.0,
+          "variant_code": "T1D55PA#ABG"
+        }
+      ],
+      "serial_count": 1
+    },
+    {
+      "id": 719,
+      "code": "BUNDLEDELL24",
+      "name": "Dual 24 Monitor Bundle 2 x Dell 24\" (P2422HE) monitors + Dell K20A dock and AC adapter",
+      "price": 181.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Monitors & Displays",
+      "public_cats": "Monitors & Displays",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 720,
+      "code": "BUNDLESA1450",
+      "name": "Two Samsung SA1450  22\"Monitors",
+      "price": 100.0,
+      "standard_price": 100.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 3.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Monitors & Displays",
+      "public_cats": "Monitors & Displays",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 726,
+      "code": "F24T450FQEXXY",
+      "name": "Samsung 24\" F24T450FQ USB hub 1080P WIFI",
+      "price": 50.0,
+      "standard_price": 50.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 4.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Monitors & Displays",
+      "public_cats": "Monitors & Displays",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 710,
+      "code": "S22A450BW",
+      "name": "Dual 22\" Samsung SA450 monitor bundle + HP G4 Dock ",
+      "price": 100.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 20.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Monitors & Displays",
+      "public_cats": "Monitors & Displays",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 750,
+      "code": "S24E450",
+      "name": "24\" Samsung Monitor S24E450",
+      "price": 40.0,
+      "standard_price": 0.0,
+      "type": "product",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Monitors & Displays",
+      "public_cats": "Monitors & Displays",
+      "specs": {
+        "brand": "Lenovo"
+      },
+      "serials": [],
+      "serial_count": 0
+    },
+    {
+      "id": 721,
+      "code": "CCIT0001",
+      "name": "Service - 1 Hour",
+      "price": 90.0,
+      "standard_price": 90.0,
+      "type": "service",
+      "tracking": "none",
+      "on_hand": 0.0,
+      "published": true,
+      "active": true,
+      "main_image": true,
+      "extra_images": 0,
+      "categ": "Services",
+      "public_cats": "Services",
+      "specs": {},
+      "serials": [],
+      "serial_count": 0
+    }
+  ]
+}

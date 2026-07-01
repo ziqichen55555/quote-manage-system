@@ -52,9 +52,9 @@ if errorlevel 1 (
 set EXITCODE=%ERRORLEVEL%
 echo.
 if %EXITCODE% NEQ 0 (
-    echo Merge finished with warnings ^(some serials failed Blancco^). Check the popup/console list.
+    echo Merge finished with warnings ^(see import-not-ready report^).
 ) else (
-    echo All rows matched Blancco. Review the .xlsx then upload SUCCESS rows to Odoo.
+    echo All devices import-ready. Upload MERGED import-ready CSV to Odoo.
 )
 pause
 exit /b %EXITCODE%

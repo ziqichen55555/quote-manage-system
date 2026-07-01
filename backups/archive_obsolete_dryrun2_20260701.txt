@@ -1,0 +1,256 @@
+﻿ssh :  Container reware-db-1 Running 
+At C:\Users\User\AppData\Local\Temp\ps-script-f25d4343-a7dc-440e-9ca0-ec9635094613.ps1:82 char:3
++   ssh -i $key root@134.199.145.67 `
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container reware-db-1 Running :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container reware-db-1 Waiting 
+ Container reware-db-1 Healthy 
+ Container reware-web-run-529ba30923cf Creating 
+ Container reware-web-run-529ba30923cf Created 
+2026-07-01 06:10:54,327 1 INFO ? odoo: Odoo version 17.0-20260528 
+2026-07-01 06:10:54,328 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-07-01 06:10:54,328 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', 
+'/var/lib/odoo/addons/17.0', '/mnt/extra-addons', '/mnt/custom-addons'] 
+2026-07-01 06:10:54,328 1 INFO ? odoo: database: odoo@db:5432 
+2026-07-01 06:10:54,506 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at 
+/usr/local/bin/wkhtmltopdf 
+2026-07-01 06:10:54,845 1 INFO ? odoo.service.server: Initiating shutdown 
+2026-07-01 06:10:54,846 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-07-01 06:10:54,890 1 INFO cocreativeit-quote odoo.modules.loading: loading 1 modules... 
+2026-07-01 06:10:54,897 1 INFO cocreativeit-quote odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 
+extra) 
+2026-07-01 06:10:55,039 1 INFO cocreativeit-quote odoo.modules.loading: loading 147 modules... 
+2026-07-01 06:10:56,922 1 INFO cocreativeit-quote odoo.modules.loading: 147 modules loaded in 1.88s, 0 queries (+0 
+extra) 
+2026-07-01 06:10:57,640 1 INFO cocreativeit-quote odoo.modules.loading: Modules loaded. 
+2026-07-01 06:10:57,671 1 INFO cocreativeit-quote odoo.modules.registry: Registry loaded in 2.824s 
+2026-07-01 06:10:57,697 1 WARNING cocreativeit-quote py.warnings: <string>:2: DeprecationWarning: invalid escape 
+sequence '\.'
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 76, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 129, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 122, in shell
+    self.console(local_vars)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 67, in console
+    exec(sys.stdin.read(), local_vars)
+  File "/usr/lib/python3.10/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 345, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+========================================================================
+ARCHIVE OBSOLETE REFURB SKUs (safe migrate)
+DRY_RUN: True
+========================================================================
+Keep: 19 | Archive: 30
+
+[DRY] 20NYS4CP00-8G-256G-T-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[830] on_hand_before=48.0
+  on_hand_after=48.0
+  zeroed duplicates: 48 lots
+
+[DRY] 20NYS4CP00-8G-256G-T-BT70
+  reason: Superseded by 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  keeper: 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  templates=[808] on_hand_before=40.0
+  on_hand_after=40.0
+  zeroed only (SN on CMOSFL): ['PC1ACMXJ@20NYS4CP00-8G-256G-T-BT70-CMOSFL', 'PC1ACMXK@20NYS4CP00-8G-256G-T-BT70-CMOSFL', 'PC1ACMY3@20NYS4CP00-8G-256G-T-BT70-CMOSFL', 'PC1ACMY7@20NYS4CP00-8G-256G-T-BT70-CMOSFL', 'PC1ACMYD@20NYS4CP00-8G-256G-T-BT70-CMOSFL']
+  zeroed duplicates: 40 lots
+
+[DRY] 10MLS1BU00
+  reason: Base MTM superseded by tier/CMOSP SKUs
+  keeper: 10MLS1BU00-CMOSP
+  templates=[767] on_hand_before=13.0
+  on_hand_after=13.0
+  moved to keeper: ['PC0PDVKV']
+  zeroed duplicates: 13 lots
+
+[DRY] 20W4004TAU-BT70
+  reason: Superseded by 20W4004TAU-BT70-CMOSP
+  keeper: 20W4004TAU-BT70-CMOSP
+  templates=[816] on_hand_before=13.0
+  on_hand_after=13.0
+  moved to keeper: ['PF2W5NAE']
+  zeroed duplicates: 13 lots
+
+[DRY] 20T1S6C300-BT70
+  reason: Superseded by 20T1S6C300-BT70-CMOSP
+  keeper: 20T1S6C300-BT70-CMOSP
+  templates=[813] on_hand_before=12.0
+  on_hand_after=12.0
+  zeroed only (SN on CMOSFL): ['PC1PQ9GQ@20T1S6C300-BT70-CMOSFL', 'PC1PQ9HS@20T1S6C300-BT70-CMOSFL', 'PC1PQ9HV@20T1S6C300-BT70-CMOSFL', 'PC1PQ9J3@20T1S6C300-BT70-CMOSFL', 'PC1PQ9JK@20T1S6C300-BT70-CMOSFL']
+  zeroed duplicates: 12 lots
+
+[DRY] 20T1S6C300-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[838] on_hand_before=11.0
+  on_hand_after=11.0
+  zeroed duplicates: 11 lots
+
+[DRY] 20WNA07YAU-BT70
+  reason: Superseded by 20WNA07YAU-BT70-CMOSP
+  keeper: 20WNA07YAU-BT70-CMOSP
+  templates=[818] on_hand_before=10.0
+  on_hand_after=10.0
+  zeroed only (SN on CMOSFL): ['GM048TJZ@20WNA07YAU-BT70-CMOSFL']
+  zeroed duplicates: 10 lots
+
+[DRY] 20NYS4CP00-8G-256G-T-BTU70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[832] on_hand_before=6.0
+  on_hand_after=6.0
+  zeroed duplicates: 6 lots
+
+[DRY] 20WN0025AU-BT70
+  reason: Superseded by 20WN0025AU-BT70-CMOSP
+  keeper: 20WN0025AU-BT70-CMOSP
+  templates=[817] on_hand_before=6.0
+  on_hand_after=6.0
+  zeroed only (SN on CMOSFL): ['PC27R1V2@20WN0025AU-BT70-CMOSFL', 'PC27R1WE@20WN0025AU-BT70-CMOSFL', 'PC27R1WK@20WN0025AU-BT70-CMOSFL', 'PC27R3NL@20WN0025AU-BT70-CMOSFL', 'PC27R40B@20WN0025AU-BT70-CMOSFL']
+  zeroed duplicates: 6 lots
+
+[DRY] 10A8A06QAU
+  reason: Base MTM superseded by tier/CMOSP SKUs
+  keeper: 10A8A06QAU-CMOSP
+  templates=[763] on_hand_before=5.0
+  on_hand_after=5.0
+  zeroed duplicates: 5 lots
+
+[DRY] 20WN0025AU-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[843] on_hand_before=5.0
+  on_hand_after=5.0
+  zeroed duplicates: 5 lots
+
+[DRY] 10MLS5RS00-8G-500G-N
+  reason: Legacy config SKU
+  keeper: 10MLS5RS00-8G-500G-N-CMOSP
+  templates=[805] on_hand_before=4.0
+  on_hand_after=4.0
+  zeroed duplicates: 4 lots
+
+[DRY] 20NYS4CP00-8G-512G-T-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[834] on_hand_before=4.0
+  on_hand_after=4.0
+  zeroed duplicates: 4 lots
+
+[DRY] 20L8SDCE00-BTU70
+  reason: Superseded by 20L8SDCE00-BTU70-CMOSP
+  keeper: 20L8SDCE00-BTU70-CMOSP
+  templates=[807] on_hand_before=3.0
+  on_hand_after=3.0
+  moved to keeper: ['PC14S09X']
+  zeroed duplicates: 3 lots
+
+[DRY] 20L8SBL100-BTU70
+  reason: Superseded by 20L8SBL100-BTU70-CMOSP
+  keeper: 20L8SBL100-BTU70-CMOSP
+  templates=[806] on_hand_before=2.0
+  on_hand_after=2.0
+  zeroed duplicates: 2 lots
+
+[DRY] 20NYS4CP00-8G-512G-T-BT70
+  reason: Superseded by 20NYS4CP00-8G-512G-T-BT70-CMOSP
+  keeper: 20NYS4CP00-8G-512G-T-BT70-CMOSP
+  templates=[810] on_hand_before=2.0
+  on_hand_after=2.0
+  zeroed duplicates: 2 lots
+
+[DRY] 10MLS5RS00-4G-256G-N
+  reason: Legacy config SKU
+  keeper: 10MLS5RS00-4G-256G-N-CMOSP
+  templates=[804] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 20NYS4CP00-8G-256G-T-BTU70
+  reason: Superseded by 20NYS4CP00-8G-256G-T-BTU70-CMOSP
+  keeper: 20NYS4CP00-8G-256G-T-BTU70-CMOSP
+  templates=[809] on_hand_before=1.0
+  on_hand_after=1.0
+  moved to keeper: ['PC1FVNDW']
+  zeroed duplicates: 1 lots
+
+[DRY] 20NYS4CP00-8G-512G-T-BTU70
+  reason: Superseded by 20NYS4CP00-8G-512G-T-BTU70-CMOSP
+  keeper: 20NYS4CP00-8G-512G-T-BTU70-CMOSP
+  templates=[811] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 20T0003UAU-BT70
+  reason: Battery-tier without CMOSP
+  templates=[812] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed only (SN on CMOSFL): ['PC1TKK7W@20T0003UAU-BT70-CMOSFL']
+  zeroed duplicates: 1 lots
+
+[DRY] 20T0003UAU-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[837] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 20T1S6C300-BTU70
+  reason: Superseded by 20T1S6C300-BTU70-CMOSP
+  keeper: 20T1S6C300-BTU70-CMOSP
+  templates=[814] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 20WNA07YAU-BT70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[845] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 20WNS1M500-BTU70-CMOSFL
+  reason: CMOSFL bucket
+  templates=[847] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 30B5S0PF00
+  reason: Base MTM superseded by tier/CMOSP SKUs
+  keeper: 30B5S0PF00-CMOSP
+  templates=[821] on_hand_before=1.0
+  on_hand_after=1.0
+  zeroed duplicates: 1 lots
+
+[DRY] 10FGA004AU
+  reason: Base MTM superseded by tier/CMOSP SKUs
+  keeper: 10FGA004AU-CMOSP
+  templates=[803] on_hand_before=0.0
+  on_hand_after=0.0
+
+[DRY] 10SJ0004AU
+  reason: Base MTM superseded by tier/CMOSP SKUs
+  keeper: 10SJ0004AU-CMOSP
+  templates=[745] on_hand_before=0.0
+  on_hand_after=0.0
+
+[DRY] 20WNS1M500-BTU70
+  reason: Battery-tier without CMOSP
+  templates=[819] on_hand_before=0.0
+  on_hand_after=0.0
+
+[DRY] 30B5S0PF00-BTU70
+  reason: Battery-tier without CMOSP
+  templates=[820] on_hand_before=0.0
+  on_hand_after=0.0
+
+[DRY] 20TJS5WW00-BT70
+  reason: Superseded by 20TJS5WW00-BT70-CMOSP
+  keeper: 20TJS5WW00-BT70-CMOSP
+  templates=[815] on_hand_before=-1.0
+  on_hand_after=-1.0
+
+Preview only. Set DRY_RUN = False and re-run to apply.
+Done.
