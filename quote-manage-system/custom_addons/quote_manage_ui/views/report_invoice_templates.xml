@@ -168,9 +168,6 @@
                 <p>Recycle. Repair. Repurpose.</p>
                 <p class="reware-group-gap">All goods on this tax invoice remain the property of Co-Creative IT PTY LTD until payment has been received in full.</p>
                 <p>This invoice is subject to Co-Creative PTY LTD terms and conditions, which can be viewed at www.cocreativeit.com</p>
-                <p>0499 909 302</p>
-                <p>0411 882 377</p>
-                <p>re-ware@cocreativeit.com</p>
             </div>
             <div class="text-muted mb-3"
                  t-attf-style="#{'text-align:justify;text-justify:inter-word;' if o.company_id.terms_type != 'html' else ''}"
