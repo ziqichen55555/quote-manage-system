@@ -227,9 +227,30 @@
                 <p>Recycle. Repair. Repurpose.</p>
                 <p class="reware-group-gap">All goods on this tax invoice remain the property of Co-Creative IT PTY LTD until payment has been received in full.</p>
                 <p>This invoice is subject to Co-Creative PTY LTD terms and conditions, which can be viewed at www.cocreativeit.com</p>
-                <p>0499 909 302</p>
-                <p>0411 882 377</p>
-                <p>re-ware@cocreativeit.com</p>
+            </div>
+            <div class="text-muted mb-3"
+                 t-attf-style="#{'text-align:justify;text-justify:inter-word;' if o.company_id.terms_type != 'html' else ''}"
+                 t-if="o.move_type != 'out_invoice' and not is_html_empty(o.narration)"
+                 name="comment">
+                <span t-field="o.narration"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_comment_fix_v148"
+              inherit_id="account.report_invoice_document"
+              priority="120"
+              name="Quote Manage UI Comment Block Fix v148">
+        <xpath expr="//div[@name='comment']" position="replace">
+            <div class="text-muted mb-3 reware-comment-block"
+                 t-attf-style="#{'text-align:justify;text-justify:inter-word;' if o.company_id.terms_type != 'html' else ''}"
+                 t-if="o.move_type == 'out_invoice'"
+                 name="comment">
+                <p>Co-Creative IT Pty Ltd are a local West Australian owned and run company, promoting ethical and sustainable practices within the Information Technology Industry.</p>
+                <p>We provide all aspects of IT solutions from creation to recreation. Recycle your hardware with us and support sustainable IT practices with our REWARE project.</p>
+                <p>Recycle. Repair. Repurpose.</p>
+                <p class="reware-group-gap">All goods on this tax invoice remain the property of Co-Creative IT PTY LTD until payment has been received in full.</p>
+                <p>This invoice is subject to Co-Creative PTY LTD terms and conditions, which can be viewed at www.cocreativeit.com</p>
             </div>
             <div class="text-muted mb-3"
                  t-attf-style="#{'text-align:justify;text-justify:inter-word;' if o.company_id.terms_type != 'html' else ''}"
