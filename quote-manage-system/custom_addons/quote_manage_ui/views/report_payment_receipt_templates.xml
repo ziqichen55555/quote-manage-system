@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Payment Receipt: align branding and layout with customer invoices. -->
+  <template id="report_payment_receipt_reware_v150"
+            inherit_id="account.report_payment_receipt_document"
+            priority="50"
+            name="Quote Manage UI Payment Receipt Layout">
+    <xpath expr="//div[hasclass('page')]/h3" position="replace">
+      <h2 class="reware-payment-receipt-title mb-2">
+        Payment Receipt <span t-field="o.name"/>
+      </h2>
+      <p t-if="o.partner_type == 'customer'" class="reware-payment-received-note mb-4">
+        Thank you — we have received your payment in full.
+      </p>
+    </xpath>
+
+    <xpath expr="//div[@name='date']/.." position="replace">
+      <div class="mb-4 mt-2 reware-payment-receipt-summary">
+        <div class="row mb-3">
+          <div class="col-6" t-if="o.date">
+            <strong>Payment Date</strong><br/>
+            <span t-field="o.date" t-options='{"widget": "date"}'/>
+          </div>
+          <div class="col-6 text-end" t-if="o.amount">
+            <strong>Amount Received</strong><br/>
+            <span class="reware-payment-amount"
+                  t-field="o.amount"
+                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-6" t-if="o.partner_id">
+            <strong class="reware-address-label d-block mb-1">Bill To</strong>
+            <span t-field="o.partner_id"
+                  t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
+          </div>
+          <div class="col-6 text-end"
+               t-if="values['display_payment_method'] and o.payment_method_id">
+            <strong>Payment Method</strong><br/>
+            <span t-field="o.payment_method_id.name"/>
+          </div>
+        </div>
+        <div class="row" t-if="o.ref">
+          <div class="col-12">
+            <strong>Reference</strong><br/>
+            <span t-field="o.ref"/>
+          </div>
+        </div>
+      </div>
+    </xpath>
+
+    <xpath expr="//table[@name='invoices']" position="attributes">
+      <attribute name="class">table table-sm reware-payment-invoices-table</attribute>
+    </xpath>
+
+    <xpath expr="//table[@name='invoices']/thead/tr" position="replace">
+      <tr>
+        <th>Invoice Date</th>
+        <th>Invoice Number</th>
+        <th>Reference</th>
+        <th t-if="otherCurrency" class="text-end">Amount In Currency</th>
+        <th class="text-end">Amount Paid</th>
+      </tr>
+    </xpath>
+  </template>
+</odoo>

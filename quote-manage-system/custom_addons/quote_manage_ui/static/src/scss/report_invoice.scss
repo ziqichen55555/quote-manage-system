@@ -82,3 +82,33 @@
 .reware-comment-block .reware-group-gap {
     margin-top: 0.8rem;
 }
+
+.reware-payment-receipt-title {
+    color: #4a4a4a;
+    font-weight: 400;
+}
+
+.reware-payment-received-note {
+    color: #198754;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.reware-payment-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.reware-payment-receipt-summary {
+    border-top: 1px solid #dee2e6;
+    padding-top: 0.75rem;
+}
+
+.reware-payment-invoices-table {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.reware-payment-invoices-table thead th {
+    border-bottom: 1px solid #000;
+}
