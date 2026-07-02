@@ -3,9 +3,9 @@
     <!-- Larger logo in report header (all external layouts). -->
     <template id="external_layout_standard_reware_logo"
               inherit_id="web.external_layout_standard">
-        <xpath expr="//div[hasclass('col-3')][hasclass('mb4')]/img[@alt='Logo']" position="attributes">
+        <xpath expr="//div[hasclass('col-3')][hasclass('mb4')]/img" position="attributes">
             <attribute name="class">o_reware_report_logo</attribute>
-            <attribute name="style"/>
+            <attribute name="style">max-height: 120px; width: 100%; max-width: 200px; object-fit: contain; object-position: left top;</attribute>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']" position="inside">
             <li t-if="company.vat" class="mt-1 reware-company-abn">
@@ -18,7 +18,7 @@
 
     <template id="external_layout_boxed_reware_logo"
               inherit_id="web.external_layout_boxed">
-        <xpath expr="//div[hasclass('o_boxed_header')]//img[@alt='Logo']" position="attributes">
+        <xpath expr="//div[hasclass('o_boxed_header')]//div[hasclass('col-6')][1]/img" position="attributes">
             <attribute name="class">o_reware_report_logo</attribute>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']" position="inside">
@@ -32,8 +32,9 @@
 
     <template id="external_layout_bold_reware_logo"
               inherit_id="web.external_layout_bold">
-        <xpath expr="//div[hasclass('o_clean_header')]//img[@alt='Logo']" position="attributes">
+        <xpath expr="//div[hasclass('o_clean_header')]//div[hasclass('col-6')][1]/img" position="attributes">
             <attribute name="class">o_reware_report_logo</attribute>
+            <attribute name="style">max-height: 160px; width: 100%; max-width: 320px; object-fit: contain; object-position: left top;</attribute>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']" position="inside">
             <li t-if="company.vat" class="mt-1 reware-company-abn">
@@ -46,7 +47,7 @@
 
     <template id="external_layout_striped_reware_logo"
               inherit_id="web.external_layout_striped">
-        <xpath expr="//img[@alt='Logo'][hasclass('float-start')]" position="attributes">
+        <xpath expr="//div[hasclass('o_background_header')]/img[hasclass('float-start')]" position="attributes">
             <attribute name="class">float-start o_reware_report_logo</attribute>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']" position="inside">
@@ -63,6 +64,17 @@
     <template id="report_invoice_document_payment_details"
               inherit_id="account.report_invoice_document"
               name="Quote Manage UI Invoice Payment Details">
+        <xpath expr="//div[@id='informations']" position="inside">
+            <div t-if="o.move_type == 'out_invoice' and o.company_id.vat"
+                 class="col-auto col-3 mw-100 mb-2"
+                 name="quote_manage_ui_company_abn">
+                <strong>
+                    <t t-if="o.company_id.country_id.code == 'AU'">ABN</t>
+                    <t t-else=""><t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/></t>:
+                </strong>
+                <span t-field="o.company_id.vat"/>
+            </div>
+        </xpath>
         <xpath expr="//div[@name='comment']" position="before">
             <t t-set="company_bank" t-value="o.partner_bank_id or o.company_id.bank_ids[:1]"/>
             <div class="mb-3"
