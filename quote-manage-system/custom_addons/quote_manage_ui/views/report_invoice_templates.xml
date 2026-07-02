@@ -166,4 +166,19 @@
             </div>
         </xpath>
     </template>
+
+    <!-- v144 hard layout fix:
+         enforce totals block + payment block vertical stacking in PDF -->
+    <template id="report_invoice_document_layout_stack_fix_v144"
+              inherit_id="account.report_invoice_document"
+              priority="95"
+              name="Quote Manage UI Invoice Layout Stack Fix v144">
+        <xpath expr="//div[@id='right-elements']" position="attributes">
+            <attribute name="t-attf-class">#{'col-5' if report_type != 'html' else 'col-12 col-md-5'} ms-auto</attribute>
+            <attribute name="style">display:block; float:none !important; clear:none; margin-left:auto;</attribute>
+        </xpath>
+        <xpath expr="//div[@id='payment_term']" position="attributes">
+            <attribute name="style">display:block; clear:both !important; width:100%; margin-top:10px; padding-top:12px; border-top:1px solid #dee2e6;</attribute>
+        </xpath>
+    </template>
 </odoo>
