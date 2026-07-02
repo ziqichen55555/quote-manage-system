@@ -15,13 +15,58 @@
     align-items: flex-start;
 }
 
-.header .row > .col-6:first-child img.o_reware_report_logo {
-    max-height: 160px;
-    max-width: 320px;
+.header .o_reware_logo_col img.o_reware_report_logo,
+.header .row > .col-6:first-child img.o_reware_report_logo,
+.header .row > .col-7:first-child img.o_reware_report_logo {
+    max-height: 220px;
+    max-width: 420px;
 }
 
 .o_background_header > img.o_reware_report_logo {
     max-height: 100px;
     max-width: 220px;
     margin-right: 1rem;
+}
+
+.reware-address-label {
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.o_report_layout_bold .address.row {
+    margin-top: 1.25rem !important;
+    padding-top: 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.o_report_layout_bold .o_reware_from_col {
+    padding-top: 0.25rem;
+}
+
+.o_report_layout_bold .reware-bill-to-block {
+    padding-top: 0.25rem;
+}
+
+/* Totals float right; payment/terms must sit below Amount Due, not beside it. */
+.o_reware_invoice_totals_clear {
+    clear: both;
+    height: 0;
+    line-height: 0;
+    font-size: 0;
+}
+
+.o_reware_invoice_payment_block {
+    clear: both;
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+}
+
+#right-elements {
+    float: right;
+    margin-bottom: 0.25rem;
 }

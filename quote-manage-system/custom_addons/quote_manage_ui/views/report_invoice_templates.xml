@@ -32,11 +32,18 @@
 
     <template id="external_layout_bold_reware_logo"
               inherit_id="web.external_layout_bold">
-        <xpath expr="//div[hasclass('o_clean_header')]//div[hasclass('col-6')][1]/img" position="attributes">
+        <xpath expr="//div[hasclass('o_clean_header')]//div[hasclass('col-6')][1]" position="attributes">
+            <attribute name="class">col-7 o_reware_logo_col</attribute>
+        </xpath>
+        <xpath expr="//div[@name='company_address']" position="attributes">
+            <attribute name="class">col-4 offset-1 o_reware_from_col text-end</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_clean_header')]//div[hasclass('col-7')][1]/img" position="attributes">
             <attribute name="class">o_reware_report_logo</attribute>
-            <attribute name="style">max-height: 160px; width: 100%; max-width: 320px; object-fit: contain; object-position: left top;</attribute>
+            <attribute name="style">max-height: 220px; width: 100%; max-width: 420px; object-fit: contain; object-position: left top;</attribute>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']" position="inside">
+            <li class="mb-1 reware-address-label"><strong>From</strong></li>
             <li t-if="company.vat" class="mt-1 reware-company-abn">
                 <t t-if="company.country_id.code == 'AU'">ABN</t>
                 <t t-else=""><t t-esc="company.country_id.vat_label or 'Tax ID'"/></t>:
@@ -59,6 +66,14 @@
         </xpath>
     </template>
 
+    <!-- Bill To label on customer address (invoice body, right column). -->
+    <template id="address_layout_bill_to"
+              inherit_id="web.address_layout">
+        <xpath expr="//div[@name='address']/t" position="before">
+            <strong class="d-block mb-1 reware-address-label">Bill To</strong>
+        </xpath>
+    </template>
+
     <!-- Append Co-Creative IT payment details (bank / BSB / account) to customer invoices.
          Data comes from the invoice Recipient Bank, or the company's first bank account. -->
     <template id="report_invoice_document_payment_details"
@@ -74,6 +89,14 @@
                 </strong>
                 <span t-field="o.company_id.vat"/>
             </div>
+        </xpath>
+        <!-- Force totals block to finish before payment / terms (wkhtmltopdf float fix). -->
+        <xpath expr="//div[@id='right-elements']" position="after">
+            <div class="o_reware_invoice_totals_clear" style="clear: both; width: 100%; height: 0; line-height: 0;"/>
+        </xpath>
+        <xpath expr="//div[@id='payment_term']" position="attributes">
+            <attribute name="class" add="o_reware_invoice_payment_block"/>
+            <attribute name="style">clear: both; width: 100%; padding-top: 12px; margin-top: 8px; border-top: 1px solid #dee2e6;</attribute>
         </xpath>
         <xpath expr="//div[@name='comment']" position="before">
             <t t-set="company_bank" t-value="o.partner_bank_id or o.company_id.bank_ids[:1]"/>
