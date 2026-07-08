@@ -466,6 +466,12 @@ html:has(main .o_wsale_products_page) {
         margin-bottom: 1.75rem;
         max-width: 30rem;
     }
+    // Mobile/tablet: Shop sits with Learn more + Donate (header Shop is in the drawer).
+    .rw-hero-ctas {
+        @media (max-width: 991.98px) {
+            gap: 0.65rem !important;
+        }
+    }
     .rw-hero-image {
         border-radius: 8px;
         overflow: hidden;

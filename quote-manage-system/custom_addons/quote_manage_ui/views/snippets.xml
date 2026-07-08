@@ -18,9 +18,10 @@
                     <div class="col-lg-6">
                         <h1 class="rw-hero-title">Turning old tech into opportunity.</h1>
                         <p class="rw-hero-sub">Your secure, compliant way to clear out old devices and help close the digital divide.</p>
-                        <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex flex-wrap gap-3 rw-hero-ctas">
                             <a href="#rw-services" class="rw-btn-coral">Learn more</a>
                             <a href="/contactus" class="rw-btn-outline-light">Donate</a>
+                            <a href="/shop" class="rw-btn-coral-red d-lg-none" target="_blank" rel="noopener noreferrer">Shop</a>
                         </div>
                     </div>
                     <div class="col-lg-6">
