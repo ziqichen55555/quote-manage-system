@@ -53,8 +53,9 @@ set EXITCODE=%ERRORLEVEL%
 echo.
 if %EXITCODE% NEQ 0 (
     echo Merge finished with warnings ^(see import-not-ready report^).
+    echo Still upload MERGED import-all CSV if it has your devices ^(Pass + CMOS Fail^).
 ) else (
-    echo All devices import-ready. Upload MERGED import-all CSV to Odoo.
+    echo OK. Upload MERGED import-all CSV to Odoo ^(NOT import-ready — that file has Pass only^).
 )
 pause
 exit /b %EXITCODE%

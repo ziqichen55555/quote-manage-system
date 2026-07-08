@@ -48,10 +48,10 @@
                     <p class="mb-2"><strong>Standard workflow (laptops / desktops)</strong></p>
                     <ol class="mb-2 ps-3">
                         <li>On your PC: put receipt + Blancco report in the <em>re-ware merge</em> folder</li>
-                        <li>Double-click <strong>run_merge.bat</strong> → get <code>MERGED import-all &lt;date&gt;.csv</code></li>
-                        <li>Upload that CSV here (must have <strong>Serial</strong> + <strong>MTM</strong> columns)</li>
-                        <li><strong>Status = SUCCESS</strong> + CMOS Pass (<code>-CMOSP</code>) or Fail (<code>-CMOSFL</code>)</li>
-                        <li>Sold serials in <code>sold_serials_exclude.txt</code> are never imported</li>
+                        <li>Double-click <strong>run_merge.bat</strong> → upload <code>MERGED import-all &lt;date&gt;.csv</code> (not import-ready)</li>
+                        <li>CMOS Fail machines are in <strong>import-all</strong> as <code>-CMOSFL</code> (warehouse only)</li>
+                        <li><code>MERGED import-ready</code> = Pass only — CMOS Fail is <strong>not</strong> in that file</li>
+                        <li><code>MERGED import-not-ready</code> = Blancco errors / sold — do not upload</li>
                     </ol>
                     <p class="mb-2"><strong>Fresh catalog (one-time cleanup)</strong></p>
                     <ol class="mb-2 ps-3">

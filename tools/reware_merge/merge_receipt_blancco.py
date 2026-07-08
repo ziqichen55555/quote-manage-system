@@ -246,9 +246,15 @@ def battery_tier_code(tier_label: str) -> str:
 
 def normalize_cmos_tier(mobo_status) -> str:
     s = str(mobo_status or "").strip().lower()
-    if s in ("successful", "pass", "passed", "ok"):
+    if not s or s in ("nan", "none", "unknown", "not tested", "n/a"):
+        return ""
+    if s in ("successful", "pass", "passed", "ok") or (
+        "success" in s and "unsuccess" not in s and "not success" not in s
+    ):
         return "Pass"
-    if s in ("failed", "fail", "error"):
+    if s in ("failed", "fail", "error", "unsuccessful", "not successful") or (
+        "fail" in s or "error" in s or "unsuccess" in s
+    ):
         return "Fail"
     return ""
 
@@ -1086,8 +1092,8 @@ def classify_import_bucket(row, sold_exclude: set[str]) -> tuple[str, str]:
         reason = str(row.get("Failure reason", "") or "").strip()
         return "not_ready", reason or "Blancco match failed"
     if cmos_tier == "Fail":
-        return "not_ready", "CMOS Fail"
-    return "not_ready", "CMOS unknown"
+        return "not_ready", "CMOS Fail (Blancco not SUCCESS — fix match first)"
+    return "not_ready", "CMOS unknown (check motherboard test status in Blancco)"
 
 
 def split_import_buckets(
@@ -1171,8 +1177,8 @@ def build_analysis(
         ["  CMOSP (shop when in stock)", cmosp],
         ["  CMOSFL (warehouse only)", cmosfl],
         ["Sold serials excluded", sold_excluded],
-        ["Import-ready Pass-only (legacy)", len(ready)],
-        ["Import-not-ready", len(not_ready)],
+        ["Import-ready Pass-only (legacy — NOT for CMOS Fail)", len(ready)],
+        ["Import-not-ready (do NOT upload)", len(not_ready)],
         ["", ""],
         ["Not-ready breakdown", "Count"],
     ]
@@ -1266,7 +1272,8 @@ def show_result_popup(
     messagebox.showinfo(
         "Re-Ware merge complete",
         summary
-        + f"\n\nSaved:\n  {all_path.name}\n  {ready_path.name}\n  {not_ready_path.name}",
+        + f"\n\nSaved (upload import-all to Odoo):\n  {all_path.name}\n\n"
+        f"Reference only:\n  {ready_path.name}\n  {not_ready_path.name}",
     )
     root.destroy()
 
@@ -1323,10 +1330,13 @@ def main() -> int:
     )
     summary += split_summary_text(import_all, ready, not_ready)
     summary += (
-        f"\n\nUpload import-all CSV to Odoo:\n"
-        f"  Inventory -> Upload inventory CSV (after DB backup + archive old SKUs)\n"
-        f"Includes CMOS Pass (CMOSP) + CMOS Fail (CMOSFL). Sold SNs in sold_serials_exclude.txt are skipped.\n"
-        f"Do not upload import-not-ready — fix Blancco first."
+        f"\n\n=== UPLOAD TO ODOO ===\n"
+        f"  {all_xlsx.name}  (or {all_csv.name})\n"
+        f"  Includes CMOS Pass (-CMOSP) AND CMOS Fail (-CMOSFL).\n"
+        f"\n=== DO NOT UPLOAD ===\n"
+        f"  {ready_xlsx.name} — Pass-only subset (CMOS Fail is NOT in this file).\n"
+        f"  {not_ready_xlsx.name} — Blancco match errors / sold / unknown CMOS.\n"
+        f"\nInventory -> Upload inventory CSV (after DB backup + archive old SKUs)."
     )
     if "--yes" in sys.argv or "--auto" in sys.argv:
         print(summary)
