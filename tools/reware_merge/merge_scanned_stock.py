@@ -15,7 +15,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from merge_receipt_blancco import load_portal_scan_stock, normalize_mtm, normalize_serial
+from merge_receipt_blancco import (
+    load_portal_scan_stock,
+    normalize_product_row,
+    normalize_mtm,
+    normalize_serial,
+)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -33,8 +38,7 @@ def load_scanned_csv(path: Path) -> list[dict]:
     col_sn = next((c for c in raw.columns if "serial" in c.lower()), raw.columns[1])
     rows = []
     for _, r in raw.iterrows():
-        mtm = fix_mtm_typo(normalize_mtm(r[col_mtm]))
-        serial = normalize_serial(str(r[col_sn]))
+        mtm, serial = normalize_product_row(r[col_mtm], r[col_sn])
         if mtm and serial:
             rows.append({"Device MTM": mtm, "Serial": serial, "_source": path.name})
     return rows
@@ -46,8 +50,8 @@ def load_scanned_file(path: Path) -> list[dict]:
     df = load_portal_scan_stock(path)
     return [
         {
-            "Device MTM": fix_mtm_typo(r.mtm),
-            "Serial": r.serial,
+            "Device MTM": normalize_product_row(r.mtm, r.serial)[0],
+            "Serial": normalize_product_row(r.mtm, r.serial)[1],
             "_source": path.name,
         }
         for r in df.itertuples()

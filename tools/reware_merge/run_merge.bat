@@ -3,13 +3,18 @@ chcp 65001 >nul
 cd /d "%~dp0"
 echo Re-Ware: merging product list + Blancco report...
 echo (includes laptop battery tier: 70%%+ / Under 70%%)
+echo Full guide: HOW_TO_USE.md in this folder
 echo.
 
 set "ENGINE=%~dp0merge_receipt_blancco.py"
-set "REPO_ENGINE=c:\Users\User\quote-management-system\quote-manage-system\tools\reware_merge\merge_receipt_blancco.py"
+set "REPO_DIR=c:\Users\User\quote-management-system\quote-manage-system\tools\reware_merge"
+set "REPO_ENGINE=%REPO_DIR%\merge_receipt_blancco.py"
 if exist "%REPO_ENGINE%" (
     echo Syncing merge_receipt_blancco.py from repo...
     copy /Y "%REPO_ENGINE%" "%ENGINE%" >nul
+)
+if exist "%REPO_DIR%\HOW_TO_USE.md" (
+    copy /Y "%REPO_DIR%\HOW_TO_USE.md" "%~dp0HOW_TO_USE.md" >nul
 )
 if not exist "%ENGINE%" (
     echo.

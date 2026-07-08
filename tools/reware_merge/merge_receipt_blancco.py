@@ -15,7 +15,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill
 
-MERGE_LOGIC_VERSION = "20260708-import-all-cmos"
+MERGE_LOGIC_VERSION = "20260708-thinkcentre-sn"
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORTED_EXTENSIONS = (".csv", ".xlsx")
@@ -38,6 +38,13 @@ OUTPUT_SKIP_PREFIXES = (
 SERIAL_S_PREFIX = re.compile(r"^S((?:PC|PF|GM|R)\w+)$", re.I)
 SCAN_SERIAL_TAIL_RE = re.compile(r"(?P<serial>(?:PC|PF|GM|R)[A-Z0-9]{6,})$", re.I)
 LENOVO_MTM_RE = re.compile(r"^\d{2}[A-Z0-9]{8}$", re.I)
+# ThinkCentre short model code in Blancco (e.g. 3209A93, 5536RE5) — 7 chars, starts with digit.
+LENOVO_SHORT_MTM_RE = re.compile(r"^\d{4}[A-Z0-9]{3}$", re.I)
+THINKCENTRE_SN_SUFFIX_RE = re.compile(r"^[A-Z0-9]{3,4}$", re.I)
+# Single-char OCR swaps allowed for same-MTM rescue (never L↔1 — distinct units like PC1TKK8L / PC1TKK81).
+CONFUSABLE_CHAR_PAIRS = frozenset(
+    {("I", "1"), ("O", "0"), ("S", "5"), ("B", "8"), ("Z", "2"), ("G", "6"), ("Q", "0")}
+)
 PORTAL_SCAN_NAME_MARKERS = ("scanned stock", "portal")
 GEN_RE = re.compile(r"gen\s*(\d+\w*)", re.I)
 SYSVER_GEN_RE = re.compile(r"Gen(?:eration)?\s*(\d+\w*)", re.I)
@@ -90,6 +97,61 @@ def normalize_mtm(value) -> str:
     return str(value).strip().upper()
 
 
+def fix_thinkcentre_mtm_typo(mtm: str) -> str:
+    """Scanner typos on ThinkCentre model codes."""
+    m = (mtm or "").strip().upper()
+    if m.startswith("553RE5"):
+        return "5536RE5" + m[6:]
+    if m.startswith("2O") and re.match(r"^2O[A-Z0-9]{8}$", m):
+        return "20" + m[2:]
+    return m
+
+
+def parse_thinkcentre_glued_code(glued: str) -> tuple[str, str]:
+    """Split portal glue '3209A93PBL' → MTM 3209A93 + serial prefix PBL."""
+    g = fix_thinkcentre_mtm_typo(glued.strip().upper().replace(" ", ""))
+    if len(g) <= 7:
+        return "", ""
+    if len(g) == 10 and LENOVO_MTM_RE.match(g) and g.startswith(("10", "20", "30")):
+        return "", ""
+    mtm = g[:7]
+    if not LENOVO_SHORT_MTM_RE.match(mtm):
+        return "", ""
+    return mtm, g[7:]
+
+
+def fix_thinkcentre_scan_pair(col0: str, col1: str) -> tuple[str, str]:
+    """ThinkCentre portal scan: digit-start model + SN prefix in one column, 4-char SN tail in the other.
+
+    Example scan row: 3209A93PBL,VRWE → model 3209A93, serial PBLVRWE (Blancco system serial).
+    Example scan row: 5536RE5R85,PRX4 → model 5536RE5, serial R85PRX4.
+    """
+    a = str(col0 or "").strip()
+    b = str(col1 or "").strip()
+    if not a or not b or b.lower() == "nan":
+        return normalize_mtm(a), normalize_serial(b)
+
+    au = a.upper().replace(" ", "")
+    bu = b.upper().replace(" ", "")
+
+    if THINKCENTRE_SN_SUFFIX_RE.match(bu):
+        mtm, prefix = parse_thinkcentre_glued_code(au)
+        if mtm and prefix:
+            return mtm, normalize_serial(prefix + bu)
+
+    if THINKCENTRE_SN_SUFFIX_RE.match(au):
+        mtm, prefix = parse_thinkcentre_glued_code(bu)
+        if mtm and prefix:
+            return mtm, normalize_serial(prefix + au)
+
+    return normalize_mtm(a), normalize_serial(b)
+
+
+def normalize_product_row(mtm_raw, serial_raw) -> tuple[str, str]:
+    mtm, serial = fix_thinkcentre_scan_pair(str(mtm_raw or ""), str(serial_raw or ""))
+    return fix_thinkcentre_mtm_typo(mtm), serial
+
+
 def _is_portal_scan_noise(text: str) -> bool:
     s = (text or "").strip().upper()
     if not s or s == "NAN":
@@ -108,8 +170,7 @@ def parse_portal_scan_row(col0, col1="") -> tuple[str, str]:
     if c0.upper().startswith("1S"):
         c0 = c0[2:]
     if c1 and c1.lower() != "nan":
-        mtm = normalize_mtm(c0)
-        serial = normalize_serial(c1)
+        mtm, serial = normalize_product_row(c0, c1)
         if mtm and serial:
             return mtm, serial
     blob = c0.upper().replace(" ", "")
@@ -286,9 +347,11 @@ def cmos_tier_code(tier_label: str) -> str:
 
 
 def is_desktop_mtm(mtm: str) -> bool:
-  """Lenovo ThinkCentre / ThinkStation MTMs (10*, 30*)."""
-  mtm_u = (mtm or "").strip().upper()
-  return bool(mtm_u.startswith(("10", "30")))
+    """Lenovo ThinkCentre / ThinkStation MTMs (10*, 30*, or 7-char Blancco model)."""
+    mtm_u = fix_thinkcentre_mtm_typo((mtm or "").strip().upper())
+    if mtm_u.startswith(("10", "30")):
+        return True
+    return bool(LENOVO_SHORT_MTM_RE.match(mtm_u))
 
 
 def is_laptop_product(model_name: str, mtm: str, system_version: str = "") -> bool:
@@ -677,6 +740,11 @@ def load_product_list(path: Path) -> pd.DataFrame:
     out.columns = ["mtm_raw", "serial_raw"] + (["has_ssd_raw"] if has_ssd_col else [])
     out["mtm"] = out["mtm_raw"].map(normalize_mtm)
     out["serial"] = out["serial_raw"].map(normalize_serial)
+    fixed = out.apply(
+        lambda r: normalize_product_row(r["mtm_raw"], r["serial_raw"]), axis=1, result_type="expand"
+    )
+    out["mtm"] = fixed[0]
+    out["serial"] = fixed[1]
     if has_ssd_col:
         out["no_ssd"] = out["has_ssd_raw"].fillna("").str.strip().str.upper().eq("NO SSD")
     else:
@@ -769,8 +837,112 @@ def is_hp_or_panasonic(manufacturer: str, mtm: str = "", model_hint: str = "") -
     return is_sku_title_vendor(manufacturer, mtm, model_hint)
 
 def is_lenovo_style_mtm(mtm: str) -> bool:
-    mtm_u = (mtm or "").strip().upper()
-    return bool(re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u) or mtm_u.startswith(("10", "20", "30")))
+    mtm_u = fix_thinkcentre_mtm_typo((mtm or "").strip().upper())
+    return bool(
+        re.match(r"^\d{2}[A-Z0-9]{8}$", mtm_u)
+        or mtm_u.startswith(("10", "20", "30"))
+        or LENOVO_SHORT_MTM_RE.match(mtm_u)
+    )
+
+def one_edit_confusable_serial(a: str, b: str) -> bool:
+    """Same length, exactly one differing char, and that pair is a known OCR swap."""
+    if len(a) != len(b):
+        return False
+    diffs = [(x, y) for x, y in zip(a.upper(), b.upper()) if x != y]
+    if len(diffs) != 1:
+        return False
+    x, y = diffs[0]
+    return (x, y) in CONFUSABLE_CHAR_PAIRS or (y, x) in CONFUSABLE_CHAR_PAIRS
+
+
+def serial_lookup_aliases(serial: str) -> list[str]:
+    """Small alias list for reports lookup (scan → Blancco direction only)."""
+    s = normalize_serial(serial)
+    aliases = []
+    if s.startswith("PCIF"):
+        aliases.append("PC1F" + s[4:])
+    return aliases
+
+
+def _blancco_serial_reserved(
+    blancco_serial: str,
+    receipt_serial: str,
+    scan_serials: set[str],
+    claimed_serials: set[str],
+) -> bool:
+    sn = blancco_serial.upper()
+    if sn in claimed_serials:
+        return True
+    # Another scanned row already owns this exact SN (different unit).
+    if sn in scan_serials and sn != normalize_serial(receipt_serial):
+        return True
+    return False
+
+
+def find_blancco_fuzzy_match(
+    receipt_serial: str,
+    receipt_mtm: str,
+    blancco: pd.DataFrame,
+    by_serial,
+    scan_serials: set[str],
+    claimed_serials: set[str],
+):
+    """Safe fuzzy tiers after exact match fails. Returns (row, kind) or (None, '')."""
+    receipt_serial = normalize_serial(receipt_serial)
+    receipt_mtm = fix_thinkcentre_mtm_typo(normalize_mtm(receipt_mtm))
+
+    for alias in serial_lookup_aliases(receipt_serial):
+        if alias not in by_serial.index:
+            continue
+        if _blancco_serial_reserved(alias, receipt_serial, scan_serials, claimed_serials):
+            continue
+        row = by_serial.loc[alias]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        return row, "alias_serial"
+
+    if not receipt_mtm:
+        return None, ""
+    pool = blancco[
+        blancco["blancco_mtm"].astype(str).str.upper().eq(receipt_mtm.upper())
+    ]
+    hits: list[str] = []
+    for bl_sn in pool["serial"].astype(str):
+        bl_u = bl_sn.upper()
+        if _blancco_serial_reserved(bl_u, receipt_serial, scan_serials, claimed_serials):
+            continue
+        if one_edit_confusable_serial(receipt_serial, bl_u):
+            hits.append(bl_u)
+    if len(hits) == 1 and hits[0] in by_serial.index:
+        row = by_serial.loc[hits[0]]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        return row, "same_mtm_one_char"
+    return None, ""
+
+
+def find_blancco_by_serial_suffix(by_serial, receipt_serial: str, receipt_mtm: str):
+    """Fallback when scan stored only the SN tail against a glued model+prefix column."""
+    if not receipt_serial or not THINKCENTRE_SN_SUFFIX_RE.match(receipt_serial):
+        return None
+    receipt_mtm = fix_thinkcentre_mtm_typo(normalize_mtm(receipt_mtm))
+    glued_mtm, _ = parse_thinkcentre_glued_code(receipt_mtm)
+    target_mtm = glued_mtm or (receipt_mtm[:7] if LENOVO_SHORT_MTM_RE.match(receipt_mtm[:7]) else receipt_mtm)
+    matches = []
+    for key in by_serial.index:
+        key_s = str(key).upper()
+        if not key_s.endswith(receipt_serial):
+            continue
+        row = by_serial.loc[key]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        bl_mtm = fix_thinkcentre_mtm_typo(normalize_mtm(str(row.get("blancco_mtm", "") or "")))
+        if target_mtm and bl_mtm and bl_mtm == target_mtm:
+            matches.append(row)
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
 
 def build_blancco_indexes(blancco: pd.DataFrame):
     """Index Blancco rows by device serial, system SKU number, and system model."""
@@ -793,13 +965,27 @@ def build_blancco_indexes(blancco: pd.DataFrame):
     )
     return by_serial, by_sku, by_model
 
-def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receipt_mtm: str):
+def resolve_blancco_row(
+    by_serial,
+    by_sku,
+    by_model,
+    receipt_serial: str,
+    receipt_mtm: str,
+    blancco: pd.DataFrame | None = None,
+    scan_serials: set[str] | None = None,
+    claimed_serials: set[str] | None = None,
+):
     """Match receipt row to Blancco.
 
-    Lenovo: receipt serial ≈ Blancco *system serial*.
-    HP / Panasonic / Dell: receipt may list *system SKU* in the serial or MTM column —
-    join via *system SKU number*, then use Blancco *system serial* as the device SN.
+    Tiers (automatic):
+    1. Rebuild ThinkCentre split scan SN, then exact System serial match.
+    2. SKU-column fallbacks for HP/Dell/Panasonic.
+
+    Does NOT auto-merge OCR typos (PC1450A6 vs PC14S0A6 etc.) — use probe_match_methods.py
+  to review candidates; fix scan or Blancco manually after checking the label.
     """
+    _ = (blancco, scan_serials, claimed_serials)  # reserved for future opt-in fuzzy
+    receipt_mtm, receipt_serial = normalize_product_row(receipt_mtm, receipt_serial)
     for key, idx, kind in (
         (receipt_serial, by_serial, "system_serial"),
         (receipt_serial, by_sku, "system_sku"),
@@ -811,6 +997,9 @@ def resolve_blancco_row(by_serial, by_sku, by_model, receipt_serial: str, receip
         if isinstance(row, pd.DataFrame):
             row = row.iloc[0]
         return row, kind
+    row = find_blancco_by_serial_suffix(by_serial, receipt_serial, receipt_mtm)
+    if row is not None:
+        return row, "system_serial"
     # MTM/model fallback: only for SKU-style receipts without a unit serial (HP/Dell/Panasonic).
     # Never match Lenovo by MTM alone — would assign the wrong device SN/specs.
     if receipt_mtm and receipt_mtm in by_model.index:
@@ -964,14 +1153,25 @@ def merge_data(
 ) -> pd.DataFrame:
     by_serial, by_sku, by_model = build_blancco_indexes(blancco)
     lut_idx = lut.set_index("mtm", drop=False) if not lut.empty else {}
+    scan_serials = set(wd["serial"].astype(str).str.upper())
+    claimed_blancco_serials: set[str] = set()
 
     rows = []
     for _, wd_row in wd.iterrows():
         receipt_serial = wd_row["serial"]
         receipt_mtm = wd_row["mtm"]
         bl, match_kind = resolve_blancco_row(
-            by_serial, by_sku, by_model, receipt_serial, receipt_mtm
+            by_serial,
+            by_sku,
+            by_model,
+            receipt_serial,
+            receipt_mtm,
+            blancco=blancco,
+            scan_serials=scan_serials,
+            claimed_serials=claimed_blancco_serials,
         )
+        if bl is not None:
+            claimed_blancco_serials.add(str(bl.get("serial", "") or "").strip().upper())
 
         uncollected = uncollected_map.get(receipt_serial, False)
         no_ssd = bool(wd_row.get("no_ssd", False))
