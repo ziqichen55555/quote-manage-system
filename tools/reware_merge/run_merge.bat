@@ -6,12 +6,10 @@ echo (includes laptop battery tier: 70%%+ / Under 70%%)
 echo.
 
 set "ENGINE=%~dp0merge_receipt_blancco.py"
-if not exist "%ENGINE%" (
-    set "REPO_ENGINE=c:\Users\User\quote-management-system\quote-manage-system\tools\reware_merge\merge_receipt_blancco.py"
-    if exist "%REPO_ENGINE%" (
-        echo merge_receipt_blancco.py missing — restoring from repo...
-        copy /Y "%REPO_ENGINE%" "%ENGINE%" >nul
-    )
+set "REPO_ENGINE=c:\Users\User\quote-management-system\quote-manage-system\tools\reware_merge\merge_receipt_blancco.py"
+if exist "%REPO_ENGINE%" (
+    echo Syncing merge_receipt_blancco.py from repo...
+    copy /Y "%REPO_ENGINE%" "%ENGINE%" >nul
 )
 if not exist "%ENGINE%" (
     echo.

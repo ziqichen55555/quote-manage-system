@@ -15,7 +15,8 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill
 
-# --- Config ---
+MERGE_LOGIC_VERSION = "20260708-import-all-cmos"
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORTED_EXTENSIONS = (".csv", ".xlsx")
 PRODUCT_LIST_MAX_COLS = 6
@@ -257,6 +258,27 @@ def normalize_cmos_tier(mobo_status) -> str:
     ):
         return "Fail"
     return ""
+
+
+def effective_cmos_tier(status: str, cmos_raw) -> str:
+    """Pass/Fail for bucket split. SUCCESS + missing mobo test defaults to Pass."""
+    tier = normalize_cmos_tier(cmos_raw)
+    if not tier and str(status or "").strip().upper() == "SUCCESS":
+        return "Pass"
+    return tier
+
+
+def cmos_output_label(status: str, cmos_raw, cmos_tier: str) -> str:
+    raw = str(cmos_raw or "").strip()
+    if raw:
+        return raw
+    if str(status or "").strip().upper() != "SUCCESS":
+        return raw
+    if cmos_tier == "Pass":
+        return "Successful"
+    if cmos_tier == "Fail":
+        return "Failed"
+    return raw
 
 
 def cmos_tier_code(tier_label: str) -> str:
@@ -1020,9 +1042,8 @@ def merge_data(
         battery_display = battery_display_label(battery_percents)
         battery_tier = battery_tier_label(battery_percents)
         tier_code = battery_tier_code(battery_tier)
-        cmos_tier = normalize_cmos_tier(
-            bl.get("mobo_status", "") if bl is not None else ""
-        )
+        cmos_raw = str(bl.get("mobo_status", "") if bl is not None else "")
+        cmos_tier = effective_cmos_tier(status, cmos_raw)
         cmos_code = cmos_tier_code(cmos_tier)
         if is_laptop_product(model_name, mtm, system_version):
             shop_sku = f"{mtm}-{tier_code}"
@@ -1050,7 +1071,7 @@ def merge_data(
                 "Battery tier": battery_tier,
                 "Shop SKU": shop_sku,
                 "GPU": str(bl.get("gpu", "") if bl is not None else ""),
-                "CMOS": str(bl.get("mobo_status", "") if bl is not None else ""),
+                "CMOS": cmos_output_label(status, cmos_raw, cmos_tier),
                 "Blancco date": str(bl.get("blancco_date", "") if bl is not None else ""),
                 "Manufacturer": manufacturer,
                 "Price": "",
@@ -1083,7 +1104,7 @@ def classify_import_bucket(row, sold_exclude: set[str]) -> tuple[str, str]:
     if serial and serial in sold_exclude:
         return "not_ready", "Sold (excluded from catalog)"
     status = str(row.get("Status", "") or "").strip().upper()
-    cmos_tier = normalize_cmos_tier(row.get("CMOS", ""))
+    cmos_tier = effective_cmos_tier(status, row.get("CMOS", ""))
     if status == "SUCCESS" and cmos_tier in ("Pass", "Fail"):
         return "all", ""
     if status == "SUCCESS" and cmos_tier == "Pass":
@@ -1092,7 +1113,7 @@ def classify_import_bucket(row, sold_exclude: set[str]) -> tuple[str, str]:
         reason = str(row.get("Failure reason", "") or "").strip()
         return "not_ready", reason or "Blancco match failed"
     if cmos_tier == "Fail":
-        return "not_ready", "CMOS Fail (Blancco not SUCCESS — fix match first)"
+        return "not_ready", "CMOS Fail but Blancco not SUCCESS"
     return "not_ready", "CMOS unknown (check motherboard test status in Blancco)"
 
 
@@ -1108,7 +1129,9 @@ def split_import_buckets(
         record = row.to_dict()
         if bucket == "all":
             all_rows.append(record)
-            cmos_tier = normalize_cmos_tier(row.get("CMOS", ""))
+            cmos_tier = effective_cmos_tier(
+                str(row.get("Status", "") or ""), row.get("CMOS", "")
+            )
             if cmos_tier == "Pass":
                 ready_rows.append(record)
         elif bucket == "ready":
@@ -1222,19 +1245,25 @@ def write_ready_output(ready: pd.DataFrame, analysis: pd.DataFrame, out_path: Pa
 
 def write_not_ready_output(not_ready: pd.DataFrame, out_path: Path) -> None:
     not_ready_cols = list(OUTPUT_COLUMNS) + ["Not ready reason"]
-    cmos_fail = not_ready.loc[not_ready["Not ready reason"] == "CMOS Fail"]
     with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
         not_ready.to_excel(writer, sheet_name="Devices", index=False)
-        if not cmos_fail.empty:
-            cmos_fail.to_excel(writer, sheet_name="CMOS Fail", index=False)
         if not not_ready.empty:
             summary = not_ready["Not ready reason"].value_counts().reset_index()
             summary.columns = ["Not ready reason", "Count"]
             summary.to_excel(writer, sheet_name="By reason", index=False)
+            success_in_not_ready = not_ready.loc[
+                not_ready["Status"].astype(str).str.upper() == "SUCCESS"
+            ]
+            if not success_in_not_ready.empty:
+                success_in_not_ready.to_excel(
+                    writer, sheet_name="SUCCESS but excluded", index=False
+                )
     wb = load_workbook(out_path)
     _style_devices_sheet(wb["Devices"], not_ready_cols, highlight_col="Not ready reason")
-    if "CMOS Fail" in wb.sheetnames:
-        _style_devices_sheet(wb["CMOS Fail"], not_ready_cols, highlight_col="Not ready reason")
+    if "SUCCESS but excluded" in wb.sheetnames:
+        _style_devices_sheet(
+            wb["SUCCESS but excluded"], not_ready_cols, highlight_col="Not ready reason"
+        )
     wb.save(out_path)
 
 
@@ -1280,6 +1309,7 @@ def show_result_popup(
 
 def main() -> int:
     folder = SCRIPT_DIR
+    print(f"Merge logic version: {MERGE_LOGIC_VERSION}")
     product_path, blancco_path = pick_files_interactive(folder)
     validate_merge_inputs(product_path, blancco_path)
 

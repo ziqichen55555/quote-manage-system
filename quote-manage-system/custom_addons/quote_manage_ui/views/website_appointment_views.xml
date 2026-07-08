@@ -4,12 +4,12 @@
         <field name="name">website.appointment.type.tree</field>
         <field name="model">website.appointment.type</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="duration_minutes"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 

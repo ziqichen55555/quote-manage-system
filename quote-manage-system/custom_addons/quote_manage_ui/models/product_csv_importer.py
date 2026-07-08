@@ -317,8 +317,12 @@ class ProductCsvImporter(models.AbstractModel):
             return "Successful"
         if s in ("failed", "fail", "error"):
             return "Failed"
-        if s in ("", "nan", "none", "unknown"):
+        if s in ("", "nan", "none", "unknown", "not tested", "n/a"):
             return ""
+        if "fail" in s or "error" in s or "unsuccess" in s:
+            return "Failed"
+        if "success" in s or s in ("pass", "passed", "ok"):
+            return "Successful"
         return (raw or "").strip()[:128]
 
     @api.model
@@ -332,6 +336,9 @@ class ProductCsvImporter(models.AbstractModel):
             return "Pass"
         if norm == "Failed":
             return "Fail"
+        status = self._merged_str(row, "Status", default="SUCCESS").upper()
+        if status == "SUCCESS":
+            return "Pass"
         return ""
 
     @api.model
