@@ -22,10 +22,14 @@ PRODUCT_LIST_MAX_COLS = 6
 BLANCCO_MIN_COLS = 8
 MTM_LUT_FILE = SCRIPT_DIR / "mtm_lookup.csv"
 OUTPUT_PREFIX = "MERGED import-ready"
+OUTPUT_ALL_PREFIX = "MERGED import-all"
 OUTPUT_NOT_READY_PREFIX = "MERGED import-not-ready"
+SOLD_EXCLUDE_FILE = SCRIPT_DIR / "sold_serials_exclude.txt"
 OUTPUT_SKIP_PREFIXES = (
     OUTPUT_PREFIX.lower(),
     "merged import-ready",
+    OUTPUT_ALL_PREFIX.lower(),
+    "merged import-all",
     OUTPUT_NOT_READY_PREFIX.lower(),
     "merged import-not-ready",
 )
@@ -1051,10 +1055,31 @@ def merge_data(
     return pd.DataFrame(rows, columns=OUTPUT_COLUMNS)
 
 
-def classify_import_bucket(row) -> tuple[str, str]:
-    """Return ('ready'|'not_ready', reason). Only SUCCESS + CMOS Pass is import-ready."""
+def load_sold_serial_exclude() -> set[str]:
+    """Serials already sold — never written to import-all (see sold_serials_exclude.txt)."""
+    if not SOLD_EXCLUDE_FILE.is_file():
+        return set()
+    out = set()
+    for line in SOLD_EXCLUDE_FILE.read_text(encoding="utf-8").splitlines():
+        s = normalize_serial(line.strip())
+        if s and not s.startswith("#"):
+            out.add(s)
+    return out
+
+
+def classify_import_bucket(row, sold_exclude: set[str]) -> tuple[str, str]:
+    """Return ('all'|'ready'|'not_ready', reason).
+
+    *all* — SUCCESS + CMOS Pass/Fail, not sold (upload to Odoo).
+    *ready* — SUCCESS + CMOS Pass only (legacy pass-only file).
+    """
+    serial = normalize_serial(row.get("Serial", ""))
+    if serial and serial in sold_exclude:
+        return "not_ready", "Sold (excluded from catalog)"
     status = str(row.get("Status", "") or "").strip().upper()
     cmos_tier = normalize_cmos_tier(row.get("CMOS", ""))
+    if status == "SUCCESS" and cmos_tier in ("Pass", "Fail"):
+        return "all", ""
     if status == "SUCCESS" and cmos_tier == "Pass":
         return "ready", ""
     if status == "FAILED":
@@ -1065,19 +1090,33 @@ def classify_import_bucket(row) -> tuple[str, str]:
     return "not_ready", "CMOS unknown"
 
 
-def split_import_ready_not_ready(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def split_import_buckets(
+    merged: pd.DataFrame, sold_exclude: set[str] | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    sold_exclude = sold_exclude or set()
+    all_rows = []
     ready_rows = []
     not_ready_rows = []
     for _, row in merged.iterrows():
-        bucket, reason = classify_import_bucket(row)
+        bucket, reason = classify_import_bucket(row, sold_exclude)
         record = row.to_dict()
-        if bucket == "ready":
+        if bucket == "all":
+            all_rows.append(record)
+            cmos_tier = normalize_cmos_tier(row.get("CMOS", ""))
+            if cmos_tier == "Pass":
+                ready_rows.append(record)
+        elif bucket == "ready":
             ready_rows.append(record)
         else:
             record["Not ready reason"] = reason
             not_ready_rows.append(record)
     ready_cols = list(OUTPUT_COLUMNS)
     not_ready_cols = ready_cols + ["Not ready reason"]
+    import_all = (
+        pd.DataFrame(all_rows, columns=ready_cols)
+        if all_rows
+        else pd.DataFrame(columns=ready_cols)
+    )
     ready = (
         pd.DataFrame(ready_rows, columns=ready_cols)
         if ready_rows
@@ -1088,16 +1127,36 @@ def split_import_ready_not_ready(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd
         if not_ready_rows
         else pd.DataFrame(columns=not_ready_cols)
     )
-    return ready.reset_index(drop=True), not_ready.reset_index(drop=True)
+    return (
+        import_all.reset_index(drop=True),
+        ready.reset_index(drop=True),
+        not_ready.reset_index(drop=True),
+    )
 
 
-def build_analysis(merged: pd.DataFrame, ready: pd.DataFrame, not_ready: pd.DataFrame) -> pd.DataFrame:
+def split_import_ready_not_ready(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Legacy helper — prefer split_import_buckets."""
+    import_all, ready, not_ready = split_import_buckets(merged, load_sold_serial_exclude())
+    return ready, not_ready
+
+
+def build_analysis(
+    merged: pd.DataFrame,
+    import_all: pd.DataFrame,
+    ready: pd.DataFrame,
+    not_ready: pd.DataFrame,
+) -> pd.DataFrame:
     total = len(merged)
     success = int((merged["Status"] == "SUCCESS").sum())
     failed = total - success
     rate = f"{(success / total * 100):.1f}%" if total else "0%"
     unique_serials = int(merged["Serial"].nunique())
     dup_serials = int(total - unique_serials)
+    sold_excluded = int(
+        (not_ready["Not ready reason"] == "Sold (excluded from catalog)").sum()
+    ) if not not_ready.empty else 0
+    cmosp = int(import_all["Shop SKU"].str.endswith("-CMOSP", na=False).sum()) if not import_all.empty else 0
+    cmosfl = int(import_all["Shop SKU"].str.endswith("-CMOSFL", na=False).sum()) if not import_all.empty else 0
 
     lines = [
         ["Metric", "Value"],
@@ -1108,7 +1167,11 @@ def build_analysis(merged: pd.DataFrame, ready: pd.DataFrame, not_ready: pd.Data
         ["Blancco FAILED", failed],
         ["Match rate", rate],
         ["", ""],
-        ["Import-ready (SUCCESS + CMOS Pass)", len(ready)],
+        ["Import-all (SUCCESS Pass+Fail, upload to Odoo)", len(import_all)],
+        ["  CMOSP (shop when in stock)", cmosp],
+        ["  CMOSFL (warehouse only)", cmosfl],
+        ["Sold serials excluded", sold_excluded],
+        ["Import-ready Pass-only (legacy)", len(ready)],
         ["Import-not-ready", len(not_ready)],
         ["", ""],
         ["Not-ready breakdown", "Count"],
@@ -1169,9 +1232,18 @@ def write_not_ready_output(not_ready: pd.DataFrame, out_path: Path) -> None:
     wb.save(out_path)
 
 
-def split_summary_text(ready: pd.DataFrame, not_ready: pd.DataFrame) -> str:
+def split_summary_text(
+    import_all: pd.DataFrame, ready: pd.DataFrame, not_ready: pd.DataFrame
+) -> str:
+    sold = 0
+    if not not_ready.empty and "Not ready reason" in not_ready.columns:
+        sold = int((not_ready["Not ready reason"] == "Sold (excluded from catalog)").sum())
     lines = [
-        f"\nImport-ready (upload to Odoo): {len(ready)}",
+        f"\nImport-all (upload to Odoo): {len(import_all)}",
+        f"  CMOSP: {int(import_all['Shop SKU'].str.endswith('-CMOSP', na=False).sum()) if not import_all.empty else 0}",
+        f"  CMOSFL: {int(import_all['Shop SKU'].str.endswith('-CMOSFL', na=False).sum()) if not import_all.empty else 0}",
+        f"Sold excluded: {sold}",
+        f"Import-ready Pass-only (legacy): {len(ready)}",
         f"Import-not-ready (manual follow-up): {len(not_ready)}",
     ]
     if not_ready.empty:
@@ -1182,7 +1254,9 @@ def split_summary_text(ready: pd.DataFrame, not_ready: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def show_result_popup(summary: str, ready_path: Path, not_ready_path: Path) -> None:
+def show_result_popup(
+    summary: str, all_path: Path, ready_path: Path, not_ready_path: Path
+) -> None:
     import tkinter as tk
     from tkinter import messagebox
 
@@ -1192,7 +1266,7 @@ def show_result_popup(summary: str, ready_path: Path, not_ready_path: Path) -> N
     messagebox.showinfo(
         "Re-Ware merge complete",
         summary
-        + f"\n\nSaved:\n  {ready_path.name}\n  {not_ready_path.name}",
+        + f"\n\nSaved:\n  {all_path.name}\n  {ready_path.name}\n  {not_ready_path.name}",
     )
     root.destroy()
 
@@ -1219,17 +1293,22 @@ def main() -> int:
     lut = ensure_mtm_lookup(product_path, wd, sheet2_names)
 
     merged = merge_data(wd, blancco, lut, uncollected_map)
-    ready, not_ready = split_import_ready_not_ready(merged)
+    sold_exclude = load_sold_serial_exclude()
+    import_all, ready, not_ready = split_import_buckets(merged, sold_exclude)
 
     stamp = datetime.now().strftime("%Y-%m-%d")
+    all_xlsx = folder / f"{OUTPUT_ALL_PREFIX} {stamp}.xlsx"
+    all_csv = folder / f"{OUTPUT_ALL_PREFIX} {stamp}.csv"
     ready_xlsx = folder / f"{OUTPUT_PREFIX} {stamp}.xlsx"
     ready_csv = folder / f"{OUTPUT_PREFIX} {stamp}.csv"
     not_ready_xlsx = folder / f"{OUTPUT_NOT_READY_PREFIX} {stamp}.xlsx"
     not_ready_csv = folder / f"{OUTPUT_NOT_READY_PREFIX} {stamp}.csv"
 
-    analysis = build_analysis(merged, ready, not_ready)
+    analysis = build_analysis(merged, import_all, ready, not_ready)
+    write_ready_output(import_all, analysis, all_xlsx)
     write_ready_output(ready, analysis, ready_xlsx)
     write_not_ready_output(not_ready, not_ready_xlsx)
+    import_all.to_csv(all_csv, index=False, encoding="utf-8-sig")
     ready.to_csv(ready_csv, index=False, encoding="utf-8-sig")
     not_ready.to_csv(not_ready_csv, index=False, encoding="utf-8-sig")
 
@@ -1242,20 +1321,23 @@ def main() -> int:
         f"Blancco FAILED: {failed}\n"
         f"Match rate: {(success/total*100):.1f}%" if total else "No rows"
     )
-    summary += split_summary_text(ready, not_ready)
+    summary += split_summary_text(import_all, ready, not_ready)
     summary += (
-        f"\n\nUpload import-ready CSV to Odoo:\n"
-        f"  Inventory -> Upload inventory CSV (after DB backup)\n"
-        f"Do not upload import-not-ready — fix CMOS / Blancco, then add SN manually."
+        f"\n\nUpload import-all CSV to Odoo:\n"
+        f"  Inventory -> Upload inventory CSV (after DB backup + archive old SKUs)\n"
+        f"Includes CMOS Pass (CMOSP) + CMOS Fail (CMOSFL). Sold SNs in sold_serials_exclude.txt are skipped.\n"
+        f"Do not upload import-not-ready — fix Blancco first."
     )
     if "--yes" in sys.argv or "--auto" in sys.argv:
         print(summary)
+        print("Saved:", all_xlsx)
+        print("Saved:", all_csv)
         print("Saved:", ready_xlsx)
         print("Saved:", ready_csv)
         print("Saved:", not_ready_xlsx)
         print("Saved:", not_ready_csv)
     else:
-        show_result_popup(summary, ready_xlsx, not_ready_xlsx)
+        show_result_popup(summary, all_xlsx, ready_xlsx, not_ready_xlsx)
     return 0 if not_ready.empty and failed == 0 else 2
 
 if __name__ == "__main__":

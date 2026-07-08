@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.150',
+    'version': '1.0.151',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -15,6 +15,7 @@
         'website_sale_stock',
         'website_blog',
         'website_crm',
+        'calendar',
         'product_images',
         'mass_mailing',
     ],
@@ -27,6 +28,7 @@
         # Product rows are imported via scripts/import_products_to_odoo.sh;
         # loading them on every -u hits duplicate barcode errors.
         'data/quote_manage_ui_arch_sync_policy.xml',
+        'data/website_appointment_data.xml',
         # Snippets must be declared BEFORE website_templates.xml so the
         # <t t-call="quote_manage_ui.s_rw_*"/> references inside page archs
         # resolve cleanly during the same data-load.
@@ -39,6 +41,8 @@
         'views/product_template_views.xml',
         'views/product_import_wizard_views.xml',
         'views/crm_lead_views.xml',
+        'views/website_appointment_views.xml',
+        'views/website_appointment_templates.xml',
         'security/ir.model.access.csv',
         'data/website_homepage_fix.xml',
         # MUST be last: locks ir.model.data.noupdate=True on layout records so
@@ -57,6 +61,7 @@
             'quote_manage_ui/static/src/js/newsletter.js',
             'quote_manage_ui/static/src/js/hero_carousel.js',
             'quote_manage_ui/static/src/js/website_stock_qty.js',
+            'quote_manage_ui/static/src/js/appointment.js',
         ],
     },
     'installable': True,

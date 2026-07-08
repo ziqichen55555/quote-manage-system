@@ -117,6 +117,27 @@ class ProductTemplate(models.Model):
                 )
         return {"updated": updated, "skipped": skipped, "errors": errors}
 
+    def _quote_copy_images_from_donor(self, donor, overwrite=True):
+        """Copy main + gallery images from another product.template record."""
+        self.ensure_one()
+        donor.ensure_one()
+        if overwrite:
+            self.product_template_image_ids.unlink()
+        if donor.image_1920:
+            self.image_1920 = donor.image_1920
+        Image = self.env["product.image"].sudo()
+        for img in donor.product_template_image_ids:
+            if not img.image_1920:
+                continue
+            Image.create(
+                {
+                    "name": img.name,
+                    "product_tmpl_id": self.id,
+                    "image_1920": img.image_1920,
+                }
+            )
+        return bool(self.image_1920)
+
     @api.model
     def quote_copy_product_images(self, source_code, target_codes, overwrite=True):
         """Copy main + gallery images from one SKU to others (same model photos)."""
@@ -124,7 +145,6 @@ class ProductTemplate(models.Model):
         src = PT.search([("default_code", "=ilike", (source_code or "").strip())], limit=1)
         if not src:
             return {"error": "source_not_found", "source": source_code}
-        Image = self.env["product.image"].sudo()
         results = []
         for code in target_codes or []:
             code = (code or "").strip()
@@ -134,20 +154,7 @@ class ProductTemplate(models.Model):
             if not tgt:
                 results.append({"sku": code, "status": "not_found"})
                 continue
-            if overwrite:
-                tgt.product_template_image_ids.unlink()
-            if src.image_1920:
-                tgt.image_1920 = src.image_1920
-            for img in src.product_template_image_ids:
-                if not img.image_1920:
-                    continue
-                Image.create(
-                    {
-                        "name": img.name,
-                        "product_tmpl_id": tgt.id,
-                        "image_1920": img.image_1920,
-                    }
-                )
+            tgt._quote_copy_images_from_donor(src, overwrite=overwrite)
             results.append({"sku": code, "status": "copied", "gallery": len(src.product_template_image_ids)})
         return {"source": src.default_code, "results": results}
 
@@ -220,17 +227,25 @@ class ProductTemplate(models.Model):
             if dry_run:
                 copied.append({
                     "target": tgt.default_code,
+                    "target_id": tgt.id,
                     "name": tgt.name,
                     "from": donor.default_code,
+                    "from_id": donor.id,
                 })
                 continue
-            self.quote_copy_product_images(
-                donor.default_code, [tgt.default_code], overwrite=True
-            )
+            code = (tgt.default_code or "").strip()
+            if code:
+                self.quote_copy_product_images(
+                    donor.default_code, [code], overwrite=True
+                )
+            else:
+                tgt._quote_copy_images_from_donor(donor)
             copied.append({
                 "target": tgt.default_code,
+                "target_id": tgt.id,
                 "name": tgt.name,
                 "from": donor.default_code,
+                "from_id": donor.id,
             })
         return {
             "dry_run": dry_run,

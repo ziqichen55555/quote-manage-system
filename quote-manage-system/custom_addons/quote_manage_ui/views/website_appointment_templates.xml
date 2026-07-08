@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="book_appointment_page" model="website.page" forcecreate="True">
+        <field name="name">Book Appointment</field>
+        <field name="url">/book-appointment</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="key">quote_manage_ui.book_appointment_page</field>
+        <field name="arch" type="xml">
+            <t name="Book Appointment" t-name="quote_manage_ui.book_appointment_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_appointment rw-section rw-bg-cream" data-name="Book appointment">
+                            <div class="container rw-container-narrow">
+                                <div class="text-center mb-5">
+                                    <p class="rw-eyebrow mb-3">Schedule</p>
+                                    <h1 class="rw-display mb-3">Book an appointment.</h1>
+                                    <p class="lead mb-0">Choose a time that works for you. All bookings are saved to the team calendar.</p>
+                                </div>
+
+                                <div class="rw-appointment-panel rw-form">
+                                    <form id="rw_appointment_book_form" class="js_rw_appointment_book_form" novalidate="novalidate">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_type">Appointment type</label>
+                                                <select id="rw_apt_type" name="appointment_type_id" class="form-select" required="required">
+                                                    <option value="">Select type…</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_staff">Staff member</label>
+                                                <select id="rw_apt_staff" name="user_id" class="form-select" required="required">
+                                                    <option value="">Select staff…</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_date">Date</label>
+                                                <select id="rw_apt_date" name="date" class="form-select" required="required">
+                                                    <option value="">Select date…</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_slot">Time</label>
+                                                <select id="rw_apt_slot" name="start" class="form-select" required="required" disabled="disabled">
+                                                    <option value="">Select time…</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_name">Your name</label>
+                                                <input id="rw_apt_name" name="name" type="text" class="form-control" required="required"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_apt_email">Email</label>
+                                                <input id="rw_apt_email" name="email" type="email" class="form-control" required="required"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label" for="rw_apt_phone">Phone <span class="text-muted">(optional)</span></label>
+                                                <input id="rw_apt_phone" name="phone" type="tel" class="form-control"/>
+                                            </div>
+                                            <div class="col-12 pt-2">
+                                                <button type="submit" class="rw-btn-gold">Book appointment</button>
+                                                <div class="rw-appointment-status mt-3" aria-live="polite"/>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="rw-appointment-panel rw-form mt-5">
+                                    <h2 class="h4 mb-3">Cancel an appointment</h2>
+                                    <p class="mb-4">Use the booking reference number from your confirmation and the same email address.</p>
+                                    <form id="rw_appointment_cancel_form" class="js_rw_appointment_cancel_form" novalidate="novalidate">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_cancel_email">Email</label>
+                                                <input id="rw_cancel_email" name="email" type="email" class="form-control" required="required"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rw_cancel_reference">Booking reference</label>
+                                                <input id="rw_cancel_reference" name="booking_reference" type="text" class="form-control" required="required" inputmode="numeric" pattern="[0-9]+"/>
+                                            </div>
+                                            <div class="col-12 pt-2">
+                                                <button type="submit" class="btn btn-outline-dark">Cancel appointment</button>
+                                                <div class="rw-appointment-status mt-3" aria-live="polite"/>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+</odoo>

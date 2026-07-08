@@ -54,7 +54,7 @@ echo.
 if %EXITCODE% NEQ 0 (
     echo Merge finished with warnings ^(see import-not-ready report^).
 ) else (
-    echo All devices import-ready. Upload MERGED import-ready CSV to Odoo.
+    echo All devices import-ready. Upload MERGED import-all CSV to Odoo.
 )
 pause
 exit /b %EXITCODE%

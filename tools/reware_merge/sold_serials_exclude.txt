@@ -1,0 +1,19 @@
+# One serial per line — excluded from MERGED import-all (already sold).
+# Sales history stays on old orders; these never enter the new catalog.
+# Update after each sale before re-running run_merge.bat.
+R913RZGT
+PC1PQ9M8
+PC1ACZL4
+PC1FSFY8
+PC0PDVKV
+PC14S09X
+PF2W5NAE
+GM048TKY
+PC1ACZK0
+PC1ACZNY
+PC1ACZPJ
+PC1FSFXM
+PC1FVEQ5
+PC1FVFCP
+PC1FVGKK
+PC1FVGKN

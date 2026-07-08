@@ -1699,3 +1699,24 @@ main:has(> .oe_website_signup_container) {
     .rw-consultation-steps-title { font-size: clamp(1.3rem, 5.5vw, 1.6rem); }
     .rw-bg-why h2 { font-size: clamp(1.3rem, 5vw, 1.6rem); }
 }
+
+// /book-appointment page
+.rw-appointment-panel {
+    background: var(--rw-light);
+    border: 1px solid var(--rw-border);
+    border-radius: 1rem;
+    padding: 1.75rem;
+}
+
+.rw-appointment-status {
+    font-size: 0.95rem;
+    color: var(--rw-text-soft);
+
+    &--success {
+        color: #2f6b3b;
+    }
+
+    &--error {
+        color: var(--rw-coral);
+    }
+}

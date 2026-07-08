@@ -67,14 +67,14 @@ class ProductCsvImporter(models.AbstractModel):
                 raise UserError(
                     _(
                         "This is a MERGED import-not-ready file. "
-                        "Upload MERGED import-ready CSV file only "
-                        "(SUCCESS + CMOS Pass devices)."
+                        "Upload MERGED import-all CSV from run_merge.bat instead "
+                        "(SUCCESS + CMOS Pass/Fail; sold serials excluded)."
                     )
                 )
             device_count = len(rows)
             not_ready_stats = self._merged_not_ready_stats(rows)
             failed_devices = not_ready_stats["skipped_blancco_failed"]
-            import_rows = self._merged_device_rows_to_import_rows(rows)
+            import_rows, skipped_sold = self._merged_device_rows_to_import_rows(rows)
             result = self._run_import(
                 import_rows,
                 additive=True,
@@ -82,6 +82,7 @@ class ProductCsvImporter(models.AbstractModel):
                 source_stats={
                     "devices_in_file": device_count,
                     "failed_devices": failed_devices,
+                    "skipped_sold_serials": skipped_sold,
                     **not_ready_stats,
                 },
             )
@@ -116,12 +117,26 @@ class ProductCsvImporter(models.AbstractModel):
 
     @api.model
     def _merged_row_import_ready(self, row):
-        """Only SUCCESS + CMOS Pass rows belong in MERGED import-ready."""
+        """Only SUCCESS + CMOS Pass rows (legacy pass-only merge file)."""
         if self._merged_str(row, "Status", default="SUCCESS").upper() != "SUCCESS":
             return False
         if not self._merged_str(row, "Serial"):
             return False
         return self._merged_cmos_tier(row) == "Pass"
+
+    @api.model
+    def _merged_row_importable(self, row):
+        """SUCCESS + CMOS Pass or Fail — MERGED import-all rows for Odoo."""
+        if self._merged_str(row, "Status", default="SUCCESS").upper() != "SUCCESS":
+            return False
+        if not self._merged_str(row, "Serial"):
+            return False
+        return self._merged_cmos_tier(row) in ("Pass", "Fail")
+
+    @api.model
+    def _serial_was_sold(self, serial_name):
+        """True if this serial was delivered on any customer order (skip fresh catalog)."""
+        return self._serial_is_delivered(serial_name, product_id=None)
 
     @api.model
     def _merged_not_ready_stats(self, rows):
@@ -131,9 +146,13 @@ class ProductCsvImporter(models.AbstractModel):
             "skipped_cmos_fail": 0,
             "skipped_cmos_unknown": 0,
             "skipped_blancco_failed": 0,
+            "skipped_sold_serials": 0,
         }
         for row in rows:
-            if self._merged_row_import_ready(row):
+            if self._merged_row_importable(row):
+                serial = (self._merged_str(row, "Serial") or "").strip().upper()
+                if serial and self._serial_was_sold(serial):
+                    stats["skipped_sold_serials"] += 1
                 continue
             stats["not_ready_devices"] += 1
             status = self._merged_str(row, "Status", default="SUCCESS").upper()
@@ -943,13 +962,23 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _merged_device_rows_to_import_rows(self, rows):
         """Convert re-ware merge CSV (per device) → inventory import rows (per SKU)."""
-        ok = [r for r in rows if self._merged_row_import_ready(r)]
+        ok = []
+        skipped_sold = 0
+        for r in rows:
+            if not self._merged_row_importable(r):
+                continue
+            serial = (self._merged_str(r, "Serial") or "").strip().upper()
+            if serial and self._serial_was_sold(serial):
+                skipped_sold += 1
+                continue
+            ok.append(r)
         skipped = self._merged_not_ready_stats(rows)
+        skipped["skipped_sold_serials"] = skipped_sold
         if skipped["not_ready_devices"] and not ok:
             raise UserError(
                 _(
-                    "No import-ready rows found (need SUCCESS + CMOS Pass). "
-                    "Use MERGED import-ready CSV from run_merge.bat, not import-not-ready."
+                    "No importable rows found (need SUCCESS + CMOS Pass/Fail). "
+                    "Use MERGED import-all CSV from run_merge.bat."
                 )
             )
         if not ok:
@@ -1055,7 +1084,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "unit_identifiers": "|".join(serials),
                 "row_note": "merged_blancco",
             })
-        return out
+        return out, skipped_sold
 
     @api.model
     def format_import_result_message(self, result):
@@ -1063,9 +1092,10 @@ class ProductCsvImporter(models.AbstractModel):
         src = result.get("import_source") or "legacy_sheet"
         if src == "merged_blancco":
             return _(
-                "Merge import complete (MERGED import-ready CSV).\n"
+                "Merge import complete (MERGED import-all CSV).\n"
                 "• Devices in file: %(devices_in_file)s\n"
-                "• Import-ready imported: %(import_ready_devices)s\n"
+                "• Importable imported: %(import_ready_devices)s\n"
+                "• Sold serials skipped (not in catalog): %(skipped_sold_serials)s\n"
                 "• Skipped not-ready in file: %(not_ready_devices)s "
                 "(CMOS fail: %(skipped_cmos_fail)s, CMOS unknown: %(skipped_cmos_unknown)s, "
                 "Blancco failed: %(skipped_blancco_failed)s)\n"
@@ -1080,9 +1110,11 @@ class ProductCsvImporter(models.AbstractModel):
                 "• Wrong/extra serials zeroed: %(serials_zeroed)s\n"
                 "• Delivered serials skipped (not restocked): %(skipped_delivered)s\n"
                 "• Orphan serial refurb SKUs (not in file): %(orphan_skus)s\n"
+                "• Orphan listings retired (unpublished): %(retired_orphan_skus)s\n"
                 "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
                 "Upload only MERGED import-ready (SUCCESS + CMOS Pass). "
-                "CMOS fail / unknown devices stay in import-not-ready for manual SN add. "
+                "CMOSFL rows import as warehouse-only *-CMOSFL SKUs (not on shop). "
+                "Sold serials are excluded from the catalog. "
                 "Merge file is the source of truth for serial numbers and qty. "
                 "Re-upload refreshes Blancco name/attrs and sets stock to exactly "
                 "the import-ready serial list per SKU (serial-tracked products only). "
@@ -1101,6 +1133,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "skipped_blancco_failed": result.get(
                     "skipped_blancco_failed", result.get("failed_devices", 0)
                 ),
+                "skipped_sold_serials": result.get("skipped_sold_serials", 0),
                 "sku_count": result.get("sku_count", 0),
                 "created": result.get("created", 0),
                 "updated": result.get("updated", 0),
@@ -1112,6 +1145,7 @@ class ProductCsvImporter(models.AbstractModel):
                 "serials_zeroed": result.get("serials_zeroed", 0),
                 "skipped_delivered": result.get("skipped_delivered", 0),
                 "orphan_skus": result.get("orphan_skus", 0),
+                "retired_orphan_skus": result.get("retired_orphan_skus", 0),
                 "skipped_blocked_skus": result.get("skipped_blocked_skus", 0),
             }
         return _(
@@ -1121,8 +1155,8 @@ class ProductCsvImporter(models.AbstractModel):
             "• Updated: %(updated)s\n"
             "• Stock lines added: %(stock_batches)s\n"
             "• Blocked synthetic SKUs skipped: %(skipped_blocked_skus)s\n\n"
-            "For laptops/desktops, prefer MERGED import-ready CSV from "
-            "run_merge.bat (Serial + MTM columns) so CPU/SSD come from Blancco."
+            "For laptops/desktops, prefer MERGED import-all CSV from "
+            "run_merge.bat (Serial + MTM; Pass + Fail CMOS)."
         ) % {
             "sku_count": result.get("sku_count", 0),
             "created": result.get("created", 0),
@@ -1195,6 +1229,7 @@ class ProductCsvImporter(models.AbstractModel):
             "skipped_cmos_fail": stats.get("skipped_cmos_fail", 0),
             "skipped_cmos_unknown": stats.get("skipped_cmos_unknown", 0),
             "skipped_blancco_failed": stats.get("skipped_blancco_failed", 0),
+            "skipped_sold_serials": stats.get("skipped_sold_serials", 0),
             "unpublished_pending_cmos": unpublished_pending_cmos,
         }
 
@@ -3370,15 +3405,17 @@ class ProductCsvImporter(models.AbstractModel):
         return sorted(set(serials))
 
     @api.model
-    def _refurb_serial_template_domain(self):
+    def _refurb_serial_template_domain(self, active_only=True):
         cat_l = self.env.ref("quote_manage_ui.public_cat_laptops").id
         cat_d = self.env.ref("quote_manage_ui.public_cat_desktops").id
-        return [
+        dom = [
             ("type", "=", "product"),
             ("tracking", "=", "serial"),
-            ("active", "=", True),
             ("public_categ_ids", "in", [cat_l, cat_d]),
         ]
+        if active_only:
+            dom.append(("active", "=", True))
+        return dom
 
     @api.model
     def _serial_stock_snapshot(self, sku):
@@ -3423,9 +3460,9 @@ class ProductCsvImporter(models.AbstractModel):
     @api.model
     def _orphan_serial_refurb_report(self, merge_skus):
         """Serial-tracked Laptops/Desktops in DB but absent from merge CSV."""
-        PT = self.env["product.template"].sudo()
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
         orphans = []
-        for tmpl in PT.search(self._refurb_serial_template_domain()):
+        for tmpl in PT.search(self._refurb_serial_template_domain(active_only=False)):
             code = self._canonical_sku_code(tmpl.default_code or "")
             if not code or code in merge_skus:
                 continue
@@ -3433,6 +3470,35 @@ class ProductCsvImporter(models.AbstractModel):
             if snap["on_hand"] > 0 or snap["lots_in_stock"]:
                 orphans.append(snap)
         return orphans
+
+    @api.model
+    def _retire_orphan_serial_refurb(self, merge_skus, dry_run=False):
+        """Unpublish + zero stock on refurb serial SKUs not in the merge file."""
+        PT = self.env["product.template"].sudo().with_context(active_test=False)
+        retired = []
+        for tmpl in PT.search(self._refurb_serial_template_domain(active_only=False)):
+            code = self._canonical_sku_code(tmpl.default_code or "")
+            if not code or code in merge_skus:
+                continue
+            oh = float(tmpl.qty_available or 0)
+            if not tmpl.website_published and not tmpl.sale_ok and not tmpl.active and oh == 0:
+                continue
+            entry = {
+                "sku": code,
+                "tmpl_id": tmpl.id,
+                "on_hand_before": oh,
+                "was_published": tmpl.website_published,
+            }
+            if not dry_run:
+                if oh > 0 and self._stock_update_allowed(tmpl):
+                    self._zero_all_serial_stock(code)
+                tmpl.write(
+                    {"active": False, "website_published": False, "sale_ok": False}
+                )
+                tmpl.invalidate_recordset()
+                entry["on_hand_after"] = float(tmpl.qty_available or 0)
+            retired.append(entry)
+        return retired
 
     @api.model
     def reconcile_merge_serial_catalog(self, units, dry_run=False):
@@ -3485,6 +3551,7 @@ class ProductCsvImporter(models.AbstractModel):
                 sku_results.append(sync)
 
         orphans = self._orphan_serial_refurb_report(merge_skus)
+        retired = self._retire_orphan_serial_refurb(merge_skus, dry_run=dry_run)
         return {
             "reconcile_skus": len(sku_results),
             "serials_zeroed": serials_zeroed,
@@ -3492,6 +3559,8 @@ class ProductCsvImporter(models.AbstractModel):
             "skipped_non_serial": skipped_non_serial,
             "orphan_skus": len(orphans),
             "orphan_serial_products": orphans,
+            "retired_orphan_skus": len(retired),
+            "retired_orphan_products": retired,
             "sku_reconcile": sku_results,
         }
 
@@ -3515,18 +3584,19 @@ class ProductCsvImporter(models.AbstractModel):
             raise UserError(
                 _(
                     "This is a MERGED import-not-ready file. "
-                    "Use MERGED import-ready CSV from run_merge.bat instead."
+                    "Use MERGED import-all CSV from run_merge.bat instead."
                 )
             )
         device_rows = list(reader)
         not_ready_stats = self._merged_not_ready_stats(device_rows)
-        import_rows = self._merged_device_rows_to_import_rows(device_rows)
+        import_rows, skipped_sold = self._merged_device_rows_to_import_rows(device_rows)
         units, skipped_blocked = self._aggregate_rows(import_rows)
         out = {
             "skipped_blocked_skus": skipped_blocked,
             "devices_in_file": len(device_rows),
             "failed_devices": not_ready_stats["skipped_blancco_failed"],
             "import_ready_devices": len(device_rows) - not_ready_stats["not_ready_devices"],
+            "skipped_sold_serials": skipped_sold,
             **not_ready_stats,
         }
         if refresh_products and not dry_run:
@@ -3539,6 +3609,7 @@ class ProductCsvImporter(models.AbstractModel):
                         "devices_in_file": out["devices_in_file"],
                         "failed_devices": out["failed_devices"],
                         "import_ready_devices": out["import_ready_devices"],
+                        "skipped_sold_serials": skipped_sold,
                         **not_ready_stats,
                     },
                 )

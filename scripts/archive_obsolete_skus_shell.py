@@ -258,10 +258,6 @@ def classify_products():
             archive.append({**p, "reason": reason, "priority": priority})
 
         for p in group:
-            if p["has_cmosfl"]:
-                add_archive(p, "CMOSFL bucket")
-
-        for p in group:
             if p["has_battery"] and not p["has_cmosp"] and not p["has_cmosfl"]:
                 bt = "BT70" if p["has_bt70"] else "BTU70"
                 succ = f"{base}-{bt}-CMOSP"
@@ -296,7 +292,7 @@ def classify_products():
                 add_archive(p, "IMPORT- synthetic SKU")
 
         for p in group:
-            if p["has_cmosp"]:
+            if p["has_cmosp"] or p["has_cmosfl"]:
                 keep.append(p)
                 keep_codes.add(p["code"])
 
