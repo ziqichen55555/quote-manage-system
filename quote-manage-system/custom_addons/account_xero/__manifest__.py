@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Xero Accounting Bridge',
-    'version': '17.0.1.0.6',
+    'version': '17.0.1.0.7',
     'category': 'Accounting/Accounting',
     'summary': 'Push Re-Ware customer invoices and payments to Co-Creative IT Xero',
     'description': """
@@ -36,4 +36,5 @@ Internal Co-Creative IT / Re-Ware module.
     'installable': True,
     'application': False,
     'auto_install': False,
+    'post_init_hook': 'post_init_hook',
 }
