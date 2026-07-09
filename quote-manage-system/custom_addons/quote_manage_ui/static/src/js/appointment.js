@@ -159,6 +159,25 @@ function showBookingSuccess(form, result) {
     setText('[data-role="guest"]', result.guest_name || '');
     setText('[data-role="email"]', result.guest_email || '');
 
+    const emailNote = successEl.querySelector('[data-role="email-note"]');
+    if (emailNote) {
+        if (result.confirmation_email_sent) {
+            emailNote.textContent =
+                'A confirmation email with your booking reference was sent to ' +
+                (result.guest_email || 'your address') + '.';
+            emailNote.classList.remove('d-none');
+        } else {
+            emailNote.textContent =
+                'Please write down your booking reference now — email could not be sent.';
+            emailNote.classList.remove('d-none');
+        }
+    }
+
+    const copyBtn = successEl.querySelector('.js_rw_copy_reference');
+    if (copyBtn && reference) {
+        copyBtn.dataset.reference = String(reference);
+    }
+
     const cancelEmail = document.querySelector('#rw_cancel_email');
     if (cancelEmail && result.guest_email) {
         cancelEmail.value = result.guest_email;
@@ -353,6 +372,23 @@ function bindBookForm(form) {
             resetBookForm(form).catch((error) => {
                 setStatus(form, 'error', error.message || 'Could not reset form.');
             });
+        });
+    }
+
+    const copyBtn = panel && panel.querySelector('.js_rw_copy_reference');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+            const reference = copyBtn.dataset.reference || '';
+            if (!reference) return;
+            try {
+                await navigator.clipboard.writeText(reference);
+                copyBtn.textContent = 'Copied';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            } catch (error) {
+                copyBtn.textContent = 'Copy failed';
+            }
         });
     }
 

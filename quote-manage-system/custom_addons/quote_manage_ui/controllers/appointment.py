@@ -55,12 +55,50 @@ class WebsiteAppointmentController(http.Controller):
             ('partner_ids', 'in', team_partners),
         ])
 
-    def _booking_attendee_partner_ids(self, calendar_user, team_users, guest_partner):
-        partner_ids = set(team_users.partner_id.ids)
-        partner_ids.add(calendar_user.partner_id.id)
-        if guest_partner:
-            partner_ids.add(guest_partner.id)
-        return list(partner_ids)
+    def _booking_attendee_partner_ids(self, calendar_user):
+        """Organizer only — no team/guest attendees (avoids calendar invites)."""
+        return [calendar_user.partner_id.id]
+
+    def _send_booking_confirmation_email(
+        self, env, event, email, name, slot_labels, booking_reference,
+    ):
+        company = env.company
+        from_addr = company.email or 're-ware@cocreativeit.com'
+        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        cancel_url = '%s/book-appointment' % base_url.rstrip('/')
+        body = _(
+            '<p>Hi %(name)s,</p>'
+            '<p>Your appointment is confirmed.</p>'
+            '<p><strong>Booking reference:</strong> %(reference)s<br/>'
+            '<strong>When:</strong> %(date)s at %(time)s<br/>'
+            '<strong>Type:</strong> %(type)s</p>'
+            '<p>Keep this reference number. To cancel, go to '
+            '<a href="%(cancel_url)s">%(cancel_url)s</a> and enter the same '
+            'email plus your booking reference.</p>'
+            '<p>Re-Ware</p>',
+            name=name,
+            reference=booking_reference,
+            date=slot_labels['date_label'],
+            time=slot_labels['time_label'],
+            type=slot_labels['type_name'],
+            cancel_url=cancel_url,
+        )
+        try:
+            mail = env['mail.mail'].sudo().create({
+                'email_from': from_addr,
+                'email_to': email,
+                'subject': _('Appointment confirmed — reference %(ref)s', ref=booking_reference),
+                'body_html': body,
+                'auto_delete': True,
+            })
+            mail.send()
+            return True
+        except Exception:
+            _logger.exception(
+                'Booking confirmation email failed for reference %s',
+                booking_reference,
+            )
+            return False
 
     def _localize_slot(self, tz, day, hour, minute):
         naive = datetime.combine(day, dt_time(hour, minute))
@@ -271,7 +309,6 @@ class WebsiteAppointmentController(http.Controller):
             }
 
         calendar_user = self._get_calendar_user(env)
-        team_users = self._get_team_users(env)
         apt_type = env['website.appointment.type'].browse(type_id).exists()
         if not calendar_user:
             return {
@@ -313,12 +350,14 @@ class WebsiteAppointmentController(http.Controller):
                 partner_vals['phone'] = phone
             partner = env['res.partner'].create(partner_vals)
 
-        attendee_ids = self._booking_attendee_partner_ids(
-            calendar_user, team_users, partner,
-        )
+        attendee_ids = self._booking_attendee_partner_ids(calendar_user)
 
         try:
-            event = env['calendar.event'].with_user(calendar_user).create({
+            event = env['calendar.event'].with_user(calendar_user).with_context(
+                no_mail_to_attendees=True,
+                dont_notify=True,
+                mail_create_nolog=True,
+            ).create({
                 'name': '%s - %s' % (apt_type.name, name),
                 'start': start_dt,
                 'stop': stop_dt,
@@ -349,16 +388,21 @@ class WebsiteAppointmentController(http.Controller):
         slot_labels = self._format_booking_slot(
             self._booking_tz(env), start_dt, apt_type,
         )
+        booking_reference = str(event.id)
+        email_sent = self._send_booking_confirmation_email(
+            env, event, email, name, slot_labels, booking_reference,
+        )
         return {
             'success': True,
             'message': _('Your appointment is confirmed.'),
-            'booking_reference': str(event.id),
+            'booking_reference': booking_reference,
             'event_id': event.id,
             'appointment_type': slot_labels['type_name'],
             'date_label': slot_labels['date_label'],
             'time_label': slot_labels['time_label'],
             'guest_name': name,
             'guest_email': email,
+            'confirmation_email_sent': email_sent,
         }
 
     @http.route(

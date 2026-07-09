@@ -46,14 +46,16 @@ class ResConfigSettings(models.TransientModel):
         string='Website Appointment Calendar',
         domain=[('share', '=', False), ('active', '=', True)],
         config_parameter=_APPOINTMENT_CALENDAR_USER_PARAM,
-        help='Organizer for public bookings. Usually the shared Re-Ware account.',
+        help='Organizer for public bookings. Usually the shared Re-Ware account. '
+             'Team members view this calendar in Odoo — no invitations are sent.',
     )
     appointment_team_user_ids = fields.Many2many(
         'res.users',
         string='Appointment team',
         domain=[('share', '=', False), ('active', '=', True)],
-        help='These users are invited to every website booking and their '
-             'calendars are checked for availability.',
+        help='Used only to block busy time slots. These users are not emailed '
+             'and are not added as meeting attendees. Everyone sees bookings on '
+             'the organizer calendar (enable Everyone\'s calendars in Calendar).',
     )
 
     def get_values(self):

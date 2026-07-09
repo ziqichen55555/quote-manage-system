@@ -61,11 +61,14 @@
                                     <div class="rw-appointment-success d-none" aria-live="polite">
                                         <p class="rw-eyebrow mb-2">Confirmed</p>
                                         <h2 class="h3 mb-3">Your appointment is booked.</h2>
-                                        <p class="mb-4">Save your booking reference — you will need it to cancel.</p>
+                                        <p class="mb-3">Your <strong>booking reference</strong> is shown below. We also email it to you — use it with the same email address if you need to cancel.</p>
                                         <dl class="rw-appointment-success-details mb-4">
                                             <div>
                                                 <dt>Booking reference</dt>
-                                                <dd data-role="reference"/>
+                                                <dd class="d-flex flex-wrap align-items-center gap-2">
+                                                    <span data-role="reference"/>
+                                                    <button type="button" class="btn btn-sm btn-outline-dark js_rw_copy_reference">Copy</button>
+                                                </dd>
                                             </div>
                                             <div>
                                                 <dt>Appointment</dt>
@@ -76,6 +79,7 @@
                                                 <dd><span data-role="guest"/> (<span data-role="email"/>)</dd>
                                             </div>
                                         </dl>
+                                        <p class="rw-appointment-email-note text-muted small mb-4 d-none" data-role="email-note"/>
                                         <button type="button" class="rw-btn-gold js_rw_appointment_book_another">Book another appointment</button>
                                     </div>
                                 </div>
