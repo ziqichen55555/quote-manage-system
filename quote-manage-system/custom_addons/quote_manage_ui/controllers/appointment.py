@@ -61,6 +61,12 @@ class WebsiteAppointmentController(http.Controller):
             return [guest_partner.id]
         return []
 
+    def _booking_team_partner_ids(self, env):
+        team_users = self._get_team_users(env)
+        if not team_users:
+            return []
+        return team_users.partner_id.ids
+
     def _send_booking_confirmation_email(
         self, env, event, email, name, slot_labels, booking_reference,
     ):
@@ -355,6 +361,8 @@ class WebsiteAppointmentController(http.Controller):
             partner = env['res.partner'].create(partner_vals)
 
         guest_partner_ids = self._booking_guest_partner_ids(partner)
+        team_partner_ids = self._booking_team_partner_ids(env)
+        partner_ids = list(dict.fromkeys(guest_partner_ids + team_partner_ids))
         company = calendar_user.company_id
         location = env['calendar.event']._format_company_address(company)
         create_vals = {
@@ -379,8 +387,8 @@ class WebsiteAppointmentController(http.Controller):
                 'x_appointment_type_id': apt_type.id,
                 'x_booking_invite_sent': False,
         }
-        if guest_partner_ids:
-            create_vals['partner_ids'] = [(6, 0, guest_partner_ids)]
+        if partner_ids:
+            create_vals['partner_ids'] = [(6, 0, partner_ids)]
 
         try:
             event = env['calendar.event'].with_user(calendar_user).with_context(
