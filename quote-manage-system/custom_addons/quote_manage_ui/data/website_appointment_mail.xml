@@ -14,7 +14,7 @@
     <t t-set="company" t-value="object.event_id.user_id.company_id"/>
     <p>
         Hello <t t-out="object.common_name or ''">Guest</t>,<br/><br/>
-        <t t-out="object.event_id.user_id.partner_id.name or ''">Re-Ware</t>
+        <t t-out="company.name or 'Re-Ware'">Re-Ware</t>
         invited you to the meeting
         <strong t-out="object.event_id.name or ''">Consultation</strong>
         starting in about 30 minutes.
