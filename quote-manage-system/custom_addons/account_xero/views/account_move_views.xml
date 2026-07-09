@@ -93,4 +93,13 @@
         </field>
     </record>
 
+    <record id="action_xero_sync_all_company_invoices" model="ir.actions.server">
+        <field name="name">Sync All Invoices to Xero</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_xero_sync_all_company_invoices()</field>
+    </record>
+
 </odoo>

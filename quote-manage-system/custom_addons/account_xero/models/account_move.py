@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 
 from odoo.addons.account_xero import const
 from odoo.addons.account_xero.models.xero_notify import xero_client_notification
@@ -120,21 +120,22 @@ class AccountMove(models.Model):
 
     def action_xero_sync_all(self):
         self.ensure_one()
+        all_ok, message = self._xero_sync_all_single()
+        return xero_client_notification(
+            _('Xero full sync succeeded') if all_ok else _('Xero full sync failed'),
+            message or _('Sync completed.'),
+            'success' if all_ok else 'danger',
+        )
+
+    def _xero_sync_all_single(self):
+        self.ensure_one()
         if self.move_type != 'out_invoice':
-            return xero_client_notification(
-                _('Xero'),
-                _('Only customer invoices can be synced to Xero.'),
-                'warning',
-            )
+            return False, _('Only customer invoices can be synced to Xero.')
 
         if self.state == 'cancel':
             ok, message = self.company_id._xero_cancel_invoice_safe(self)
             self._xero_post_chatter(_('Xero invoice cancel (manual)'), ok, message)
-            return xero_client_notification(
-                _('Xero full sync succeeded') if ok else _('Xero full sync failed'),
-                message,
-                'success' if ok else 'danger',
-            )
+            return ok, message
 
         if self.state != 'posted':
             self.action_post()
@@ -147,11 +148,48 @@ class AccountMove(models.Model):
             if not pay_ok:
                 message = f'{message}\n\n{pay_message}' if message else pay_message
         all_ok = ok and (pay_ok or not pay_message)
-        return xero_client_notification(
-            _('Xero full sync succeeded') if all_ok else _('Xero full sync failed'),
-            message or _('Sync completed.'),
-            'success' if all_ok else 'danger',
+        return all_ok, (message or _('Sync completed.'))
+
+    @api.model
+    def action_xero_sync_all_company_invoices(self):
+        invoices = self.search([
+            ('move_type', '=', 'out_invoice'),
+            ('state', 'in', ('posted', 'cancel')),
+            ('company_id', '=', self.env.company.id),
+        ])
+        if not invoices:
+            return xero_client_notification(
+                _('Xero sync'),
+                _('No posted/cancelled customer invoices found to sync.'),
+                'warning',
+            )
+
+        success_count = 0
+        fail_count = 0
+        last_error = ''
+        for invoice in invoices:
+            ok, message = invoice._xero_sync_all_single()
+            if ok:
+                success_count += 1
+            else:
+                fail_count += 1
+                if message:
+                    last_error = message
+
+        if fail_count:
+            msg = _(
+                'Bulk sync finished. Success: %(ok)s, Failed: %(fail)s. Last error: %(err)s',
+                ok=success_count,
+                fail=fail_count,
+                err=last_error or '-',
+            )
+            return xero_client_notification(_('Xero bulk sync finished'), msg, 'warning')
+
+        msg = _(
+            'Bulk sync finished. All %(ok)s invoice(s) synced.',
+            ok=success_count,
         )
+        return xero_client_notification(_('Xero bulk sync finished'), msg, 'success')
 
     def action_open_xero_sync_logs(self):
         self.ensure_one()
