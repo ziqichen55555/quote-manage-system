@@ -1765,3 +1765,33 @@ main:has(> .oe_website_signup_container) {
         color: var(--rw-coral);
     }
 }
+
+.rw-appointment-success {
+    &-details {
+        margin: 0;
+
+        > div + div {
+            margin-top: 1rem;
+        }
+
+        dt {
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--rw-text-soft);
+            margin-bottom: 0.25rem;
+        }
+
+        dd {
+            margin: 0;
+            font-size: 1.05rem;
+            color: var(--rw-text);
+        }
+
+        [data-role='reference'] {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+    }
+}

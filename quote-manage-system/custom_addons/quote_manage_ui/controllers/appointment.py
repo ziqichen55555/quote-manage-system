@@ -38,6 +38,30 @@ class WebsiteAppointmentController(http.Controller):
     def _get_calendar_user(self, env):
         return env['res.config.settings'].get_appointment_calendar_user()
 
+    def _get_team_users(self, env):
+        return env['res.config.settings'].get_appointment_team_users()
+
+    def _team_busy_events(self, env, utc_start, utc_end):
+        team_users = self._get_team_users(env)
+        if not team_users:
+            return env['calendar.event']
+        team_partners = team_users.partner_id.ids
+        return env['calendar.event'].search([
+            ('active', '=', True),
+            ('start', '<', utc_end),
+            ('stop', '>', utc_start),
+            '|',
+            ('user_id', 'in', team_users.ids),
+            ('partner_ids', 'in', team_partners),
+        ])
+
+    def _booking_attendee_partner_ids(self, calendar_user, team_users, guest_partner):
+        partner_ids = set(team_users.partner_id.ids)
+        partner_ids.add(calendar_user.partner_id.id)
+        if guest_partner:
+            partner_ids.add(guest_partner.id)
+        return list(partner_ids)
+
     def _localize_slot(self, tz, day, hour, minute):
         naive = datetime.combine(day, dt_time(hour, minute))
         return tz.localize(naive)
@@ -73,6 +97,14 @@ class WebsiteAppointmentController(http.Controller):
             if event.start < slot_stop and event.stop > slot_start:
                 return True
         return False
+
+    def _format_booking_slot(self, tz, start_dt, apt_type):
+        start_local = pytz.utc.localize(start_dt).astimezone(tz)
+        return {
+            'date_label': start_local.strftime('%a, %d %b %Y'),
+            'time_label': start_local.strftime('%I:%M %p').lstrip('0'),
+            'type_name': apt_type.name,
+        }
 
     def _get_appointment_types(self, env):
         return env['website.appointment.type'].search([
@@ -169,11 +201,8 @@ class WebsiteAppointmentController(http.Controller):
         utc_start = day_start.astimezone(pytz.utc).replace(tzinfo=None)
         utc_end = day_end.astimezone(pytz.utc).replace(tzinfo=None)
 
-        events = env['calendar.event'].search([
-            ('active', '=', True),
-            ('start', '<', utc_end),
-            ('stop', '>', utc_start),
-        ])
+        calendar_user = self._get_calendar_user(env)
+        events = self._team_busy_events(env, utc_start, utc_end)
 
         now_utc = fields.Datetime.now()
         slots = []
@@ -227,7 +256,12 @@ class WebsiteAppointmentController(http.Controller):
 
         if not name:
             return {'success': False, 'message': _('Please enter your name.')}
-        if email and not _EMAIL_RE.match(email):
+        if not email:
+            return {
+                'success': False,
+                'message': _('Please enter your email — you need it to cancel later.'),
+            }
+        if not _EMAIL_RE.match(email):
             return {'success': False, 'message': _('Please enter a valid email address.')}
 
         if email and self._booking_rate_limited(env, email):
@@ -237,6 +271,7 @@ class WebsiteAppointmentController(http.Controller):
             }
 
         calendar_user = self._get_calendar_user(env)
+        team_users = self._get_team_users(env)
         apt_type = env['website.appointment.type'].browse(type_id).exists()
         if not calendar_user:
             return {
@@ -255,11 +290,7 @@ class WebsiteAppointmentController(http.Controller):
             return {'success': False, 'message': _('Please choose a future time slot.')}
 
         stop_dt = start_dt + timedelta(minutes=apt_type.duration_minutes)
-        conflict = env['calendar.event'].search_count([
-            ('active', '=', True),
-            ('start', '<', stop_dt),
-            ('stop', '>', start_dt),
-        ])
+        conflict = self._team_busy_events(env, start_dt, stop_dt)
         if conflict:
             return {
                 'success': False,
@@ -282,13 +313,17 @@ class WebsiteAppointmentController(http.Controller):
                 partner_vals['phone'] = phone
             partner = env['res.partner'].create(partner_vals)
 
+        attendee_ids = self._booking_attendee_partner_ids(
+            calendar_user, team_users, partner,
+        )
+
         try:
-            event = env['calendar.event'].create({
+            event = env['calendar.event'].with_user(calendar_user).create({
                 'name': '%s - %s' % (apt_type.name, name),
                 'start': start_dt,
                 'stop': stop_dt,
                 'user_id': calendar_user.id,
-                'partner_ids': [(4, partner.id)] if partner else [],
+                'partner_ids': [(4, partner_id) for partner_id in attendee_ids],
                 'description': _(
                     'Website booking\n'
                     'Type: %(type)s\n'
@@ -311,11 +346,19 @@ class WebsiteAppointmentController(http.Controller):
                 'message': _('Something went wrong — please try again in a moment.'),
             }
 
+        slot_labels = self._format_booking_slot(
+            self._booking_tz(env), start_dt, apt_type,
+        )
         return {
             'success': True,
             'message': _('Your appointment is confirmed.'),
             'booking_reference': str(event.id),
             'event_id': event.id,
+            'appointment_type': slot_labels['type_name'],
+            'date_label': slot_labels['date_label'],
+            'time_label': slot_labels['time_label'],
+            'guest_name': name,
+            'guest_email': email,
         }
 
     @http.route(

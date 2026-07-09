@@ -54,11 +54,72 @@
                     <setting
                         id="website_appointment_calendar_setting"
                         string="Website appointment calendar"
-                        help="Public bookings are created on this user calendar. You can connect this calendar to Outlook later.">
+                        help="Organizer for public bookings. Usually the shared Re-Ware account.">
                         <field name="appointment_calendar_user_id"/>
+                    </setting>
+                    <setting
+                        id="website_appointment_team_setting"
+                        string="Appointment team"
+                        help="Everyone listed here is invited to each website booking. Their calendars are also checked before a slot is offered.">
+                        <field name="appointment_team_user_ids" widget="many2many_tags"/>
                     </setting>
                 </block>
             </xpath>
         </field>
     </record>
+
+    <record id="view_website_booking_calendar_event_tree" model="ir.ui.view">
+        <field name="name">calendar.event.website.booking.tree</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <tree string="Website bookings" create="false">
+                <field name="id" string="Reference"/>
+                <field name="name"/>
+                <field name="start"/>
+                <field name="stop"/>
+                <field name="user_id" string="Calendar"/>
+                <field name="x_booking_email"/>
+                <field name="x_appointment_type_id"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_website_booking_calendar_event_form" model="ir.ui.view">
+        <field name="name">calendar.event.website.booking.form</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='description']" position="after">
+                <group string="Website booking" invisible="not x_is_website_booking">
+                    <field name="x_is_website_booking" readonly="1"/>
+                    <field name="x_booking_email" readonly="1"/>
+                    <field name="x_appointment_type_id" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_website_booking_calendar_event" model="ir.actions.act_window">
+        <field name="name">Website Bookings</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('x_is_website_booking', '=', True)]</field>
+        <field name="context">{'default_x_is_website_booking': True}</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_website_booking_calendar_event_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('calendar.view_calendar_event_form')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('calendar.view_calendar_event_calendar')}),
+        ]"/>
+    </record>
+
+    <menuitem
+        id="menu_website_booking_calendar_event"
+        name="Website Bookings"
+        parent="calendar.mail_menu_calendar"
+        action="action_website_booking_calendar_event"
+        sequence="5"
+        groups="base.group_user"
+    />
 </odoo>

@@ -4,6 +4,12 @@
 from odoo import api, fields, models
 
 _APPOINTMENT_CALENDAR_USER_PARAM = 'quote_manage_ui.appointment_calendar_user_id'
+_APPOINTMENT_TEAM_USER_IDS_PARAM = 'quote_manage_ui.appointment_team_user_ids'
+_DEFAULT_TEAM_LOGINS = (
+    're-ware@cocreativeit.com',
+    'louismoncrieff@cocreativeit.com',
+    'drewwright@cocreativeit.com',
+)
 
 
 class WebsiteAppointmentType(models.Model):
@@ -40,8 +46,65 @@ class ResConfigSettings(models.TransientModel):
         string='Website Appointment Calendar',
         domain=[('share', '=', False), ('active', '=', True)],
         config_parameter=_APPOINTMENT_CALENDAR_USER_PARAM,
-        help='Bookings from the public page are created on this user calendar.',
+        help='Organizer for public bookings. Usually the shared Re-Ware account.',
     )
+    appointment_team_user_ids = fields.Many2many(
+        'res.users',
+        string='Appointment team',
+        domain=[('share', '=', False), ('active', '=', True)],
+        help='These users are invited to every website booking and their '
+             'calendars are checked for availability.',
+    )
+
+    def get_values(self):
+        res = super().get_values()
+        raw = self.env['ir.config_parameter'].sudo().get_param(
+            _APPOINTMENT_TEAM_USER_IDS_PARAM,
+            '',
+        )
+        user_ids = [int(uid) for uid in raw.split(',') if uid.strip().isdigit()]
+        res['appointment_team_user_ids'] = [(6, 0, user_ids)]
+        return res
+
+    def set_values(self):
+        super().set_values()
+        self.env['ir.config_parameter'].sudo().set_param(
+            _APPOINTMENT_TEAM_USER_IDS_PARAM,
+            ','.join(str(uid) for uid in self.appointment_team_user_ids.ids),
+        )
+
+    @api.model
+    def _default_appointment_team_users(self):
+        Users = self.env['res.users'].sudo()
+        team = Users.search([
+            ('login', 'in', list(_DEFAULT_TEAM_LOGINS)),
+            ('share', '=', False),
+            ('active', '=', True),
+        ])
+        if team:
+            return team
+        return Users.search([
+            ('share', '=', False),
+            ('active', '=', True),
+        ])
+
+    @api.model
+    def get_appointment_team_users(self):
+        """Internal users who receive and block website bookings."""
+        raw = self.env['ir.config_parameter'].sudo().get_param(
+            _APPOINTMENT_TEAM_USER_IDS_PARAM,
+            '',
+        )
+        user_ids = [int(uid) for uid in raw.split(',') if uid.strip().isdigit()]
+        team = self.env['res.users'].browse(user_ids).exists().filtered(
+            lambda user: user.active and not user.share,
+        )
+        if team:
+            return team
+        calendar_user = self.get_appointment_calendar_user()
+        if calendar_user:
+            return calendar_user
+        return self._default_appointment_team_users()
 
     @api.model
     def get_appointment_calendar_user(self):

@@ -124,6 +124,60 @@ function getBookFormValues(form) {
     };
 }
 
+function getBookPanel(form) {
+    return form.closest('.rw-appointment-panel');
+}
+
+function hideBookingSuccess(form) {
+    const panel = getBookPanel(form);
+    const successEl = panel && panel.querySelector('.rw-appointment-success');
+    if (successEl) {
+        successEl.classList.add('d-none');
+    }
+    form.classList.remove('d-none');
+}
+
+function showBookingSuccess(form, result) {
+    const panel = getBookPanel(form);
+    if (!panel) return;
+
+    const successEl = panel.querySelector('.rw-appointment-success');
+    if (!successEl) return;
+
+    const reference = result.booking_reference || result.event_id || '';
+    const setText = (selector, value) => {
+        const node = successEl.querySelector(selector);
+        if (node) {
+            node.textContent = value || '';
+        }
+    };
+
+    setText('[data-role="reference"]', reference);
+    setText('[data-role="type"]', result.appointment_type || '');
+    setText('[data-role="date"]', result.date_label || '');
+    setText('[data-role="time"]', result.time_label || '');
+    setText('[data-role="guest"]', result.guest_name || '');
+    setText('[data-role="email"]', result.guest_email || '');
+
+    const cancelEmail = document.querySelector('#rw_cancel_email');
+    if (cancelEmail && result.guest_email) {
+        cancelEmail.value = result.guest_email;
+    }
+    const cancelReference = document.querySelector('#rw_cancel_reference');
+    if (cancelReference && reference) {
+        cancelReference.value = String(reference);
+    }
+
+    form.classList.add('d-none');
+    successEl.classList.remove('d-none');
+    successEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const cancelPanel = document.querySelector('#rw_appointment_cancel_panel');
+    if (cancelPanel) {
+        cancelPanel.classList.remove('d-none');
+    }
+}
+
 async function loadSlots(form, preferredSlot) {
     const slotSelect = form.querySelector('[name="start"]');
     const values = getBookFormValues(form);
@@ -200,6 +254,17 @@ async function bootstrapBookForm(form) {
     await applyBookingDefaults(form, result);
 }
 
+async function resetBookForm(form) {
+    hideBookingSuccess(form);
+    form.reset();
+    const company = form.querySelector('[name="company"]');
+    if (company) company.value = '';
+    form.querySelector('[name="start"]').disabled = true;
+    delete form.dataset.loadedAt;
+    setStatus(form, null, '');
+    await bootstrapBookForm(form);
+}
+
 async function handleBookSubmit(event) {
     const form = event.currentTarget;
     event.preventDefault();
@@ -220,18 +285,7 @@ async function handleBookSubmit(event) {
             return;
         }
 
-        const reference = result.booking_reference || result.event_id;
-        setStatus(
-            form,
-            'success',
-            `${result.message} Reference: ${reference}`,
-        );
-        form.reset();
-        const company = form.querySelector('[name="company"]');
-        if (company) company.value = '';
-        form.querySelector('[name="start"]').disabled = true;
-        delete form.dataset.loadedAt;
-        await bootstrapBookForm(form);
+        showBookingSuccess(form, result);
     } catch (error) {
         setStatus(form, 'error', error.message || 'Booking failed.');
     } finally {
@@ -267,6 +321,8 @@ async function handleCancelSubmit(event) {
         form.reset();
         const company = form.querySelector('[name="company"]');
         if (company) company.value = '';
+        delete form.dataset.loadedAt;
+        ensureFormLoadedAt(form);
     } catch (error) {
         setStatus(form, 'error', error.message || 'Cancellation failed.');
     } finally {
@@ -286,6 +342,16 @@ function bindBookForm(form) {
         form.querySelector(selector).addEventListener('change', () => {
             loadSlots(form).catch((error) => {
                 setStatus(form, 'error', error.message || 'Could not load slots.');
+            });
+        });
+    }
+
+    const panel = getBookPanel(form);
+    const bookAnother = panel && panel.querySelector('.js_rw_appointment_book_another');
+    if (bookAnother) {
+        bookAnother.addEventListener('click', () => {
+            resetBookForm(form).catch((error) => {
+                setStatus(form, 'error', error.message || 'Could not reset form.');
             });
         });
     }

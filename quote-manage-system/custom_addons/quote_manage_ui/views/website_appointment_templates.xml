@@ -47,8 +47,9 @@
                                                 <input id="rw_apt_name" name="name" type="text" class="form-control" required="required"/>
                                             </div>
                                             <div class="col-12">
-                                                <label class="form-label" for="rw_apt_email">Email <span class="text-muted">(optional)</span></label>
-                                                <input id="rw_apt_email" name="email" type="email" class="form-control"/>
+                                                <label class="form-label" for="rw_apt_email">Email</label>
+                                                <input id="rw_apt_email" name="email" type="email" class="form-control" required="required"/>
+                                                <div class="form-text">Required — you need this email and your booking reference to cancel.</div>
                                             </div>
                                             <div class="col-12 pt-2">
                                                 <button type="submit" class="rw-btn-gold">Book appointment</button>
@@ -56,9 +57,30 @@
                                             </div>
                                         </div>
                                     </form>
+
+                                    <div class="rw-appointment-success d-none" aria-live="polite">
+                                        <p class="rw-eyebrow mb-2">Confirmed</p>
+                                        <h2 class="h3 mb-3">Your appointment is booked.</h2>
+                                        <p class="mb-4">Save your booking reference — you will need it to cancel.</p>
+                                        <dl class="rw-appointment-success-details mb-4">
+                                            <div>
+                                                <dt>Booking reference</dt>
+                                                <dd data-role="reference"/>
+                                            </div>
+                                            <div>
+                                                <dt>Appointment</dt>
+                                                <dd><span data-role="type"/> · <span data-role="date"/> · <span data-role="time"/></dd>
+                                            </div>
+                                            <div>
+                                                <dt>Guest</dt>
+                                                <dd><span data-role="guest"/> (<span data-role="email"/>)</dd>
+                                            </div>
+                                        </dl>
+                                        <button type="button" class="rw-btn-gold js_rw_appointment_book_another">Book another appointment</button>
+                                    </div>
                                 </div>
 
-                                <div class="rw-appointment-panel rw-form mt-5">
+                                <div id="rw_appointment_cancel_panel" class="rw-appointment-panel rw-form mt-5">
                                     <h2 class="h4 mb-3">Cancel an appointment</h2>
                                     <p class="mb-4">Use the booking reference number from your confirmation and the same email address.</p>
                                     <form id="rw_appointment_cancel_form" class="js_rw_appointment_cancel_form" novalidate="novalidate">
