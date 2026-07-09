@@ -498,6 +498,67 @@ class ResCompany(models.Model):
         self._xero_log('invoice', 'account.move', move.id, 'synced', message, xero_invoice_id)
         return xero_invoice_id
 
+    def _xero_cancel_invoice(self, move):
+        self.ensure_one()
+        if move.move_type != 'out_invoice':
+            message = _('Only customer invoices can be cancelled in Xero.')
+            move.sudo().write({
+                'xero_sync_status': 'skipped',
+                'xero_sync_message': message,
+            })
+            return False
+        if move.state != 'cancel':
+            message = _('Only cancelled customer invoices can be cancelled in Xero.')
+            move.sudo().write({
+                'xero_sync_status': 'skipped',
+                'xero_sync_message': message,
+            })
+            return False
+        if not move.xero_invoice_id:
+            message = _('This invoice has not been synced to Xero yet.')
+            move.sudo().write({
+                'xero_sync_status': 'skipped',
+                'xero_sync_message': message,
+            })
+            return False
+
+        detail = self._xero_request('GET', f'Invoices/{move.xero_invoice_id}')
+        xero_invoice = (detail.get('Invoices') or [{}])[0]
+        status = xero_invoice.get('Status')
+        if status in ('VOIDED', 'DELETED'):
+            message = _('Invoice is already cancelled in Xero.')
+            move.sudo().write({
+                'xero_sync_status': 'synced',
+                'xero_sync_message': message,
+            })
+            self._xero_log(
+                'invoice_cancel', 'account.move', move.id, 'synced',
+                message, move.xero_invoice_id,
+            )
+            return move.xero_invoice_id
+
+        payload = {
+            'Invoices': [{
+                'InvoiceID': move.xero_invoice_id,
+                'Status': 'VOIDED',
+            }],
+        }
+        result = self._xero_request('POST', 'Invoices', payload)
+        invoices = result.get('Invoices') or []
+        if not invoices:
+            raise UserError(_('Xero did not return an invoice record for %s', move.display_name))
+
+        message = _('Invoice cancelled in Xero (status: VOIDED).')
+        move.sudo().write({
+            'xero_sync_status': 'synced',
+            'xero_sync_message': message,
+        })
+        self._xero_log(
+            'invoice_cancel', 'account.move', move.id, 'synced',
+            message, move.xero_invoice_id,
+        )
+        return move.xero_invoice_id
+
     def _xero_sync_payment(self, payment):
         self.ensure_one()
         if payment.xero_payment_id:
@@ -675,4 +736,41 @@ class ResCompany(models.Model):
             })
             self._xero_log('payment', 'account.payment', payment.id, 'error', message)
             _logger.exception('Xero payment sync failed for %s', payment.display_name)
+            return False, message
+
+    def _xero_cancel_invoice_safe(self, move):
+        """Cancel invoice in Xero. Returns (success, user_message)."""
+        self.ensure_one()
+        if not self.xero_enabled:
+            message = _('Xero sync is turned off. Enable it under Accounting → Xero Integration.')
+            move.sudo().write({'xero_sync_status': 'skipped', 'xero_sync_message': message})
+            return False, message
+        if not self.xero_connected:
+            message = _('Xero is not connected. Open Settings and click Connect to Xero.')
+            move.sudo().write({'xero_sync_status': 'error', 'xero_sync_message': message})
+            return False, message
+        try:
+            with self.env.cr.savepoint():
+                xero_id = self._xero_cancel_invoice(move)
+                move.invalidate_recordset(['xero_sync_status', 'xero_sync_message'])
+                if xero_id:
+                    return True, move.xero_sync_message or _('Invoice cancellation synced to Xero.')
+                return False, move.xero_sync_message or _('Invoice cancellation was not synced to Xero.')
+        except UserError as exc:
+            message = xero_short_api_error(str(exc.args[0]))
+            move.sudo().write({
+                'xero_sync_status': 'error',
+                'xero_sync_message': message,
+            })
+            self._xero_log('invoice_cancel', 'account.move', move.id, 'error', message)
+            _logger.warning('Xero invoice cancel sync failed for %s: %s', move.display_name, exc)
+            return False, message
+        except Exception as exc:  # noqa: BLE001
+            message = xero_short_api_error(str(exc))
+            move.sudo().write({
+                'xero_sync_status': 'error',
+                'xero_sync_message': message,
+            })
+            self._xero_log('invoice_cancel', 'account.move', move.id, 'error', message)
+            _logger.exception('Xero invoice cancel sync failed for %s', move.display_name)
             return False, message

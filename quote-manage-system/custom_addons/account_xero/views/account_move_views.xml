@@ -31,6 +31,15 @@
                         <span class="o_stat_text">Sync payment</span>
                     </div>
                 </button>
+                <button name="action_xero_sync_all"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-refresh"
+                        invisible="move_type != 'out_invoice' or state not in ('posted', 'cancel')">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Sync all</span>
+                    </div>
+                </button>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Xero" name="xero_sync"

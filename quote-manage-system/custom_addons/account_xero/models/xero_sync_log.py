@@ -13,6 +13,7 @@ class XeroSyncLog(models.Model):
         [
             ('contact', 'Contact'),
             ('invoice', 'Invoice'),
+            ('invoice_cancel', 'Invoice Cancel'),
             ('payment', 'Payment'),
         ],
         required=True,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Xero Accounting Bridge',
-    'version': '17.0.1.0.5',
+    'version': '17.0.1.0.6',
     'category': 'Accounting/Accounting',
     'summary': 'Push Re-Ware customer invoices and payments to Co-Creative IT Xero',
     'description': """
@@ -25,6 +25,7 @@ Internal Co-Creative IT / Re-Ware module.
         'sale_stock',
     ],
     'data': [
+        'data/account_payment_method_data.xml',
         'security/ir.model.access.csv',
         'views/xero_sync_log_views.xml',
         'views/res_config_settings_views.xml',

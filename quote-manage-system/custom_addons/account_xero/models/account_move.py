@@ -118,6 +118,41 @@ class AccountMove(models.Model):
             'success' if ok else 'danger',
         )
 
+    def action_xero_sync_all(self):
+        self.ensure_one()
+        if self.move_type != 'out_invoice':
+            return xero_client_notification(
+                _('Xero'),
+                _('Only customer invoices can be synced to Xero.'),
+                'warning',
+            )
+
+        if self.state == 'cancel':
+            ok, message = self.company_id._xero_cancel_invoice_safe(self)
+            self._xero_post_chatter(_('Xero invoice cancel (manual)'), ok, message)
+            return xero_client_notification(
+                _('Xero full sync succeeded') if ok else _('Xero full sync failed'),
+                message,
+                'success' if ok else 'danger',
+            )
+
+        if self.state != 'posted':
+            self.action_post()
+
+        ok, message = self.company_id._xero_sync_invoice_safe(self)
+        self._xero_post_chatter(_('Xero invoice (manual)'), ok, message)
+        pay_ok, pay_message = self._xero_sync_reconciled_payments()
+        if pay_message:
+            self._xero_post_chatter(_('Xero payment (manual)'), pay_ok, pay_message)
+            if not pay_ok:
+                message = f'{message}\n\n{pay_message}' if message else pay_message
+        all_ok = ok and (pay_ok or not pay_message)
+        return xero_client_notification(
+            _('Xero full sync succeeded') if all_ok else _('Xero full sync failed'),
+            message or _('Sync completed.'),
+            'success' if all_ok else 'danger',
+        )
+
     def action_open_xero_sync_logs(self):
         self.ensure_one()
         return {
