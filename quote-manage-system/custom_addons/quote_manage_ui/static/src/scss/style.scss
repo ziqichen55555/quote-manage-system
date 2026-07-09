@@ -1714,6 +1714,26 @@ main:has(> .oe_website_signup_container) {
     padding: 1.75rem;
 }
 
+.rw-appointment-fields {
+    > .col-12,
+    > [class*='col-'] {
+        margin-bottom: 0.25rem;
+    }
+
+    > .col-12 + .col-md-6,
+    > .col-12 + .col-12 {
+        margin-top: 0.5rem;
+    }
+}
+
+.rw-appointment-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 .rw-appointment-status {
     font-size: 0.95rem;
     color: var(--rw-text-soft);

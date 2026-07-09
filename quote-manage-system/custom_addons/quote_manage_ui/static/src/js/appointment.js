@@ -3,8 +3,8 @@
 /**
  * Public appointment booking page (/book-appointment).
  *
- * All fields are <select> or text inputs. Creates / cancels calendar.event
- * records through JSON-RPC endpoints on quote_manage_ui.
+ * Defaults date/time to the nearest available slot. Includes lightweight
+ * anti-bot fields (honeypot + submit timing) — no Cloudflare required.
  */
 
 const ROUTES = Object.freeze({
@@ -51,6 +51,21 @@ function setSubmitting(form, submitting) {
     }
 }
 
+function ensureFormLoadedAt(form) {
+    if (!form.dataset.loadedAt) {
+        form.dataset.loadedAt = String(Date.now() / 1000);
+    }
+    return form.dataset.loadedAt;
+}
+
+function getAntiBotPayload(form) {
+    const company = form.querySelector('[name="company"]');
+    return {
+        company: company ? company.value : '',
+        form_loaded_at: ensureFormLoadedAt(form),
+    };
+}
+
 async function postJsonRpc(url, params) {
     const response = await fetch(url, {
         method: 'POST',
@@ -92,31 +107,35 @@ function fillSelect(select, options, placeholder) {
     }
 }
 
+function setSelectValue(select, value) {
+    if (!select || !value) return false;
+    select.value = String(value);
+    return select.value === String(value);
+}
+
 function getBookFormValues(form) {
     return {
         appointment_type_id: form.querySelector('[name="appointment_type_id"]').value,
-        user_id: form.querySelector('[name="user_id"]').value,
         date: form.querySelector('[name="date"]').value,
         start: form.querySelector('[name="start"]').value,
         name: form.querySelector('[name="name"]').value.trim(),
         email: form.querySelector('[name="email"]').value.trim(),
-        phone: form.querySelector('[name="phone"]').value.trim(),
+        ...getAntiBotPayload(form),
     };
 }
 
-async function loadSlots(form) {
+async function loadSlots(form, preferredSlot) {
     const slotSelect = form.querySelector('[name="start"]');
     const values = getBookFormValues(form);
     slotSelect.disabled = true;
     fillSelect(slotSelect, [], 'Select time…');
 
-    if (!values.appointment_type_id || !values.user_id || !values.date) {
-        return;
+    if (!values.appointment_type_id || !values.date) {
+        return null;
     }
 
     const result = await postJsonRpc(ROUTES.slots, {
         appointment_type_id: values.appointment_type_id,
-        user_id: values.user_id,
         date: values.date,
     });
 
@@ -126,19 +145,38 @@ async function loadSlots(form) {
             'error',
             (result && result.message) || 'Could not load time slots.',
         );
-        return;
+        return null;
     }
 
     fillSelect(slotSelect, result.slots || [], 'Select time…');
     slotSelect.disabled = !(result.slots && result.slots.length);
     if (!result.slots || !result.slots.length) {
         setStatus(form, 'error', result.message || 'No available times on this day.');
-    } else {
-        setStatus(form, null, '');
+        return null;
     }
+
+    const defaultSlot = preferredSlot || result.default_slot || result.slots[0].value;
+    setSelectValue(slotSelect, defaultSlot);
+    setStatus(form, null, '');
+    return result;
+}
+
+async function applyBookingDefaults(form, bootstrapResult) {
+    const typeSelect = form.querySelector('[name="appointment_type_id"]');
+    const dateSelect = form.querySelector('[name="date"]');
+
+    if (bootstrapResult.default_type_id) {
+        setSelectValue(typeSelect, bootstrapResult.default_type_id);
+    }
+    if (bootstrapResult.default_date) {
+        setSelectValue(dateSelect, bootstrapResult.default_date);
+    }
+
+    await loadSlots(form);
 }
 
 async function bootstrapBookForm(form) {
+    ensureFormLoadedAt(form);
     const result = await postJsonRpc(ROUTES.bootstrap, {});
     if (!result || !result.success) {
         setStatus(
@@ -155,15 +193,11 @@ async function bootstrapBookForm(form) {
         'Select type…',
     );
     fillSelect(
-        form.querySelector('[name="user_id"]'),
-        result.staff,
-        'Select staff…',
-    );
-    fillSelect(
         form.querySelector('[name="date"]'),
         result.dates,
         'Select date…',
     );
+    await applyBookingDefaults(form, result);
 }
 
 async function handleBookSubmit(event) {
@@ -193,7 +227,10 @@ async function handleBookSubmit(event) {
             `${result.message} Reference: ${reference}`,
         );
         form.reset();
+        const company = form.querySelector('[name="company"]');
+        if (company) company.value = '';
         form.querySelector('[name="start"]').disabled = true;
+        delete form.dataset.loadedAt;
         await bootstrapBookForm(form);
     } catch (error) {
         setStatus(form, 'error', error.message || 'Booking failed.');
@@ -216,6 +253,7 @@ async function handleCancelSubmit(event) {
             booking_reference: form
                 .querySelector('[name="booking_reference"]')
                 .value.trim(),
+            ...getAntiBotPayload(form),
         });
         if (!result || !result.success) {
             setStatus(
@@ -227,6 +265,8 @@ async function handleCancelSubmit(event) {
         }
         setStatus(form, 'success', result.message);
         form.reset();
+        const company = form.querySelector('[name="company"]');
+        if (company) company.value = '';
     } catch (error) {
         setStatus(form, 'error', error.message || 'Cancellation failed.');
     } finally {
@@ -241,7 +281,6 @@ function bindBookForm(form) {
     form.addEventListener('submit', handleBookSubmit);
     for (const selector of [
         '[name="appointment_type_id"]',
-        '[name="user_id"]',
         '[name="date"]',
     ]) {
         form.querySelector(selector).addEventListener('change', () => {
@@ -263,6 +302,7 @@ function bindBookForm(form) {
 function bindCancelForm(form) {
     if (form.dataset.bound === '1') return;
     form.dataset.bound = '1';
+    ensureFormLoadedAt(form);
     form.addEventListener('submit', handleCancelSubmit);
 }
 

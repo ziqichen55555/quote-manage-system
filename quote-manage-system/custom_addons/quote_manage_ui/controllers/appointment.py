@@ -3,7 +3,8 @@
 
 import logging
 import re
-from datetime import datetime, time, timedelta
+import time
+from datetime import datetime, time as dt_time, timedelta
 
 import pytz
 
@@ -17,6 +18,8 @@ _WORK_START_HOUR = 9
 _WORK_END_HOUR = 17
 _SLOT_MINUTES = 30
 _BOOKING_HORIZON_DAYS = 30
+_MIN_SUBMIT_SECONDS = 3
+_MAX_BOOKINGS_PER_EMAIL_HOUR = 5
 
 
 class WebsiteAppointmentController(http.Controller):
@@ -32,9 +35,36 @@ class WebsiteAppointmentController(http.Controller):
         )
         return pytz.timezone(tz_name)
 
+    def _get_calendar_user(self, env):
+        return env['res.config.settings'].get_appointment_calendar_user()
+
     def _localize_slot(self, tz, day, hour, minute):
-        naive = datetime.combine(day, time(hour, minute))
+        naive = datetime.combine(day, dt_time(hour, minute))
         return tz.localize(naive)
+
+    def _bot_rejection(self, post):
+        """Lightweight anti-bot checks — no Cloudflare required."""
+        if (post.get('company') or '').strip():
+            return _('Invalid submission.')
+        loaded_at = post.get('form_loaded_at')
+        if loaded_at:
+            try:
+                if time.time() - float(loaded_at) < _MIN_SUBMIT_SECONDS:
+                    return _('Please wait a moment before submitting.')
+            except (TypeError, ValueError):
+                return _('Invalid submission.')
+        else:
+            return _('Invalid submission.')
+        return None
+
+    def _booking_rate_limited(self, env, email):
+        since = fields.Datetime.now() - timedelta(hours=1)
+        count = env['calendar.event'].search_count([
+            ('x_is_website_booking', '=', True),
+            ('x_booking_email', '=ilike', email),
+            ('create_date', '>=', since),
+        ])
+        return count >= _MAX_BOOKINGS_PER_EMAIL_HOUR
 
     def _slot_busy(self, events, slot_start, slot_stop):
         for event in events:
@@ -43,12 +73,6 @@ class WebsiteAppointmentController(http.Controller):
             if event.start < slot_stop and event.stop > slot_start:
                 return True
         return False
-
-    def _get_staff_users(self, env):
-        return env['res.users'].search([
-            ('share', '=', False),
-            ('active', '=', True),
-        ], order='name')
 
     def _get_appointment_types(self, env):
         return env['website.appointment.type'].search([
@@ -61,12 +85,6 @@ class WebsiteAppointmentController(http.Controller):
             'name': rec.name,
             'duration_minutes': rec.duration_minutes,
         } for rec in types]
-
-    def _serialize_staff(self, users):
-        return [{
-            'id': user.id,
-            'name': user.name,
-        } for user in users]
 
     def _serialize_dates(self, tz):
         today = datetime.now(tz).date()
@@ -92,23 +110,25 @@ class WebsiteAppointmentController(http.Controller):
     def appointment_bootstrap(self, **post):
         env = self._booking_env()
         types = self._get_appointment_types(env)
-        staff = self._get_staff_users(env)
+        calendar_user = self._get_calendar_user(env)
         if not types:
             return {
                 'success': False,
                 'message': _('No appointment types are configured yet.'),
             }
-        if not staff:
+        if not calendar_user:
             return {
                 'success': False,
-                'message': _('No staff members are available for booking.'),
+                'message': _('No calendar is configured for website bookings yet.'),
             }
         tz = self._booking_tz(env)
+        dates = self._serialize_dates(tz)
         return {
             'success': True,
             'types': self._serialize_types(types),
-            'staff': self._serialize_staff(staff),
-            'dates': self._serialize_dates(tz),
+            'dates': dates,
+            'default_date': dates[0]['value'] if dates else '',
+            'default_type_id': types[0].id if types else False,
         }
 
     @http.route(
@@ -121,16 +141,17 @@ class WebsiteAppointmentController(http.Controller):
     )
     def appointment_slots(self, **post):
         env = self._booking_env()
-        user_id = int(post.get('user_id') or 0)
         date_str = (post.get('date') or '').strip()
         type_id = int(post.get('appointment_type_id') or 0)
 
-        staff = env['res.users'].browse(user_id).exists()
         apt_type = env['website.appointment.type'].browse(type_id).exists()
-        if not staff or not staff.active or staff.share:
-            return {'success': False, 'message': _('Please choose a staff member.')}
         if not apt_type or not apt_type.active:
             return {'success': False, 'message': _('Please choose an appointment type.')}
+        if not self._get_calendar_user(env):
+            return {
+                'success': False,
+                'message': _('No calendar is configured for website bookings yet.'),
+            }
 
         try:
             day = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -149,13 +170,14 @@ class WebsiteAppointmentController(http.Controller):
         utc_end = day_end.astimezone(pytz.utc).replace(tzinfo=None)
 
         events = env['calendar.event'].search([
-            ('user_id', '=', staff.id),
             ('active', '=', True),
             ('start', '<', utc_end),
             ('stop', '>', utc_start),
         ])
 
+        now_utc = fields.Datetime.now()
         slots = []
+        default_slot = ''
         cursor = day_start
         latest_start = day_end - timedelta(minutes=duration)
         while cursor <= latest_start:
@@ -163,16 +185,23 @@ class WebsiteAppointmentController(http.Controller):
             slot_stop = cursor + timedelta(minutes=duration)
             utc_slot_start = slot_start.astimezone(pytz.utc).replace(tzinfo=None)
             utc_slot_stop = slot_stop.astimezone(pytz.utc).replace(tzinfo=None)
+            if day == today and utc_slot_start < now_utc:
+                cursor += timedelta(minutes=_SLOT_MINUTES)
+                continue
             if not self._slot_busy(events, utc_slot_start, utc_slot_stop):
+                slot_value = fields.Datetime.to_string(utc_slot_start)
                 slots.append({
-                    'value': fields.Datetime.to_string(utc_slot_start),
+                    'value': slot_value,
                     'label': slot_start.strftime('%I:%M %p').lstrip('0'),
                 })
+                if not default_slot:
+                    default_slot = slot_value
             cursor += timedelta(minutes=_SLOT_MINUTES)
 
         return {
             'success': True,
             'slots': slots,
+            'default_slot': default_slot,
             'message': _('No available times on this day.') if not slots else '',
         }
 
@@ -186,7 +215,10 @@ class WebsiteAppointmentController(http.Controller):
     )
     def appointment_book(self, **post):
         env = self._booking_env()
-        user_id = int(post.get('user_id') or 0)
+        bot_error = self._bot_rejection(post)
+        if bot_error:
+            return {'success': False, 'message': bot_error}
+
         type_id = int(post.get('appointment_type_id') or 0)
         start_raw = (post.get('start') or '').strip()
         name = (post.get('name') or '').strip()
@@ -195,13 +227,22 @@ class WebsiteAppointmentController(http.Controller):
 
         if not name:
             return {'success': False, 'message': _('Please enter your name.')}
-        if not email or not _EMAIL_RE.match(email):
+        if email and not _EMAIL_RE.match(email):
             return {'success': False, 'message': _('Please enter a valid email address.')}
 
-        staff = env['res.users'].browse(user_id).exists()
+        if email and self._booking_rate_limited(env, email):
+            return {
+                'success': False,
+                'message': _('Too many booking attempts. Please try again later.'),
+            }
+
+        calendar_user = self._get_calendar_user(env)
         apt_type = env['website.appointment.type'].browse(type_id).exists()
-        if not staff or not staff.active or staff.share:
-            return {'success': False, 'message': _('Please choose a staff member.')}
+        if not calendar_user:
+            return {
+                'success': False,
+                'message': _('No calendar is configured for website bookings yet.'),
+            }
         if not apt_type or not apt_type.active:
             return {'success': False, 'message': _('Please choose an appointment type.')}
 
@@ -210,9 +251,11 @@ class WebsiteAppointmentController(http.Controller):
         except (TypeError, ValueError):
             return {'success': False, 'message': _('Please choose a time slot.')}
 
+        if start_dt < fields.Datetime.now():
+            return {'success': False, 'message': _('Please choose a future time slot.')}
+
         stop_dt = start_dt + timedelta(minutes=apt_type.duration_minutes)
         conflict = env['calendar.event'].search_count([
-            ('user_id', '=', staff.id),
             ('active', '=', True),
             ('start', '<', stop_dt),
             ('stop', '>', start_dt),
@@ -223,26 +266,29 @@ class WebsiteAppointmentController(http.Controller):
                 'message': _('That time was just booked. Please choose another slot.'),
             }
 
-        partner = env['res.partner'].search([('email', '=ilike', email)], limit=1)
+        partner = False
+        if email:
+            partner = env['res.partner'].search([('email', '=ilike', email)], limit=1)
         if partner:
             partner.write({
                 'name': name,
                 'phone': phone or partner.phone,
             })
         else:
-            partner = env['res.partner'].create({
-                'name': name,
-                'email': email,
-                'phone': phone,
-            })
+            partner_vals = {'name': name}
+            if email:
+                partner_vals['email'] = email
+            if phone:
+                partner_vals['phone'] = phone
+            partner = env['res.partner'].create(partner_vals)
 
         try:
             event = env['calendar.event'].create({
                 'name': '%s - %s' % (apt_type.name, name),
                 'start': start_dt,
                 'stop': stop_dt,
-                'user_id': staff.id,
-                'partner_ids': [(4, partner.id)],
+                'user_id': calendar_user.id,
+                'partner_ids': [(4, partner.id)] if partner else [],
                 'description': _(
                     'Website booking\n'
                     'Type: %(type)s\n'
@@ -251,11 +297,11 @@ class WebsiteAppointmentController(http.Controller):
                     'Phone: %(phone)s',
                     type=apt_type.name,
                     name=name,
-                    email=email,
+                    email=email or '-',
                     phone=phone or '-',
                 ),
                 'x_is_website_booking': True,
-                'x_booking_email': email,
+                'x_booking_email': email or False,
                 'x_appointment_type_id': apt_type.id,
             })
         except Exception:
@@ -282,6 +328,10 @@ class WebsiteAppointmentController(http.Controller):
     )
     def appointment_cancel(self, **post):
         env = self._booking_env()
+        bot_error = self._bot_rejection(post)
+        if bot_error:
+            return {'success': False, 'message': bot_error}
+
         email = (post.get('email') or '').strip().lower()
         booking_reference = (post.get('booking_reference') or '').strip()
 

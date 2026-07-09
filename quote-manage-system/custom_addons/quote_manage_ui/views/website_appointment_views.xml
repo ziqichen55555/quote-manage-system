@@ -43,4 +43,22 @@
         action="action_website_appointment_type"
         sequence="45"
     />
+
+    <record id="res_config_settings_view_form_appointment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.appointment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='website_email_marketing']" position="after">
+                <block title="Appointments" id="website_appointment_settings" invisible="not website_id">
+                    <setting
+                        id="website_appointment_calendar_setting"
+                        string="Website appointment calendar"
+                        help="Public bookings are created on this user calendar. You can connect this calendar to Outlook later.">
+                        <field name="appointment_calendar_user_id"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
 </odoo>
