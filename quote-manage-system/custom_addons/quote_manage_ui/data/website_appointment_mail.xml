@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_website_booking_reminder" model="mail.template">
+        <field name="name">Website Booking: 30 minute calendar invite</field>
+        <field name="model_id" ref="calendar.model_calendar_attendee"/>
+        <field name="subject">Invitation to {{ object.event_id.name }}</field>
+        <field name="email_from">{{ (object.event_id.user_id.email_formatted or user.email_formatted or '') }}</field>
+        <field name="email_to">{{ object.email }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="description">30-minute website booking calendar invite for team and guest.</field>
+        <field name="body_html" type="html">
+<div>
+    <t t-set="company" t-value="object.event_id.user_id.company_id"/>
+    <p>
+        Hello <t t-out="object.common_name or ''">Guest</t>,<br/><br/>
+        <t t-out="object.event_id.user_id.partner_id.name or ''">Re-Ware</t>
+        invited you to the meeting
+        <strong t-out="object.event_id.name or ''">Consultation</strong>
+        starting in about 30 minutes.
+    </p>
+    <div style="text-align: center; padding: 16px 0;">
+        <a t-attf-href="/calendar/meeting/view?token={{ object.access_token }}&amp;id={{ object.event_id.id }}"
+           style="padding: 8px 14px; color: #FFFFFF; text-decoration: none; background-color: #875A7B; border-radius: 3px">
+            View appointment
+        </a>
+    </div>
+    <table border="0" cellpadding="0" cellspacing="0"><tr>
+        <td width="130" style="min-width: 130px;">
+            <div style="border-top-left-radius: 3px; border-top-right-radius: 3px; font-size: 12px; text-align: center; font-weight: bold; color: #ffffff; background-color: #875A7B; border: 1px solid #875A7B;">
+                <t t-out="format_datetime(dt=object.event_id.start, tz=object.mail_tz if not object.event_id.allday else None, dt_format='EEEE', lang_code=object.env.lang) or ''">Tuesday</t>
+            </div>
+            <div style="font-size: 48px; font-weight: bold; text-align: center; color: #5F5F5F; background-color: #F8F8F8; border: 1px solid #875A7B;">
+                <t t-out="format_datetime(dt=object.event_id.start, tz=object.mail_tz if not object.event_id.allday else None, dt_format='d', lang_code=object.env.lang) or ''">4</t>
+            </div>
+            <div style="font-size: 12px; text-align: center; font-weight: bold; color: #ffffff; background-color: #875A7B;">
+                <t t-out="format_datetime(dt=object.event_id.start, tz=object.mail_tz if not object.event_id.allday else None, dt_format='MMMM y', lang_code=object.env.lang) or ''">July 2026</t>
+            </div>
+            <div style="color: #5F5F5F; text-align: center; font-size: 12px; border: 1px solid #875A7B; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;">
+                <t t-if="not object.event_id.allday">
+                    <t t-out="format_time(time=object.event_id.start, tz=object.mail_tz, time_format='short', lang_code=object.env.lang) or ''">1:00 PM</t>
+                </t>
+            </div>
+        </td>
+        <td width="20"/>
+        <td style="padding-top: 5px; vertical-align: top;">
+            <p><strong>Details of the event</strong></p>
+            <ul>
+                <li t-if="object.event_id.location">
+                    Location:
+                    <t t-out="object.event_id.location or ''">102 Edward St, Perth</t>
+                    (<a target="_blank" t-attf-href="http://maps.google.com/maps?oi=map&amp;q={{ object.event_id.location }}">View Map</a>)
+                </li>
+                <t t-if="not object.event_id.allday and object.event_id.duration">
+                    <li>Duration:
+                        <t t-out="('%dH%02d' % (object.event_id.duration, round(object.event_id.duration * 60) % 60)) or ''">0H30</t>
+                    </li>
+                </t>
+                <t t-if="not is_html_empty(object.event_id.description)">
+                    <li>Description of the event:
+                        <div t-out="object.event_id.description"/>
+                    </li>
+                </t>
+            </ul>
+        </td>
+    </tr></table>
+    <p style="color:#5F5F5F; font-size:12px; margin-top:16px;">
+        <t t-out="company.name or 'Re-Ware'">Re-Ware</t><br/>
+        <t t-if="company.phone">
+            <a t-attf-href="tel:{{ company.phone }}"><t t-out="company.phone"/></a>
+        </t>
+        <t t-if="company.phone and company.mobile"> · </t>
+        <t t-if="company.mobile">
+            <a t-attf-href="tel:{{ company.mobile }}"><t t-out="company.mobile"/></a>
+        </t>
+        <t t-if="company.email"><br/><a t-attf-href="mailto:{{ company.email }}"><t t-out="company.email"/></a></t>
+    </p>
+</div>
+        </field>
+    </record>
+
+    <data noupdate="1">
+        <record id="ir_cron_website_booking_invites" model="ir.cron">
+            <field name="name">Website booking: send 30-minute reminders</field>
+            <field name="model_id" ref="calendar.model_calendar_event"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_send_website_booking_invites()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

@@ -54,13 +54,13 @@
                     <setting
                         id="website_appointment_calendar_setting"
                         string="Website appointment calendar"
-                        help="Organizer calendar for all public bookings. Louis and Drew see this by enabling Re-Ware under Everyone's calendars. No invitation emails are sent.">
+                        help="Organizer calendar for public bookings. Louis and Drew also see this under Everyone's calendars in Calendar.">
                         <field name="appointment_calendar_user_id"/>
                     </setting>
                     <setting
                         id="website_appointment_team_setting"
                         string="Appointment team"
-                        help="Only used to hide time slots when any of these people are already busy. They are not emailed and not added as attendees.">
+                        help="Re-Ware, Louis and Drew receive a calendar invite 30 minutes before each booking. Their calendars are also checked for availability.">
                         <field name="appointment_team_user_ids" widget="many2many_tags"/>
                     </setting>
                 </block>

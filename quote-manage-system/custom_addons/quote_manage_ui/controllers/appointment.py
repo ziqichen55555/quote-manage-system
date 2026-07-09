@@ -55,9 +55,11 @@ class WebsiteAppointmentController(http.Controller):
             ('partner_ids', 'in', team_partners),
         ])
 
-    def _booking_attendee_partner_ids(self, calendar_user):
-        """Organizer only — no team/guest attendees (avoids calendar invites)."""
-        return [calendar_user.partner_id.id]
+    def _booking_guest_partner_ids(self, guest_partner):
+        """Guest only — organizer is not listed as an invitee."""
+        if guest_partner:
+            return [guest_partner.id]
+        return []
 
     def _send_booking_confirmation_email(
         self, env, event, email, name, slot_labels, booking_reference,
@@ -72,7 +74,9 @@ class WebsiteAppointmentController(http.Controller):
             '<p><strong>Booking reference:</strong> %(reference)s<br/>'
             '<strong>When:</strong> %(date)s at %(time)s<br/>'
             '<strong>Type:</strong> %(type)s</p>'
-            '<p>Keep this reference number. To cancel, go to '
+            '<p>About 30 minutes before your appointment, everyone on the team '
+            'and you will receive a calendar invite by email.</p>'
+            '<p>To cancel, go to '
             '<a href="%(cancel_url)s">%(cancel_url)s</a> and enter the same '
             'email plus your booking reference.</p>'
             '<p>Re-Ware</p>',
@@ -350,19 +354,15 @@ class WebsiteAppointmentController(http.Controller):
                 partner_vals['phone'] = phone
             partner = env['res.partner'].create(partner_vals)
 
-        attendee_ids = self._booking_attendee_partner_ids(calendar_user)
-
-        try:
-            event = env['calendar.event'].with_user(calendar_user).with_context(
-                no_mail_to_attendees=True,
-                dont_notify=True,
-                mail_create_nolog=True,
-            ).create({
+        guest_partner_ids = self._booking_guest_partner_ids(partner)
+        company = calendar_user.company_id
+        location = env['calendar.event']._format_company_address(company)
+        create_vals = {
                 'name': '%s - %s' % (apt_type.name, name),
                 'start': start_dt,
                 'stop': stop_dt,
                 'user_id': calendar_user.id,
-                'partner_ids': [(4, partner_id) for partner_id in attendee_ids],
+                'location': location,
                 'description': _(
                     'Website booking\n'
                     'Type: %(type)s\n'
@@ -377,7 +377,17 @@ class WebsiteAppointmentController(http.Controller):
                 'x_is_website_booking': True,
                 'x_booking_email': email or False,
                 'x_appointment_type_id': apt_type.id,
-            })
+                'x_booking_invite_sent': False,
+        }
+        if guest_partner_ids:
+            create_vals['partner_ids'] = [(6, 0, guest_partner_ids)]
+
+        try:
+            event = env['calendar.event'].with_user(calendar_user).with_context(
+                no_mail_to_attendees=True,
+                dont_notify=True,
+                mail_create_nolog=True,
+            ).create(create_vals)
         except Exception:
             _logger.exception('Website appointment booking failed for %s', email)
             return {
