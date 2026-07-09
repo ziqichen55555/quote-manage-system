@@ -1706,6 +1706,25 @@ main:has(> .oe_website_signup_container) {
     .rw-bg-why h2 { font-size: clamp(1.3rem, 5vw, 1.6rem); }
 }
 
+// /contactus — booking CTA below the contact form
+.rw-contact-booking {
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rw-border);
+}
+
+.rw-contact-booking-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--rw-text);
+    margin-bottom: 0.5rem;
+}
+
+.rw-contact-booking-lead {
+    color: var(--rw-text-soft);
+    margin-bottom: 0;
+}
+
 // /book-appointment page
 .rw-appointment-panel {
     background: var(--rw-light);

@@ -14,8 +14,7 @@
                             <div class="container rw-container-narrow">
                                 <div class="text-center mb-5">
                                     <p class="rw-eyebrow mb-3">Schedule</p>
-                                    <h1 class="rw-display mb-3">Book an appointment.</h1>
-                                    <p class="lead mb-0">Choose a time that works for you. All bookings are saved to the team calendar.</p>
+                                    <h1 class="rw-display mb-0">Book an appointment.</h1>
                                 </div>
 
                                 <div class="rw-appointment-panel rw-form">

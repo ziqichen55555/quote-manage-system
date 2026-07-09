@@ -815,6 +815,17 @@
         </xpath>
     </template>
 
+    <!-- 9a. Contact Us — booking CTA below the message form -->
+    <template id="reware_contactus_booking_cta" inherit_id="quote_manage_ui.reware_contactus" name="Reware Contact Us Booking CTA" priority="20">
+        <xpath expr="//section[hasclass('rw-contact-form')]" position="after">
+            <div class="rw-contact-booking">
+                <h2 class="rw-contact-booking-title">Prefer to book a time?</h2>
+                <p class="rw-contact-booking-lead mb-3">Schedule a consultation or drop-off visit at a time that suits you.</p>
+                <a href="/book-appointment" class="rw-btn-gold">Book an appointment</a>
+            </div>
+        </xpath>
+    </template>
+
     <!-- 9b. Auth — Sign up / Login / Reset password.
          Wrap the default Odoo form in a centered Re-Ware page-hero so
          the page picks up our cream palette and gold buttons instead of

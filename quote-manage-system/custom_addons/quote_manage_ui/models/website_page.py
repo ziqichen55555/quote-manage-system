@@ -413,10 +413,11 @@ class WebsitePage(models.Model):
 
     @api.model
     def _quote_manage_ui_cleanup_duplicate_menus(self):
-        """One Re-Ware nav: About. / Our Why. / Contact. + DONATE / SHOP buttons.
+        """One Re-Ware nav: About. / Our Why. / Contact. + DONATE / SHOP.
 
         Hidden from the navigation (their page records stay so direct URLs
-        keep working): ``/shop``, ``/partners``, ``/trade-in``, ``/services``.
+        keep working): ``/shop``, ``/partners``, ``/trade-in``, ``/services``,
+        ``/book-appointment`` (linked from the Contact page instead).
         Trade-in and Services pages are also fully removed (legacy URLs).
         The seeded ``/contactus`` menu is reattached under each website's
         main menu and renamed to ``Contact.`` at sequence 3 so it shows up
@@ -469,6 +470,9 @@ class WebsitePage(models.Model):
             ('name', 'in', retired_menu_xmlids),
             ('name', 'in', ('trade_in_page', 'services_page')),
         ]).unlink()
+
+        # /book-appointment is promoted from the Contact page, not the header.
+        Menu.search([('url', '=', '/book-appointment')]).unlink()
 
         menu_specs = (
             ('menu_about_us', 'About.', 1),
