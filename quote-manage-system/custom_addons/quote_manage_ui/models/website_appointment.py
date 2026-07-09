@@ -208,6 +208,15 @@ class ResConfigSettings(models.TransientModel):
         ])
 
     @api.model
+    def _mandatory_appointment_team_users(self):
+        """Core team that must always see website bookings in Calendar."""
+        return self.env['res.users'].sudo().search([
+            ('login', 'in', list(_DEFAULT_TEAM_LOGINS)),
+            ('share', '=', False),
+            ('active', '=', True),
+        ])
+
+    @api.model
     def get_appointment_team_users(self):
         """Internal users who receive and block website bookings."""
         raw = self.env['ir.config_parameter'].sudo().get_param(
@@ -215,9 +224,10 @@ class ResConfigSettings(models.TransientModel):
             '',
         )
         user_ids = [int(uid) for uid in raw.split(',') if uid.strip().isdigit()]
-        team = self.env['res.users'].browse(user_ids).exists().filtered(
+        configured = self.env['res.users'].browse(user_ids).exists().filtered(
             lambda user: user.active and not user.share,
         )
+        team = configured | self._mandatory_appointment_team_users()
         if team:
             return team
         calendar_user = self.get_appointment_calendar_user()
