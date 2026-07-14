@@ -5,8 +5,9 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: prod-repair
-  cancel-in-progress: true
+  # Same lock as Deploy / Odoo shell so repair never races with odoo -u / shell.
+  group: prod-deploy
+  cancel-in-progress: false
 
 jobs:
   repair:

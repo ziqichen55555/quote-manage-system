@@ -2,6 +2,11 @@
 #
 # Production layout: /root/reware (no git clone). Secrets:
 #   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_KEY, PROD_APP_DIR (/root/reware)
+#
+# Guardrails:
+#   * scripts/** does NOT auto-deploy (one-off shell scripts should not run odoo -u)
+#   * shares concurrency group prod-deploy with shell/repair (no parallel prod jobs)
+#   * cancel-in-progress: false — never kill an in-flight odoo -u
 name: Deploy production
 
 on:
@@ -11,7 +16,6 @@ on:
     paths:
       - 'quote-manage-system/custom_addons/**'
       - 'quote-manage-system/addons/**'
-      - 'scripts/**'
       - 'config/**'
       - 'docker-compose.prod.yml'
       - 'Caddyfile'
@@ -19,8 +23,7 @@ on:
 
 concurrency:
   group: prod-deploy
-  # Only the latest push deploys; avoid queued back-to-back odoo -u on the server.
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
