@@ -5,18 +5,12 @@ Targets only the two active CMOSP listings:
   * 20WN0025AU-BT70-CMOSP
   * 20WNA07YAU-BT70-CMOSP
 
-Does not touch base/CMOSFL/duplicate templates, stock, lots, prices, or merge.
+Shop pattern (match T14s Gen 1):
+  * Do NOT change product name (keep \"ThinkPad T14s Gen 2i\")
+  * Only upsert Touchscreen=Yes and WAN=Enabled attribute lines
+  * Do NOT call full _sync_template_attributes (avoids wiping CPU/RAM/Storage)
 
-Default DRY_RUN=True. Set False to apply on production.
-
-Production (PowerShell):
-  Get-Content scripts/add_t14s_gen2i_touch_wan_shell.py -Raw |
-    ssh -i $env:USERPROFILE\\.ssh\\id_ed25519_do root@134.199.145.67 `
-    "docker compose -f /root/reware/docker-compose.yml run --rm -T web odoo shell -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init"
-
-Local:
-  Get-Content scripts/add_t14s_gen2i_touch_wan_shell.py -Raw |
-    docker compose run --rm -T web odoo shell -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init
+Default DRY_RUN=True. Set False + workflow confirm_apply=APPLY to write.
 """
 DRY_RUN = True  # set False to commit on production
 
@@ -25,15 +19,9 @@ SHOP_SKUS = (
     "20WNA07YAU-BT70-CMOSP",
 )
 
-Importer = env["product.csv.importer"].sudo()
 PT = env["product.template"].sudo().with_context(active_test=False)
-
-
-def brand_from_template(tmpl):
-    for line in tmpl.attribute_line_ids:
-        if line.attribute_id.name == "Brand" and line.value_ids:
-            return line.value_ids[0].name
-    return "Lenovo"
+Line = env["product.template.attribute.line"].sudo()
+Pav = env["product.attribute.value"].sudo()
 
 
 def current_specs(tmpl):
@@ -44,99 +32,64 @@ def current_specs(tmpl):
     return out
 
 
-def ensure_touch_wan_name(name):
-    name = (name or "").strip()
-    up = name.upper()
-    parts = []
-    if "TOUCH" not in up:
-        parts.append("TOUCHSCREEN")
-    if "WAN" not in up and " LTE" not in up:
-        parts.append("WAN ENABLED")
-    if not parts:
-        return name
-    return name.rstrip(", ") + ", " + ", ".join(parts)
-
-
-def find_target_templates():
-    out = []
-    missing = []
-    for code in SHOP_SKUS:
-        tmpl = PT.search([("default_code", "=", code)], limit=1)
-        if not tmpl:
-            missing.append(code)
-            continue
-        out.append(tmpl)
-    if missing:
-        raise SystemExit("Missing shop SKU(s): %s" % ", ".join(missing))
-    return out
-
-
-def plan_update(tmpl):
-    before = current_specs(tmpl)
-    new_name = ensure_touch_wan_name(tmpl.name)
-    brand = brand_from_template(tmpl)
-    titles = [new_name, tmpl.description_sale or ""]
-    specs = Importer._parse_specs(brand, titles)
-    specs["touch"] = "Yes"
-    specs["wan"] = "Yes"
-    after = {
-        "Touchscreen": "Yes",
-        "WAN": "Enabled",
-    }
-    changed = (
-        (tmpl.name or "") != new_name
-        or before.get("Touchscreen") != "Yes"
-        or before.get("WAN") != "Enabled"
+def upsert_attr(tmpl, attr_xmlid, value_name):
+    attr = env.ref(attr_xmlid)
+    val = Pav.search(
+        [("attribute_id", "=", attr.id), ("name", "=ilike", value_name)],
+        limit=1,
     )
-    return {
-        "tmpl": tmpl,
-        "before": before,
-        "after": after,
-        "new_name": new_name,
-        "brand": brand,
-        "titles": titles,
-        "specs": specs,
-        "changed": changed,
-    }
+    if not val:
+        val = Pav.create({"attribute_id": attr.id, "name": value_name[:128]})
+    line = tmpl.attribute_line_ids.filtered(lambda l: l.attribute_id.id == attr.id)
+    if line:
+        if set(line.value_ids.ids) != {val.id}:
+            line.write({"value_ids": [(6, 0, [val.id])]})
+            return "updated"
+        return "unchanged"
+    Line.create(
+        {
+            "product_tmpl_id": tmpl.id,
+            "attribute_id": attr.id,
+            "value_ids": [(6, 0, [val.id])],
+        }
+    )
+    return "created"
 
 
 print("=" * 72)
-print("Add Touch + WAN to ThinkPad T14s Gen 2i (shop CMOSP only)")
+print("Add Touch + WAN attrs only (no title change)")
 print("  SKUs:", ", ".join(SHOP_SKUS))
 print("  DRY_RUN:", DRY_RUN)
 print("=" * 72)
 
-targets = find_target_templates()
-if not targets:
-    raise SystemExit("No matching T14s Gen 2i templates found.")
+plans = []
+for code in SHOP_SKUS:
+    tmpl = PT.search([("default_code", "=", code)], limit=1)
+    if not tmpl:
+        raise SystemExit("Missing shop SKU: %s" % code)
+    before = current_specs(tmpl)
+    need = before.get("Touchscreen") != "Yes" or before.get("WAN") != "Enabled"
+    plans.append({"tmpl": tmpl, "code": code, "before": before, "changed": need})
 
-plans = [plan_update(t) for t in targets]
 to_apply = [p for p in plans if p["changed"]]
-skipped = [p for p in plans if not p["changed"]]
-
-print("\nFound %d template(s), %d need update, %d already OK" % (
-    len(plans), len(to_apply), len(skipped)
+print("\nFound %d, need update %d, already OK %d" % (
+    len(plans), len(to_apply), len(plans) - len(to_apply)
 ))
 
 for p in plans:
     tmpl = p["tmpl"]
-    print("\n--- id=%s code=%r active=%s published=%s on_hand=%s" % (
-        tmpl.id,
-        tmpl.default_code,
-        tmpl.active,
-        tmpl.website_published,
-        tmpl.qty_available,
+    print("\n--- id=%s code=%r name=%r on_hand=%s" % (
+        tmpl.id, p["code"], tmpl.name, tmpl.qty_available
     ))
-    print("  name: %r" % (tmpl.name,))
-    print("  before attrs: touch=%r wan=%r" % (
+    print("  before: touch=%r wan=%r cpu=%r" % (
         p["before"].get("Touchscreen"),
         p["before"].get("WAN"),
+        p["before"].get("CPU"),
     ))
     if p["changed"]:
-        print("  -> new name: %r" % (p["new_name"],))
-        print("  -> after attrs: touch=Yes wan=Enabled")
+        print("  -> upsert Touchscreen=Yes, WAN=Enabled (name untouched)")
     else:
-        print("  -> skip (already has touch + wan)")
+        print("  -> skip")
 
 if not to_apply:
     print("\nNothing to do.")
@@ -146,15 +99,10 @@ else:
     updated = 0
     for p in to_apply:
         tmpl = p["tmpl"]
-        tmpl.write({"name": p["new_name"]})
-        Importer._sync_template_attributes(
-            tmpl,
-            brand=p["brand"],
-            titles=p["titles"],
-            ptype=tmpl.type or "product",
-            specs=p["specs"],
-        )
+        r1 = upsert_attr(tmpl, "quote_manage_ui.attr_touchscreen", "Yes")
+        r2 = upsert_attr(tmpl, "quote_manage_ui.attr_wan", "Enabled")
         updated += 1
+        print("  %s: touch=%s wan=%s name=%r" % (p["code"], r1, r2, tmpl.name))
     env.cr.commit()
     print("\nCommitted %d template update(s)." % updated)
 
