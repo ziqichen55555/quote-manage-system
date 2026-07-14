@@ -267,23 +267,32 @@
         </xpath>
     </template>
 
-    <!-- Only show attribute values used by the current shop catalogue (hides orphan
-         Series values like "ThinkPad T14s Gen 1" that have no published products). -->
+    <!-- Shop filters: only show attribute values used by current listing products.
+         t-cache MUST include quote_attrib_value_ids or orphan Series values reappear. -->
     <template id="quote_shop_attribute_values" inherit_id="website_sale.products_attributes" name="Reware Shop Attribute Values" priority="20">
-        <xpath expr="//div[hasclass('products_attributes_filters')]//div[hasclass('accordion-item')]" position="attributes">
+        <xpath expr="//form[hasclass('js_attributes')]//t[@t-cache='a,attrib_set']" position="attributes">
+            <attribute name="t-cache">a,attrib_set,quote_attrib_value_ids</attribute>
+        </xpath>
+        <xpath expr="//form[hasclass('js_attributes')]//div[hasclass('accordion-item')]" position="attributes">
             <attribute name="t-if">a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids) and len(a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids)) &gt; 1</attribute>
         </xpath>
-        <xpath expr="//form[hasclass('js_attributes') and hasclass('position-relative')]//t[@t-foreach='a.value_ids']" position="attributes">
-            <attribute name="t-if">v.id in quote_attrib_value_ids</attribute>
+        <xpath expr="//form[hasclass('js_attributes')]//t[@t-foreach='a.value_ids']" position="attributes">
+            <attribute name="t-foreach">a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids)</attribute>
         </xpath>
     </template>
 
     <template id="quote_shop_offcanvas_attribute_values" inherit_id="website_sale.o_wsale_offcanvas" name="Reware Offcanvas Attribute Values" priority="20">
-        <xpath expr="//div[@id='o_wsale_offcanvas_content']//form//div[@t-foreach='a.value_ids']" position="attributes">
-            <attribute name="t-if">v.id in quote_attrib_value_ids</attribute>
+        <xpath expr="//div[@id='o_wsale_offcanvas_content']//form[hasclass('js_attributes')]//t[@t-cache='a,attrib_set']" position="attributes">
+            <attribute name="t-cache">a,attrib_set,quote_attrib_value_ids</attribute>
         </xpath>
         <xpath expr="//div[@id='o_wsale_offcanvas_content']//form//div[contains(@t-attf-class, 'accordion-item')]" position="attributes">
             <attribute name="t-if">a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids) and len(a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids)) &gt; 1</attribute>
+        </xpath>
+        <xpath expr="//div[@id='o_wsale_offcanvas_content']//form//t[@t-foreach='a.value_ids']" position="attributes">
+            <attribute name="t-foreach">a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids)</attribute>
+        </xpath>
+        <xpath expr="//div[@id='o_wsale_offcanvas_content']//form//div[@t-foreach='a.value_ids']" position="attributes">
+            <attribute name="t-foreach">a.value_ids.filtered(lambda v: v.id in quote_attrib_value_ids)</attribute>
         </xpath>
     </template>
 

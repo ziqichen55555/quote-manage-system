@@ -515,21 +515,18 @@ class ProductCsvImporter(models.AbstractModel):
         s = (series or "").strip()
         s = re.sub(r"\bThinkpad\b", "ThinkPad", s, flags=re.I)
         s = re.sub(r"\bThinkcentre\b", "ThinkCentre", s, flags=re.I)
+        # Shop Series filter must NOT include Generation (Gen 1 / Gen 2i).
+        # Generation has its own attribute; Gen-suffixed Series breaks sidebar filters.
         if re.search(r"T490", s, re.I):
             return "ThinkPad T490s"
-        m = re.search(r"T14s?\s*Gen\s*(\d+\w*)", s, re.I)
-        if m:
-            return f"ThinkPad T14s Gen {m.group(1)}"
-        m = re.search(r"T15\s*Gen\s*(\d+\w*)", s, re.I)
-        if m:
-            return f"ThinkPad T15 Gen {m.group(1)}"
-        m = re.search(r"P1\s*Gen\s*(\d+\w*)", s, re.I)
-        if m:
-            return f"ThinkPad P1 Gen {m.group(1)}"
+        if re.search(r"T14s?", s, re.I):
+            return "ThinkPad T14s"
+        if re.search(r"T15", s, re.I):
+            return "ThinkPad T15"
+        if re.search(r"\bP1\b", s, re.I):
+            return "ThinkPad P1"
         if re.search(r"T480", s, re.I):
             return "ThinkPad T480s"
-        if re.search(r"T14S", s, re.I):
-            return "ThinkPad T14s"
         if re.search(r"M910", s, re.I):
             return "ThinkCentre M910s"
         if re.search(r"M70Q", s, re.I):
