@@ -18,7 +18,7 @@ Local:
   Get-Content scripts/add_t14s_gen2i_touch_wan_shell.py -Raw |
     docker compose run --rm -T web odoo shell -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init
 """
-DRY_RUN = True  # set False to commit on production
+DRY_RUN = False  # set False to commit on production
 
 SHOP_SKUS = (
     "20WN0025AU-BT70-CMOSP",
