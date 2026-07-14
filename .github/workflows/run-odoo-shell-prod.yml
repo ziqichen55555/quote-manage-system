@@ -1,0 +1,54 @@
+# Manual: run an Odoo shell script on production (one-off data fixes).
+name: Run Odoo shell on production
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: Script filename under scripts/
+        required: true
+        default: add_t14s_gen2i_touch_wan_shell.py
+        type: string
+
+concurrency:
+  group: prod-odoo-shell
+  cancel-in-progress: true
+
+jobs:
+  run-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload shell script
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: "scripts/${{ github.event.inputs.script }}"
+          target: "/tmp"
+
+      - name: Run Odoo shell
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          command_timeout: 15m
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.PROD_APP_DIR }}"
+            SCRIPT="/tmp/scripts/${{ github.event.inputs.script }}"
+            if [[ ! -f "$SCRIPT" ]]; then
+              SCRIPT="/tmp/${{ github.event.inputs.script }}"
+            fi
+            if [[ ! -f "$SCRIPT" ]]; then
+              echo "Script not found: $SCRIPT"
+              ls -la /tmp/scripts/ 2>/dev/null || ls -la /tmp/
+              exit 1
+            fi
+            echo "Running: $SCRIPT"
+            cat "$SCRIPT" | docker compose --env-file .env run --rm -T web odoo shell \
+              -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init
