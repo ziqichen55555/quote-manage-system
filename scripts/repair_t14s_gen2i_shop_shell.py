@@ -12,7 +12,7 @@ Default DRY_RUN=True. Set False + workflow confirm_apply=APPLY to write.
 """
 import re
 
-DRY_RUN = True  # set False to commit on production
+DRY_RUN = False  # set False to commit on production
 
 # Broken by earlier apply: bad title + wiped CPU/RAM/Storage.
 RESTORE = {
