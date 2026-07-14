@@ -14,6 +14,9 @@ cloudflared.exe
 !.mailmap
 !.weblate.json
 !.env.prod.example
+!.cursor/
+!.cursor/rules/
+!.cursor/rules/**
 # compiled python files
 *.py[co]
 __pycache__/

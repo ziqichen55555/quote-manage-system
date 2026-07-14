@@ -1,4 +1,10 @@
 # Manual: run an Odoo shell script on production (one-off data fixes).
+#
+# Guardrails:
+#   * manual only (workflow_dispatch)
+#   * shares concurrency group prod-deploy with Deploy/Repair
+#   * fails if another odoo one-shot container is already running
+#   * apply requires confirm_apply=APPLY (default is dry-run mode check only)
 name: Run Odoo shell on production
 
 on:
@@ -9,16 +15,44 @@ on:
         required: true
         default: add_t14s_gen2i_touch_wan_shell.py
         type: string
+      confirm_apply:
+        description: Leave empty for DRY_RUN scripts. Type APPLY only when the script has DRY_RUN=False and you intend to write production data.
+        required: false
+        default: ""
+        type: string
 
 concurrency:
-  group: prod-odoo-shell
-  cancel-in-progress: true
+  group: prod-deploy
+  cancel-in-progress: false
 
 jobs:
   run-shell:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Guard APPLY confirmation
+        run: |
+          set -euo pipefail
+          CONFIRM="${{ github.event.inputs.confirm_apply }}"
+          SCRIPT="scripts/${{ github.event.inputs.script }}"
+          if [[ ! -f "$SCRIPT" ]]; then
+            echo "Script not found in checkout: $SCRIPT"
+            exit 1
+          fi
+          if grep -qE '^DRY_RUN\s*=\s*False' "$SCRIPT"; then
+            if [[ "$CONFIRM" != "APPLY" ]]; then
+              echo "::error::Script has DRY_RUN=False but confirm_apply is not APPLY."
+              echo "Set confirm_apply=APPLY only after reviewing a successful dry-run."
+              exit 1
+            fi
+            echo "APPLY confirmed for write mode script."
+          else
+            if [[ "$CONFIRM" == "APPLY" ]]; then
+              echo "::warning::confirm_apply=APPLY but script still has DRY_RUN=True (or unset). No writes expected."
+            fi
+            echo "Proceeding in dry-run mode (script DRY_RUN is not False)."
+          fi
 
       - name: Upload shell script
         uses: appleboy/scp-action@v0.1.7
@@ -40,6 +74,16 @@ jobs:
           script: |
             set -euo pipefail
             cd "${{ secrets.PROD_APP_DIR }}"
+            COMPOSE=(docker compose)
+            if [[ -f .env ]]; then
+              COMPOSE+=(--env-file .env)
+            fi
+            # Fail hard if another one-shot odoo is running (deploy -u / shell / stuck run).
+            if docker ps --format '{{.Names}} {{.Command}}' | grep -qiE 'web-run|odoo -u|odoo shell'; then
+              echo "::error::Another odoo one-shot container is already running. Abort."
+              docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Command}}'
+              exit 1
+            fi
             SCRIPT="/tmp/scripts/${{ github.event.inputs.script }}"
             if [[ ! -f "$SCRIPT" ]]; then
               SCRIPT="/tmp/${{ github.event.inputs.script }}"
@@ -50,5 +94,5 @@ jobs:
               exit 1
             fi
             echo "Running: $SCRIPT"
-            cat "$SCRIPT" | docker compose --env-file .env run --rm -T web odoo shell \
+            cat "$SCRIPT" | "${COMPOSE[@]}" run --rm -T web odoo shell \
               -c /etc/odoo/odoo.conf -d cocreativeit-quote --stop-after-init
