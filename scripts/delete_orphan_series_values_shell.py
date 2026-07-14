@@ -8,7 +8,7 @@ Default DRY_RUN=True. Set False + confirm_apply=APPLY to write.
 """
 import re
 
-DRY_RUN = True  # set False to commit on production
+DRY_RUN = False  # set False to commit on production
 
 PTAL = env["product.template.attribute.line"].sudo()
 PTAV = env["product.template.attribute.value"].sudo()
