@@ -6,8 +6,8 @@ Context:
   Display was meant to be free ($0). Invoice was manually corrected to 0 and sent
   to the customer; sale order still has the original non-zero price.
 
-DRY_RUN=True  → inspect SO vs invoice only (default)
-DRY_RUN=False + confirm_apply="APPLY" → write price_unit=0 on matching SO line(s)
+Default: DRY_RUN True (inspect only).
+Write mode: set DRY_RUN to False and confirm_apply to APPLY.
 
 Optional:
   FORCE_LINE_IDS = (123,)  # pin exact sale.order.line ids if auto-detect is wrong
