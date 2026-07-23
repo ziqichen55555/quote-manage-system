@@ -12,12 +12,12 @@ Write mode: set DRY_RUN to False and confirm_apply to APPLY.
 Optional:
   FORCE_LINE_IDS = (123,)  # pin exact sale.order.line ids if auto-detect is wrong
 """
-DRY_RUN = True
-confirm_apply = ""  # must be "APPLY" when DRY_RUN=False
+DRY_RUN = False
+confirm_apply = "APPLY"  # must be "APPLY" when DRY_RUN=False
 
 ORDER = "S00074"
 TARGET_PRICE = 0.0
-FORCE_LINE_IDS = ()  # e.g. (42,) to override auto-detect
+FORCE_LINE_IDS = (138,)  # S22A450BW confirmed by DRY_RUN
 
 # Auto-detect keywords (name / default_code / categ)
 DISPLAY_KEYS = (
