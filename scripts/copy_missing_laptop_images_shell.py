@@ -10,8 +10,8 @@ Approved mapping (2026-07-27):
 DRY_RUN inspect-only by default.
 Set DRY_RUN to False and confirm_apply to APPLY to write.
 """
-DRY_RUN = True
-confirm_apply = ""  # must be "APPLY" when DRY_RUN is False
+DRY_RUN = False
+confirm_apply = "APPLY"
 
 # (target_sku, donor_sku, reason)
 COPIES = [
