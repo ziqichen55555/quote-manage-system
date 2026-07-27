@@ -69,7 +69,7 @@ jobs:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: ${{ secrets.PROD_SSH_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          command_timeout: 25m
+          command_timeout: 15m
           script_stop: true
           script: |
             set -euo pipefail
