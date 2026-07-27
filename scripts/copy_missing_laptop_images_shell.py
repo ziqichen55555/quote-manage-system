@@ -2,41 +2,50 @@
 """
 Copy product photos onto shop SKUs that still show the Odoo placeholder.
 
-Approved mapping (visual check 2026-07-27):
-  * T14s Gen 2i (missing) ← T14s Gen 1 photo (20T1S6C300-BT70-CMOSP)
-    - same-MTM sibling preferred when it already has a real photo
-  * T470s ← T480s (20L8SBL100-BTU70-CMOSP) — same classic thick-bezel look
-  * T470s ← T490s  SKIP — donor photo has "T490s" printed on the bezel
+Approved mapping (2026-07-27):
+  * T480s missing CMOSP <- same-model T480s donor
+  * T15 Gen 2i missing CMOSP <- 20W4004TAU-BT70
+  * Samsung 24" bundle: not in this script (no donor)
 
-DRY_RUN=True  → inspect only (default)
-DRY_RUN=False + confirm_apply="APPLY" → write + commit
+DRY_RUN inspect-only by default.
+Set DRY_RUN to False and confirm_apply to APPLY to write.
 """
-DRY_RUN = False
-confirm_apply = "APPLY"
+DRY_RUN = True
+confirm_apply = ""  # must be "APPLY" when DRY_RUN is False
 
 # (target_sku, donor_sku, reason)
 COPIES = [
-    # T14s Gen 2i — prefer same-MTM sibling that already has Gen1 lineage photo
+    # T480s
     (
-        "20WNS1M500-BTU70-CMOSP",
-        "20WNS1M500-BT70-CMOSP",
-        "T14s Gen 2i: same MTM sibling (already has Gen1/T0003 photo)",
-    ),
-    (
-        "20WNS6LL00-BT70-CMOSP",
-        "20T1S6C300-BT70-CMOSP",
-        "T14s Gen 2i: Gen 1 photo",
-    ),
-    (
-        "20WNS8B700-BT70-CMOSP",
-        "20T1S6C300-BT70-CMOSP",
-        "T14s Gen 2i: Gen 1 photo",
-    ),
-    # T470s — T480 only (T490 skipped: bezel says T490s)
-    (
-        "20JTS15500-BT70-CMOSP",
+        "20L8SBL100-BT70-CMOSP",
         "20L8SBL100-BTU70-CMOSP",
-        "T470s: T480s photo (classic thick-bezel; T490s skipped)",
+        "T480s: same MTM sibling",
+    ),
+    (
+        "20L8SDCE00-16G-256G-T-BT70-CMOSP",
+        "20L8SDCE00-BTU70",
+        "T480s: same MTM base (SDCE00)",
+    ),
+    (
+        "20L8SDCE00-8G-256G-T-BT70-CMOSP",
+        "20L8SDCE00-BTU70",
+        "T480s: same MTM base (SDCE00)",
+    ),
+    (
+        "20L8SDCE00-8G-256G-T-BTU70-CMOSP",
+        "20L8SDCE00-BTU70",
+        "T480s: same MTM base (SDCE00)",
+    ),
+    # T15 Gen 2i
+    (
+        "20W4004TAU-16G-512G-T-BT70-CMOSP",
+        "20W4004TAU-BT70",
+        "T15 Gen 2i: same model donor",
+    ),
+    (
+        "20W4004TAU-24G-512G-T-BT70-CMOSP",
+        "20W4004TAU-BT70",
+        "T15 Gen 2i: same model donor",
     ),
 ]
 
