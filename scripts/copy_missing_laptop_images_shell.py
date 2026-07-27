@@ -11,8 +11,8 @@ Approved mapping (visual check 2026-07-27):
 DRY_RUN=True  → inspect only (default)
 DRY_RUN=False + confirm_apply="APPLY" → write + commit
 """
-DRY_RUN = True
-confirm_apply = ""  # must be "APPLY" when DRY_RUN=False
+DRY_RUN = False
+confirm_apply = "APPLY"
 
 # (target_sku, donor_sku, reason)
 COPIES = [
