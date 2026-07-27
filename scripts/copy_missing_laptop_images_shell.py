@@ -32,12 +32,6 @@ COPIES = [
         "20T1S6C300-BT70-CMOSP",
         "T14s Gen 2i: Gen 1 photo",
     ),
-    # T470s — T480 only (T490 skipped: bezel says T490s)
-    (
-        "20JTS15500-BT70-CMOSP",
-        "20L8SBL100-BTU70-CMOSP",
-        "T470s: T480s photo (classic thick-bezel; T490s skipped)",
-    ),
 ]
 
 PT = env["product.template"].sudo().with_context(active_test=False)
