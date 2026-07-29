@@ -6,6 +6,8 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/root/reware}"
 DB="${ODOO_DATABASE:-cocreativeit-quote}"
 MODULE="${ODOO_MODULE:-quote_manage_ui}"
+# Comma-separated extras: -i installs if missing, -u upgrades when already installed.
+EXTRA_MODULES="${ODOO_EXTRA_MODULES:-sale_square_terminal}"
 SYNC_SCRIPT="${SYNC_SCRIPT:-/tmp/sync_rw_templates.py}"
 
 cd "$APP_DIR"
@@ -29,6 +31,16 @@ log "Upgrading ${MODULE}..."
   -d "$DB" \
   -u "$MODULE" \
   --stop-after-init
+
+if [[ -n "${EXTRA_MODULES}" ]]; then
+  log "Installing/upgrading extra modules: ${EXTRA_MODULES}"
+  "${COMPOSE[@]}" run --rm web odoo \
+    -c /etc/odoo/odoo.conf \
+    -d "$DB" \
+    -i "$EXTRA_MODULES" \
+    -u "$EXTRA_MODULES" \
+    --stop-after-init
+fi
 
 if [[ -f "$SYNC_SCRIPT" ]]; then
   log "Syncing locked templates from XML..."
