@@ -1,10 +1,11 @@
-# Push to main -> upload custom_addons to DO server, upgrade Odoo module.
+# Push to main -> validate custom_addons on a throwaway DB, then deploy.
 #
 # Production layout: /root/reware (no git clone). Secrets:
 #   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_KEY, PROD_APP_DIR (/root/reware)
 #
 # Guardrails:
-#   * scripts/** does NOT auto-deploy (one-off shell scripts should not run odoo -u)
+#   * scripts/** alone does NOT auto-deploy (except this workflow file)
+#   * validate job must pass before any production upload / odoo -u
 #   * shares concurrency group prod-deploy with shell/repair (no parallel prod jobs)
 #   * cancel-in-progress: false — never kill an in-flight odoo -u
 name: Deploy production
@@ -19,6 +20,10 @@ on:
       - 'config/**'
       - 'docker-compose.prod.yml'
       - 'Caddyfile'
+      - 'scripts/validate-custom-addons.sh'
+      - 'scripts/validate-quote-manage-ui.sh'
+      - 'scripts/deploy-reware-remote.sh'
+      - 'scripts/sync_rw_templates.py'
       - '.github/workflows/deploy-prod.yml'
 
 concurrency:
@@ -26,7 +31,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Normalize shell scripts (CRLF -> LF)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq dos2unix
+          dos2unix scripts/*.sh
+
+      - name: Validate + install all custom_addons on throwaway DB
+        run: bash scripts/validate-custom-addons.sh
+
   deploy:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import SUPERUSER_ID, api
 
-
-def post_init_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def post_init_hook(env):
+    """Odoo 17+ passes env (not cr, registry)."""
     method_model = env['account.payment.method'].sudo()
     line_model = env['account.payment.method.line'].sudo()
     journal_model = env['account.journal'].sudo()
