@@ -2,10 +2,8 @@
 
 from odoo import fields, models
 
-from odoo.addons.sale_square_terminal.models.square_api import SquareApiMixin
 
-
-class ResCompany(SquareApiMixin, models.Model):
+class ResCompany(models.Model):
     _inherit = 'res.company'
 
     square_enabled = fields.Boolean(

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Thin Square REST client used by wizards and webhooks."""
+"""Square REST client methods on res.company."""
 
 import logging
 import uuid
 
 import requests
 
-from odoo import _
+from odoo import _, models
 from odoo.exceptions import UserError
 
 from odoo.addons.sale_square_terminal import const
@@ -14,8 +14,8 @@ from odoo.addons.sale_square_terminal import const
 _logger = logging.getLogger(__name__)
 
 
-class SquareApiMixin:
-    """Mixin expecting ``square_*`` fields on ``res.company``."""
+class ResCompany(models.Model):
+    _inherit = 'res.company'
 
     def _square_api_base_url(self):
         self.ensure_one()
@@ -82,7 +82,6 @@ class SquareApiMixin:
     def _square_amount_money(self, amount, currency):
         """Convert Odoo monetary amount to Square Money (smallest unit)."""
         currency.ensure_one()
-        # AUD/USD etc. use 2 decimal places; Square expects integer cents.
         rounding = currency.decimal_places if currency.decimal_places is not None else 2
         factor = 10 ** rounding
         cents = int(round(amount * factor))
@@ -146,7 +145,6 @@ class SquareApiMixin:
         if not self.square_access_token:
             raise UserError(_('Enter a Square Access Token first.'))
 
-        # Temporarily relax device requirement for connectivity check.
         url = '%s/v2/locations' % self._square_api_base_url()
         try:
             response = requests.get(
