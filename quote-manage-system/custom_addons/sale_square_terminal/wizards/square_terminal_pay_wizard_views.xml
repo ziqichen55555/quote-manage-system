@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_square_terminal_pay_wizard_form" model="ir.ui.view">
+        <field name="name">square.terminal.pay.wizard.form</field>
+        <field name="model">square.terminal.pay.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Pay with Square">
+                <group>
+                    <field name="sale_order_id"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="amount"/>
+                    <field name="device_id"/>
+                    <field name="state"/>
+                    <field name="checkout_id" invisible="not checkout_id"/>
+                    <field name="square_payment_id" invisible="not square_payment_id"/>
+                    <field name="status_message" colspan="2"/>
+                </group>
+                <footer>
+                    <button name="action_send_to_reader"
+                            type="object"
+                            string="Send to Reader"
+                            class="btn-primary"
+                            invisible="state not in ('draft', 'failed')"/>
+                    <button name="action_check_status"
+                            type="object"
+                            string="Check Status"
+                            class="btn-primary"
+                            invisible="state != 'waiting'"/>
+                    <button name="action_cancel_checkout"
+                            type="object"
+                            string="Cancel on Reader"
+                            invisible="state != 'waiting'"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

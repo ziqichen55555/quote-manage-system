@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_square" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sale.square</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='sale_management']" position="inside">
+                <block title="Square Terminal" name="square_terminal_setting_container">
+                    <setting string="Enable Square Terminal"
+                             help="Pay Sales Orders on a paired Square Terminal. Products, prices and inventory stay in Odoo — Square only takes the card payment.">
+                        <field name="square_enabled"/>
+                        <div class="content-group mt16" invisible="not square_enabled">
+                            <div class="row">
+                                <label for="square_environment" class="col-lg-3 o_light_label"/>
+                                <field name="square_environment"/>
+                            </div>
+                            <div class="row mt8" groups="base.group_system">
+                                <label for="square_access_token" class="col-lg-3 o_light_label"/>
+                                <field name="square_access_token" password="True"
+                                         placeholder="Paste Square Access Token"/>
+                            </div>
+                            <div class="row mt8" groups="base.group_system">
+                                <label for="square_location_id" class="col-lg-3 o_light_label"/>
+                                <field name="square_location_id" placeholder="Location ID from Square Dashboard"/>
+                            </div>
+                            <div class="row mt8" groups="base.group_system">
+                                <label for="square_device_id" class="col-lg-3 o_light_label"/>
+                                <field name="square_device_id"
+                                         placeholder="Paired device_id (not the 6-digit code)"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="square_journal_id" class="col-lg-3 o_light_label"/>
+                                <field name="square_journal_id"
+                                         placeholder="Defaults to first bank journal if empty"/>
+                            </div>
+                            <div class="row mt8" groups="base.group_system">
+                                <label for="square_webhook_signature_key" class="col-lg-3 o_light_label"/>
+                                <field name="square_webhook_signature_key" password="True"
+                                         placeholder="Optional webhook signature key"/>
+                            </div>
+                            <div class="row mt8" groups="base.group_system">
+                                <label for="square_webhook_url" class="col-lg-3 o_light_label"/>
+                                <field name="square_webhook_url" readonly="1"/>
+                            </div>
+                            <div class="mt16 d-flex gap-2" groups="base.group_system">
+                                <button name="action_square_test_connection"
+                                        type="object"
+                                        string="Test connection"
+                                        class="btn-secondary"
+                                        icon="fa-plug"/>
+                            </div>
+                            <div class="alert alert-info mt16" role="alert" groups="base.group_system">
+                                Get credentials from
+                                <a href="https://developer.squareup.com/apps" target="_blank" rel="noopener">
+                                    Square Developer Dashboard
+                                </a>
+                                (Sandbox first). Pair the Terminal with Devices API, then paste
+                                Access Token, Location ID and Device ID here. Save settings before testing.
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
