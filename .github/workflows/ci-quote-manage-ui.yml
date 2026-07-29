@@ -1,14 +1,33 @@
-# Pull request -> validate XML + install quote_manage_ui on a temporary database.
-name: CI quote_manage_ui
+# Pull request / main → validate ALL custom_addons (XML + install on throwaway DB).
+# Blocks broken Odoo views / model inheritance before production deploy.
+name: CI custom_addons
 
 on:
   pull_request:
     paths:
       - 'quote-manage-system/custom_addons/**'
-      - 'scripts/**'
+      - 'scripts/validate-custom-addons.sh'
+      - 'scripts/validate-quote-manage-ui.sh'
+      - 'scripts/sync_rw_templates.py'
       - 'docker-compose.yml'
       - 'config/**'
       - '.github/workflows/ci-quote-manage-ui.yml'
+      - '.github/workflows/ci-custom-addons.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'quote-manage-system/custom_addons/**'
+      - 'scripts/validate-custom-addons.sh'
+      - 'scripts/validate-quote-manage-ui.sh'
+      - 'scripts/sync_rw_templates.py'
+      - 'docker-compose.yml'
+      - 'config/**'
+      - '.github/workflows/ci-quote-manage-ui.yml'
+      - '.github/workflows/ci-custom-addons.yml'
+
+concurrency:
+  group: ci-custom-addons-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
@@ -23,5 +42,5 @@ jobs:
           sudo apt-get install -y -qq dos2unix
           dos2unix scripts/*.sh
 
-      - name: Validate module XML and install on throwaway DB
-        run: bash scripts/validate-quote-manage-ui.sh
+      - name: Validate + install all custom_addons on throwaway DB
+        run: bash scripts/validate-custom-addons.sh
