@@ -7,8 +7,19 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     square_enabled = fields.Boolean(
-        string='Enable Square Terminal',
+        string='Enable Square Payments',
         help='Allow Pay with Square on Sales Orders for this company.',
+    )
+    square_payment_mode = fields.Selection(
+        [
+            ('reader', 'Square Reader (phone/tablet app)'),
+            ('terminal', 'Square Terminal (cloud device)'),
+        ],
+        string='Square Hardware Mode',
+        default='reader',
+        required=True,
+        help='Reader mode: Odoo creates a pending charge; the store phone app '
+             'takes payment on the Bluetooth Reader and reports back.',
     )
     square_environment = fields.Selection(
         [
@@ -24,19 +35,30 @@ class ResCompany(models.Model):
         groups='base.group_system',
         help='Personal access token or OAuth access token with PAYMENTS_WRITE.',
     )
+    square_application_id = fields.Char(
+        string='Square Application ID',
+        groups='base.group_system',
+        help='Required by the Mobile Payments SDK on the phone/tablet app.',
+    )
     square_location_id = fields.Char(
         string='Square Location ID',
         groups='base.group_system',
     )
     square_device_id = fields.Char(
-        string='Square Device ID',
+        string='Square Terminal Device ID',
         groups='base.group_system',
-        help='Paired Terminal device_id from Devices API (not the 6-digit pair code).',
+        help='Only for Terminal mode. Paired Terminal device_id (not the 6-digit code).',
+    )
+    square_mobile_api_key = fields.Char(
+        string='Reader App API Key',
+        groups='base.group_system',
+        help='Shared secret the phone/tablet app sends as Authorization: Bearer … '
+             'to fetch pending checkouts from Odoo.',
     )
     square_webhook_signature_key = fields.Char(
         string='Square Webhook Signature Key',
         groups='base.group_system',
-        help='Optional. Used to verify terminal.checkout.updated webhooks.',
+        help='Optional. Used to verify Square webhooks.',
     )
     square_journal_id = fields.Many2one(
         'account.journal',

@@ -17,8 +17,8 @@ class SaleOrder(models.Model):
         company = self.company_id
         if not company.square_enabled:
             raise UserError(_(
-                'Square Terminal is disabled for this company. '
-                'Enable it under Settings → Sales → Square Terminal.'
+                'Square payments are disabled for this company. '
+                'Enable under Settings → Sales → Square Card Payments.'
             ))
         company._square_require_config()
 

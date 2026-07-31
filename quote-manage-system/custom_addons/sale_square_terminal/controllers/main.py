@@ -14,6 +14,24 @@ from odoo.addons.sale_square_terminal import const
 _logger = logging.getLogger(__name__)
 
 
+def _json_error(message, status=400):
+    return request.make_json_response({'ok': False, 'error': message}, status=status)
+
+
+def _auth_company_from_bearer():
+    """Authorize Reader app via company square_mobile_api_key."""
+    auth = request.httprequest.headers.get('Authorization') or ''
+    if not auth.lower().startswith('bearer '):
+        return None
+    token = auth.split(' ', 1)[1].strip()
+    if not token:
+        return None
+    return request.env['res.company'].sudo().search([
+        ('square_enabled', '=', True),
+        ('square_mobile_api_key', '=', token),
+    ], limit=1)
+
+
 class SquareTerminalController(http.Controller):
 
     @http.route(
@@ -25,11 +43,7 @@ class SquareTerminalController(http.Controller):
         save_session=False,
     )
     def square_terminal_webhook(self, **_kwargs):
-        """Optional webhook for terminal.checkout.updated.
-
-        Primary UX uses the wizard Check Status button; this endpoint can
-        auto-fulfill open sales orders when Square pushes COMPLETED.
-        """
+        """Optional webhook for terminal.checkout.updated."""
         raw = request.httprequest.get_data()
         signature = request.httprequest.headers.get('x-square-hmacsha256-signature')
         try:
@@ -110,3 +124,141 @@ class SquareTerminalController(http.Controller):
             return request.make_json_response({'ok': False}, status=500)
 
         return request.make_json_response({'ok': True, 'order': order.name})
+
+    # ------------------------------------------------------------------
+    # Reader companion app API
+    # ------------------------------------------------------------------
+
+    @http.route(
+        '/square/reader/config',
+        type='http',
+        auth='public',
+        methods=['GET'],
+        csrf=False,
+        save_session=False,
+    )
+    def square_reader_config(self, **_kwargs):
+        """Return Square SDK credentials for the authorized Reader app."""
+        company = _auth_company_from_bearer()
+        if not company:
+            return _json_error('Unauthorized', 401)
+        return request.make_json_response({
+            'ok': True,
+            'environment': company.square_environment or 'sandbox',
+            'application_id': company.square_application_id or '',
+            'access_token': company.square_access_token or '',
+            'location_id': company.square_location_id or '',
+            'company_name': company.name,
+        })
+
+    @http.route(
+        '/square/reader/pending',
+        type='http',
+        auth='public',
+        methods=['GET'],
+        csrf=False,
+        save_session=False,
+    )
+    def square_reader_pending(self, **_kwargs):
+        """List waiting Reader checkouts for this company."""
+        company = _auth_company_from_bearer()
+        if not company:
+            return _json_error('Unauthorized', 401)
+        checkouts = request.env['square.reader.checkout'].sudo().search([
+            ('company_id', '=', company.id),
+            ('state', '=', 'waiting'),
+        ], order='id desc', limit=20)
+        rows = []
+        for c in checkouts:
+            rows.append({
+                'id': c.id,
+                'name': c.name,
+                'access_token': c.access_token,
+                'amount': c.amount,
+                'currency': c.currency_id.name,
+                'sale_order': c.sale_order_id.name,
+                'sale_order_id': c.sale_order_id.id,
+                'partner': c.sale_order_id.partner_id.display_name,
+            })
+        return request.make_json_response({'ok': True, 'checkouts': rows})
+
+    @http.route(
+        '/square/reader/complete',
+        type='http',
+        auth='public',
+        methods=['POST'],
+        csrf=False,
+        save_session=False,
+    )
+    def square_reader_complete(self, **_kwargs):
+        """Mark a pending checkout paid after Mobile Payments SDK success."""
+        company = _auth_company_from_bearer()
+        if not company:
+            return _json_error('Unauthorized', 401)
+        try:
+            payload = json.loads(request.httprequest.get_data().decode('utf-8') or '{}')
+        except ValueError:
+            return _json_error('Invalid JSON')
+
+        checkout_id = payload.get('checkout_id')
+        access_token = payload.get('access_token')
+        square_payment_id = payload.get('square_payment_id')
+        if not square_payment_id:
+            return _json_error('square_payment_id is required')
+
+        Checkout = request.env['square.reader.checkout'].sudo()
+        checkout = False
+        if checkout_id:
+            checkout = Checkout.browse(int(checkout_id)).exists()
+        if not checkout and access_token:
+            checkout = Checkout.search([('access_token', '=', access_token)], limit=1)
+        if not checkout or checkout.company_id.id != company.id:
+            return _json_error('Checkout not found', 404)
+
+        try:
+            payments = checkout.action_mark_paid(square_payment_id)
+        except Exception as exc:  # noqa: BLE001
+            _logger.exception('Reader complete failed for %s', checkout.name)
+            return _json_error(str(exc), 500)
+
+        return request.make_json_response({
+            'ok': True,
+            'checkout': checkout.name,
+            'state': checkout.state,
+            'payments': payments.mapped('name'),
+            'sale_order': checkout.sale_order_id.name,
+        })
+
+    @http.route(
+        '/square/reader/fail',
+        type='http',
+        auth='public',
+        methods=['POST'],
+        csrf=False,
+        save_session=False,
+    )
+    def square_reader_fail(self, **_kwargs):
+        company = _auth_company_from_bearer()
+        if not company:
+            return _json_error('Unauthorized', 401)
+        try:
+            payload = json.loads(request.httprequest.get_data().decode('utf-8') or '{}')
+        except ValueError:
+            return _json_error('Invalid JSON')
+
+        Checkout = request.env['square.reader.checkout'].sudo()
+        checkout = False
+        if payload.get('checkout_id'):
+            checkout = Checkout.browse(int(payload['checkout_id'])).exists()
+        if not checkout and payload.get('access_token'):
+            checkout = Checkout.search([
+                ('access_token', '=', payload['access_token']),
+            ], limit=1)
+        if not checkout or checkout.company_id.id != company.id:
+            return _json_error('Checkout not found', 404)
+        if checkout.state == 'waiting':
+            checkout.write({
+                'state': 'failed',
+                'status_message': payload.get('message') or 'Failed on Reader App',
+            })
+        return request.make_json_response({'ok': True, 'state': checkout.state})

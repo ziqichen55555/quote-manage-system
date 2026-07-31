@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Sale: Square Terminal Payments',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Sales/Sales',
-    'summary': 'Pay Sales Orders via Square Terminal / Reader (card only)',
+    'summary': 'Pay Sales Orders via Square Reader app or Square Terminal',
     'description': """
-Square Terminal payments for Sales Orders
-=========================================
-Odoo remains the source of truth for products, inventory, pricing and accounting.
-Square is used only to take card / EFTPOS payments on a paired Terminal device.
+Square card payments for Sales Orders
+=====================================
+Supports:
+* **Reader mode** (default): Odoo creates a pending charge; a store phone/tablet
+  app uses Square Mobile Payments SDK + Bluetooth Reader, then reports payment
+  back to Odoo.
+* **Terminal mode**: classic Terminal API cloud checkout.
 
-Flow
-----
-1. Staff open a Sales Order and click **Pay with Square**.
-2. Odoo sends a Terminal Checkout to the configured device.
-3. Customer taps / inserts / swipes on the Square device.
-4. On success Odoo invoices the order, posts an inbound payment with the
-   **Square** payment method, and validates deliveries to deduct stock.
-5. Refunds: create a credit note, then **Refund via Square** (Square Refunds API).
-
-Credentials (access token, location id, device id) are configured per company
-under Settings → Sales → Square Terminal.
+On success Odoo invoices, posts payment method Square, and attempts stock delivery.
 """,
     'author': 'Co-Creative IT',
     'website': 'https://www.cocreativeit.com',

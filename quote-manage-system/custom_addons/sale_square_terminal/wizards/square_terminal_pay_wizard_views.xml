@@ -9,8 +9,10 @@
                     <field name="sale_order_id"/>
                     <field name="currency_id" invisible="1"/>
                     <field name="company_id" invisible="1"/>
+                    <field name="payment_mode" invisible="1"/>
+                    <field name="reader_checkout_id" invisible="1"/>
                     <field name="amount"/>
-                    <field name="device_id"/>
+                    <field name="device_id" invisible="payment_mode == 'reader'"/>
                     <field name="state"/>
                     <field name="checkout_id" invisible="not checkout_id"/>
                     <field name="square_payment_id" invisible="not square_payment_id"/>
@@ -29,7 +31,7 @@
                             invisible="state != 'waiting'"/>
                     <button name="action_cancel_checkout"
                             type="object"
-                            string="Cancel on Reader"
+                            string="Cancel"
                             invisible="state != 'waiting'"/>
                     <button string="Close" class="btn-secondary" special="cancel"/>
                 </footer>

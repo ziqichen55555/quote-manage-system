@@ -22,18 +22,22 @@ class ResCompany(models.Model):
         env_key = self.square_environment or 'sandbox'
         return const.API_URLS.get(env_key, const.API_URLS['sandbox'])
 
-    def _square_require_config(self):
+    def _square_require_config(self, require_terminal_device=None):
         self.ensure_one()
         missing = []
         if not self.square_access_token:
             missing.append('Access Token')
         if not self.square_location_id:
             missing.append('Location ID')
-        if not self.square_device_id:
-            missing.append('Device ID')
+        if require_terminal_device is None:
+            require_terminal_device = (self.square_payment_mode or 'reader') == 'terminal'
+        if require_terminal_device and not self.square_device_id:
+            missing.append('Terminal Device ID')
+        if (self.square_payment_mode or 'reader') == 'reader' and not self.square_mobile_api_key:
+            missing.append('Reader App API Key')
         if missing:
             raise UserError(_(
-                'Square Terminal is not configured (%s). '
+                'Square is not configured (%s). '
                 'Go to Settings → Sales → Square Terminal.'
             ) % ', '.join(missing))
 
@@ -47,7 +51,9 @@ class ResCompany(models.Model):
 
     def _square_request(self, method, path, payload=None, timeout=30):
         self.ensure_one()
-        self._square_require_config()
+        # API calls (locations, refunds, terminal) need token + location; device only for terminal checkout create.
+        if not self.square_access_token:
+            raise UserError(_('Enter a Square Access Token first.'))
         url = '%s%s' % (self._square_api_base_url(), path)
         try:
             response = requests.request(
@@ -92,6 +98,7 @@ class ResCompany(models.Model):
 
     def _square_create_terminal_checkout(self, amount, currency, reference, note=None):
         self.ensure_one()
+        self._square_require_config(require_terminal_device=True)
         checkout = {
             'amount_money': self._square_amount_money(amount, currency),
             'device_options': {
