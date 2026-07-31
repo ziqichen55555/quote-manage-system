@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Re-Ware Square</string>
+    <!-- Override these or set via in-app Settings -->
+    <string name="odoo_base_url">https://www.reware-project.com</string>
+    <string name="odoo_api_key"></string>
+    <string name="square_application_id"></string>
+</resources>
