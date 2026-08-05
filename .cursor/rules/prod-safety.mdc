@@ -13,9 +13,9 @@ alwaysApply: true
    - Prefer feature branch + DRY_RUN.
    - Do **not** merge just to "upload a script".
    - DRY RUN → paste output → wait for user OK → then APPLY (`DRY_RUN=False` + `confirm_apply=APPLY`).
-4. Changing `scripts/**` must **not** imply a module upgrade. Auto-deploy only covers addons/config/compose/Caddy (not scripts).
+4. **Merge / push to `main` does NOT deploy.** Production deploy is manual only (`Deploy production` workflow + `confirm_deploy=DEPLOY`). Do not treat a merge as a deploy.
 5. If a production action might collide with Deploy, **stop and ask** — do not "just try GH Actions".
 
 ## Why
 
-A previous incident: merging a shell script to `main` triggered Deploy (`scripts/**` path) while a shell workflow also started → two `docker compose run web odoo` jobs locked each other. Guardrails in `.github/workflows/` exist; agents must still follow process.
+Past incidents: merge-triggered Deploy uploaded new addons while `-u` failed mid-upgrade → site down; concurrent Deploy + shell locked `docker compose run web odoo`. Deploy is manual-only now; agents must still follow process.

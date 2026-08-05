@@ -1,10 +1,12 @@
-# Push to main -> validate custom_addons on a throwaway DB, then deploy.
+# Manual only: validate custom_addons on a throwaway DB, then deploy.
+# Merge / push to main does NOT deploy — run this workflow explicitly.
 #
 # Production layout: /root/reware (no git clone). Secrets:
 #   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_KEY, PROD_APP_DIR (/root/reware)
 #
 # Guardrails:
-#   * scripts/** alone does NOT auto-deploy (except this workflow file)
+#   * no push/PR triggers (merge ≠ deploy)
+#   * confirm_deploy must be DEPLOY
 #   * validate job must pass before any production upload / odoo -u
 #   * shares concurrency group prod-deploy with shell/repair (no parallel prod jobs)
 #   * cancel-in-progress: false — never kill an in-flight odoo -u
@@ -12,19 +14,12 @@ name: Deploy production
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'quote-manage-system/custom_addons/**'
-      - 'quote-manage-system/addons/**'
-      - 'config/**'
-      - 'docker-compose.prod.yml'
-      - 'Caddyfile'
-      - 'scripts/validate-custom-addons.sh'
-      - 'scripts/validate-quote-manage-ui.sh'
-      - 'scripts/deploy-reware-remote.sh'
-      - 'scripts/sync_rw_templates.py'
-      - '.github/workflows/deploy-prod.yml'
+    inputs:
+      confirm_deploy:
+        description: Type DEPLOY to run production upload + module upgrade
+        required: true
+        default: ""
+        type: string
 
 concurrency:
   group: prod-deploy
@@ -35,6 +30,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Guard DEPLOY confirmation
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event.inputs.confirm_deploy }}" != "DEPLOY" ]]; then
+            echo "::error::confirm_deploy must be exactly DEPLOY (got: '${{ github.event.inputs.confirm_deploy }}')."
+            echo "Merge to main does not deploy. Re-run this workflow and type DEPLOY only when ready."
+            exit 1
+          fi
+          echo "DEPLOY confirmed."
+
       - uses: actions/checkout@v4
 
       - name: Normalize shell scripts (CRLF -> LF)
