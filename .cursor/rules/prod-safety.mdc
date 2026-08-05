@@ -7,15 +7,30 @@ alwaysApply: true
 
 ## Hard rules
 
-1. **Never** merge to `main`, trigger Deploy / Repair / Odoo-shell Actions, or SSH into production unless the user **explicitly** says to (e.g. "deploy", "run on prod", "apply").
+1. **Never** merge to `main`, trigger Deploy / Repair / Odoo-shell Actions, or SSH into production unless the user **explicitly** says to (e.g. "deploy", "部署", "确认部署", "run on prod", "apply").
 2. **Never** run a second production job while Deploy / shell / repair is `in_progress`. Always `gh run list` first.
 3. One-off data fixes (`scripts/*_shell.py`):
    - Prefer feature branch + DRY_RUN.
    - Do **not** merge just to "upload a script".
    - DRY RUN → paste output → wait for user OK → then APPLY (`DRY_RUN=False` + `confirm_apply=APPLY`).
-4. **Merge / push to `main` does NOT deploy.** Production deploy is manual only (`Deploy production` workflow + `confirm_deploy=DEPLOY`). Do not treat a merge as a deploy.
+4. **Merge / push to `main` does NOT deploy.** Production deploy is manual only.
 5. If a production action might collide with Deploy, **stop and ask** — do not "just try GH Actions".
+
+## How to deploy (from Cursor — preferred)
+
+User confirms **here in chat** (not on github.com). Do **not** send them to the Actions UI.
+
+When the user clearly asks to deploy (e.g. "deploy", "部署", "确认部署", "重新部署"):
+
+1. `gh run list --limit 15` — abort if Deploy / Repair / Odoo-shell is queued or in progress.
+2. Run:
+   ```powershell
+   .\scripts\trigger-prod-deploy.ps1 -ConfirmDeploy DEPLOY
+   ```
+   (Equivalent: `gh workflow run "Deploy production" --ref main -f confirm_deploy=DEPLOY`)
+3. `gh run watch <id> --exit-status`, then smoke-check `https://www.reware-project.com`.
+4. Report success/failure with the run URL.
 
 ## Why
 
-Past incidents: merge-triggered Deploy uploaded new addons while `-u` failed mid-upgrade → site down; concurrent Deploy + shell locked `docker compose run web odoo`. Deploy is manual-only now; agents must still follow process.
+Past incidents: merge-triggered Deploy uploaded new addons while `-u` failed mid-upgrade → site down; concurrent Deploy + shell locked `docker compose run web odoo`. Deploy is Cursor-triggered / manual-only; agents must still follow process.
