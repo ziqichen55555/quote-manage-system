@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.171',
+    'version': '1.0.172',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -22,6 +22,7 @@
         'mass_mailing',
     ],
     'data': [
+        'data/account_payment_method_data.xml',
         'data/quote_refurb_product_category.xml',
         'data/quote_refurb_product_tags.xml',
         'data/quote_refurb_product_attributes.xml',

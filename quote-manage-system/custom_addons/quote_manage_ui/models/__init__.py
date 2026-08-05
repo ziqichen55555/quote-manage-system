@@ -10,4 +10,5 @@ from . import delivery_carrier
 from . import quote_manage_ui_setup
 from . import sale_order
 from . import account_payment
+from . import account_payment_method
 from . import website_appointment

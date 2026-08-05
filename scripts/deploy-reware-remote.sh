@@ -7,7 +7,7 @@ APP_DIR="${APP_DIR:-/root/reware}"
 DB="${ODOO_DATABASE:-cocreativeit-quote}"
 MODULE="${ODOO_MODULE:-quote_manage_ui}"
 # Comma-separated extras: -i installs if missing, -u upgrades when already installed.
-EXTRA_MODULES="${ODOO_EXTRA_MODULES:-sale_square_terminal}"
+EXTRA_MODULES="${ODOO_EXTRA_MODULES:-}"
 SYNC_SCRIPT="${SYNC_SCRIPT:-/tmp/sync_rw_templates.py}"
 
 cd "$APP_DIR"
@@ -25,10 +25,8 @@ log "Backing up ${DB} -> ${BACKUP_FILE}"
 "${COMPOSE[@]}" exec -T db pg_dump -U odoo "$DB" | gzip > "$BACKUP_FILE"
 find backups -name 'db-*.sql.gz' -mtime +14 -delete 2>/dev/null || true
 
-# Extras first: new fields/tables on already-installed modules (e.g.
-# sale_square_terminal) must be applied before -u quote_manage_ui, otherwise
-# Odoo loads updated Python for all installed addons but only migrates the
-# upgraded module → missing columns (e.g. res_company.square_payment_mode).
+# Optional extras first: when ODOO_EXTRA_MODULES is set, install/upgrade those
+# modules before quote_manage_ui so dependencies and schema stay in sync.
 if [[ -n "${EXTRA_MODULES}" ]]; then
   log "Installing/upgrading extra modules first: ${EXTRA_MODULES}"
   "${COMPOSE[@]}" run --rm web odoo \
