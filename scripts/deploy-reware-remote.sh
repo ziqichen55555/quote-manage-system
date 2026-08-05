@@ -25,15 +25,12 @@ log "Backing up ${DB} -> ${BACKUP_FILE}"
 "${COMPOSE[@]}" exec -T db pg_dump -U odoo "$DB" | gzip > "$BACKUP_FILE"
 find backups -name 'db-*.sql.gz' -mtime +14 -delete 2>/dev/null || true
 
-log "Upgrading ${MODULE}..."
-"${COMPOSE[@]}" run --rm web odoo \
-  -c /etc/odoo/odoo.conf \
-  -d "$DB" \
-  -u "$MODULE" \
-  --stop-after-init
-
+# Extras first: new fields/tables on already-installed modules (e.g.
+# sale_square_terminal) must be applied before -u quote_manage_ui, otherwise
+# Odoo loads updated Python for all installed addons but only migrates the
+# upgraded module → missing columns (e.g. res_company.square_payment_mode).
 if [[ -n "${EXTRA_MODULES}" ]]; then
-  log "Installing/upgrading extra modules: ${EXTRA_MODULES}"
+  log "Installing/upgrading extra modules first: ${EXTRA_MODULES}"
   "${COMPOSE[@]}" run --rm web odoo \
     -c /etc/odoo/odoo.conf \
     -d "$DB" \
@@ -41,6 +38,14 @@ if [[ -n "${EXTRA_MODULES}" ]]; then
     -u "$EXTRA_MODULES" \
     --stop-after-init
 fi
+
+log "Upgrading ${MODULE}..."
+"${COMPOSE[@]}" run --rm web odoo \
+  -c /etc/odoo/odoo.conf \
+  -d "$DB" \
+  -u "$MODULE" \
+  --stop-after-init
+
 
 if [[ -f "$SYNC_SCRIPT" ]]; then
   log "Syncing locked templates from XML..."
