@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Append S/N under each product line description when lots are assigned/delivered. -->
+  <template id="report_saleorder_document_serial"
+            inherit_id="sale.report_saleorder_document"
+            name="Quote Manage UI Sale Order Serial Numbers">
+    <xpath expr="//td[@name='td_name']/span[@t-field='line.name']" position="after">
+      <t t-set="lot_names" t-value="line._get_report_lot_names()"/>
+      <t t-foreach="lot_names" t-as="lot_name">
+        <div class="reware-report-sn text-muted">S/N: <t t-esc="lot_name"/></div>
+      </t>
+    </xpath>
+  </template>
+</odoo>

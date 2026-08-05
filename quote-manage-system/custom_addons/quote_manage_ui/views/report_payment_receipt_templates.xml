@@ -62,5 +62,29 @@
         <th class="text-end">Amount Paid</th>
       </tr>
     </xpath>
+
+    <!-- SN/LN from reconciled invoices (shown only when delivery has assigned lots). -->
+    <xpath expr="//table[@name='invoices']" position="after">
+      <t t-set="lot_values" t-value="o._get_payment_receipt_lot_values()"/>
+      <table t-if="lot_values" class="table table-sm mt-3 reware-payment-sn-table" style="width: 70%;" name="payment_snln_table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="text-end">Quantity</th>
+            <th>S/N</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr t-foreach="lot_values" t-as="snln_line">
+            <td><t t-esc="snln_line['product_name']"/></td>
+            <td class="text-end">
+              <t t-esc="snln_line['quantity']"/>
+              <t t-esc="snln_line['uom_name']" groups="uom.group_uom"/>
+            </td>
+            <td><t t-esc="snln_line['lot_name']"/></td>
+          </tr>
+        </tbody>
+      </table>
+    </xpath>
   </template>
 </odoo>

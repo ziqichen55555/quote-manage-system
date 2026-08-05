@@ -260,4 +260,13 @@
             </div>
         </xpath>
     </template>
+
+    <!-- Always show the standard SN/LN table when lots exist (not only for users in the inventory group). -->
+    <template id="report_invoice_document_serial_ungroup"
+              inherit_id="stock_account.stock_account_report_invoice_document"
+              name="Quote Manage UI Invoice Serial Numbers Visible">
+        <xpath expr="//t[@groups='stock_account.group_lot_on_invoice']" position="attributes">
+            <attribute name="groups"/>
+        </xpath>
+    </template>
 </odoo>
