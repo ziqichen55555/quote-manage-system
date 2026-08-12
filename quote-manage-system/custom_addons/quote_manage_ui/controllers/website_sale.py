@@ -1,11 +1,37 @@
 # -*- coding: utf-8 -*-
-"""Tighten eCommerce category lists and shop attribute filters."""
+"""Tighten eCommerce category lists and shop attribute filters.
+
+Also require real customer contact details before a website cart is treated as
+a quotation / allowed to pay (avoids Public User orders like S91).
+"""
+from odoo import _
 from odoo.addons.website_sale.controllers import main as website_sale_controller
 from odoo.http import request
 from odoo.tools import lazy
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
+    def _get_mandatory_fields_billing(self, country_id=False):
+        """Phone is required so staff can contact unpaid website quotations."""
+        req = super()._get_mandatory_fields_billing(country_id)
+        if "phone" not in req:
+            req.append("phone")
+        return req
+
+    def _get_shop_payment_errors(self, order):
+        errors = super()._get_shop_payment_errors(order)
+        if not order:
+            return errors
+        if order._is_public_order() or not order._quote_has_contactable_customer():
+            errors.append((
+                _("Customer details required"),
+                _(
+                    "Please fill in your name, email and phone before placing "
+                    "a quotation or paying. This lets us contact you if needed."
+                ),
+            ))
+        return errors
+
     def _quote_wsale_root_categories_with_products(self):
         Category = request.env["product.public.category"].sudo()
         PT = request.env["product.template"].sudo()

@@ -37,4 +37,31 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Hide Public User / anonymous website carts from Quotation menus (S91-type noise). -->
+    <record id="sale_order_view_search_hide_anonymous_cart" model="ir.ui.view">
+        <field name="name">sale.order.search.hide.anonymous.website.cart</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            <filter name="draft" position="after">
+                <separator/>
+                <filter string="With customer contact"
+                        name="contactable_quotations"
+                        domain="[('quote_is_anonymous_website_cart', '=', False)]"/>
+                <filter string="Anonymous website carts"
+                        name="anonymous_website_carts"
+                        domain="[('quote_is_anonymous_website_cart', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Default: hide Public User carts; staff can clear filter or use "Anonymous website carts". -->
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="context">{'search_default_my_quotation': 1, 'search_default_contactable_quotations': 1}</field>
+    </record>
+
+    <record id="sale.action_quotations" model="ir.actions.act_window">
+        <field name="context">{'search_default_my_quotation': 1, 'search_default_contactable_quotations': 1}</field>
+    </record>
 </odoo>
