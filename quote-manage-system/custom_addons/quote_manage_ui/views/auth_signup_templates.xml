@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Collect phone + address at signup so website quotations have a real account. -->
+    <template id="reware_signup_contact_fields" inherit_id="auth_signup.fields" name="Reware Signup Contact Fields" priority="50">
+        <xpath expr="//div[hasclass('field-name')]" position="after">
+            <div class="mb-3 field-phone" t-if="not only_passwords">
+                <label for="phone">Phone</label>
+                <input type="tel" name="phone" t-att-value="phone" id="phone"
+                       autocomplete="tel" class="form-control form-control-sm"
+                       required="required"/>
+            </div>
+            <div class="mb-3 field-street" t-if="not only_passwords">
+                <label for="street">Street</label>
+                <input type="text" name="street" t-att-value="street" id="street"
+                       autocomplete="street-address" class="form-control form-control-sm"
+                       required="required"/>
+            </div>
+            <div class="mb-3 field-street2" t-if="not only_passwords">
+                <label for="street2">Street 2</label>
+                <input type="text" name="street2" t-att-value="street2" id="street2"
+                       class="form-control form-control-sm"/>
+            </div>
+            <div class="mb-3 field-city" t-if="not only_passwords">
+                <label for="city">City</label>
+                <input type="text" name="city" t-att-value="city" id="city"
+                       autocomplete="address-level2" class="form-control form-control-sm"
+                       required="required"/>
+            </div>
+            <div class="mb-3 field-zip" t-if="not only_passwords">
+                <label for="zip">Postcode</label>
+                <input type="text" name="zip" t-att-value="zip" id="zip"
+                       autocomplete="postal-code" class="form-control form-control-sm"/>
+            </div>
+            <div class="mb-3 field-country_id" t-if="not only_passwords">
+                <label for="country_id">Country</label>
+                <select name="country_id" id="country_id" class="form-select form-select-sm" required="required">
+                    <t t-foreach="countries or []" t-as="c">
+                        <option t-att-value="c.id"
+                                t-att-selected="(country_id and str(c.id) == str(country_id)) or (not country_id and country and c.id == country.id)">
+                            <t t-esc="c.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+            <div class="mb-3 field-state_id" t-if="not only_passwords and country_states">
+                <label for="state_id">State / Territory</label>
+                <select name="state_id" id="state_id" class="form-select form-select-sm">
+                    <option value="">—</option>
+                    <t t-foreach="country_states" t-as="st">
+                        <option t-att-value="st.id"
+                                t-att-selected="state_id and str(st.id) == str(state_id)">
+                            <t t-esc="st.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="reware_signup_checkout_copy" inherit_id="auth_signup.signup" name="Reware Signup Checkout Copy" priority="55">
+        <xpath expr="//p[hasclass('lead')]" position="replace">
+            <p class="lead mb-0">
+                Create an account with your email, phone and address to place a quotation.
+                Payment is optional — your quote stays a quotation until you pay.
+            </p>
+        </xpath>
+    </template>
+</odoo>

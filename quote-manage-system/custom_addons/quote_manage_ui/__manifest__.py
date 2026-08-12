@@ -5,6 +5,7 @@
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
         'account',
+        'auth_signup',
         'delivery',
         'l10n_au',
         'web',
@@ -42,6 +43,7 @@
         'views/report_saleorder_templates.xml',
         'views/report_payment_receipt_templates.xml',
         'views/website_templates.xml',
+        'views/auth_signup_templates.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/product_import_wizard_views.xml',

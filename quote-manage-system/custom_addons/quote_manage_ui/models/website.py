@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import api, models
+from odoo import _lt, api, models
 from odoo.tools import ormcache
 
 
@@ -39,3 +39,16 @@ class Website(models.Model):
             except (TypeError, AttributeError):
                 pass
         self.env.registry.clear_cache()
+
+    def _get_checkout_step_list(self):
+        """Cart CTA: create account (mandatory) instead of guest checkout."""
+        steps = super()._get_checkout_step_list()
+        if not (self.account_on_checkout == "mandatory" and self.is_public_user()):
+            return steps
+        # First step is cart review — point guests at signup, not login-only.
+        cart_xmlids, cart_values = steps[0]
+        cart_values = dict(cart_values)
+        cart_values["main_button"] = _lt("Create account")
+        cart_values["main_button_href"] = "/web/signup?redirect=/shop/checkout?express=1"
+        steps[0] = (cart_xmlids, cart_values)
+        return steps

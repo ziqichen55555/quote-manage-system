@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tighten eCommerce category lists and shop attribute filters.
-
-Also require real customer contact details before a website cart is treated as
-a quotation / allowed to pay (avoids Public User orders like S91).
-"""
+"""Website shop: require account + contact details before quotation/payment."""
 from odoo import _
 from odoo.addons.website_sale.controllers import main as website_sale_controller
 from odoo.http import request
@@ -11,8 +7,20 @@ from odoo.tools import lazy
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
+    def checkout_redirection(self, order):
+        """Mandatory account: send guests to signup (not guest checkout)."""
+        redirection = super().checkout_redirection(order)
+        if (
+            redirection
+            and request.website.account_on_checkout == "mandatory"
+            and request.website.is_public_user()
+            and "/web/login" in (redirection.location or "")
+        ):
+            return request.redirect("/web/signup?redirect=/shop/checkout")
+        return redirection
+
     def _get_mandatory_fields_billing(self, country_id=False):
-        """Phone is required so staff can contact unpaid website quotations."""
+        """Phone required so unpaid quotations remain contactable."""
         req = super()._get_mandatory_fields_billing(country_id)
         if "phone" not in req:
             req.append("phone")
@@ -22,12 +30,20 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         errors = super()._get_shop_payment_errors(order)
         if not order:
             return errors
-        if order._is_public_order() or not order._quote_has_contactable_customer():
+        if request.website.is_public_user():
+            errors.append((
+                _("Account required"),
+                _(
+                    "Please create an account or sign in before placing a "
+                    "quotation or paying."
+                ),
+            ))
+        elif not order._quote_has_contactable_customer():
             errors.append((
                 _("Customer details required"),
                 _(
-                    "Please fill in your name, email and phone before placing "
-                    "a quotation or paying. This lets us contact you if needed."
+                    "Please complete your name, email and phone on your account "
+                    "or address before placing a quotation or paying."
                 ),
             ))
         return errors
@@ -66,7 +82,6 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         attrib_set = set(attrib_set or ())
         if search_product is None:
             return attrib_set
-        # Empty listing → no filter chips from catalogue (keep selected only).
         if not search_product:
             return attrib_set
         lines = (

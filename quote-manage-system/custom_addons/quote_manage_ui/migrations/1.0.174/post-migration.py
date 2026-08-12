@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""1.0.174 — Remove leftover Square views after incomplete sale_square_terminal uninstall.
+"""1.0.174 — Remove leftover Square views; require account for website quotations.
 
-Production OwlError: sale.order.square_pay_enabled field is undefined — the
-module was marked uninstalled without deleting its inherited form views.
+- Cleans incomplete sale_square_terminal uninstall (square_pay_enabled OwlError).
+- Sets Website account_on_checkout = mandatory + public signup (b2c).
 """
 
 from odoo import SUPERUSER_ID, api
@@ -42,18 +42,15 @@ def _unlink_records(env, model_name, ids):
         records.unlink()
 
 
-def migrate(cr, version):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def _cleanup_square(env):
     Data = env["ir.model.data"].sudo()
     View = env["ir.ui.view"].sudo()
 
-    # 1) Delete everything still registered under sale_square_terminal xmlids.
     xmlids = Data.search([("module", "=", "sale_square_terminal")])
     by_model = {}
     for xid in xmlids:
         by_model.setdefault(xid.model, set()).add(xid.res_id)
 
-    # Views first (breaks form inheritance), then the rest.
     preferred_order = [
         "ir.ui.view",
         "ir.actions.act_window",
@@ -69,21 +66,33 @@ def migrate(cr, version):
         try:
             _unlink_records(env, model_name, by_model[model_name])
         except Exception:
-            # Model may already be gone; still drop the xmlids below.
             pass
 
     xmlids.unlink()
 
-    # 2) Catch COW / orphan views that still reference Square fields in arch.
     domain = ["|"] * (len(_SQUARE_ARCH_MARKERS) - 1)
     domain.extend(("arch_db", "ilike", marker) for marker in _SQUARE_ARCH_MARKERS)
     orphan_views = View.search(domain)
     if orphan_views:
         orphan_views.unlink()
 
-    # 3) Ensure module row is not left as installed.
     module = env["ir.module.module"].sudo().search(
         [("name", "=", "sale_square_terminal")], limit=1
     )
     if module and module.state in ("installed", "to upgrade", "to remove"):
         module.write({"state": "uninstalled"})
+
+
+def _require_account_for_website_quotes(env):
+    # Allow public self-signup (needed for mandatory checkout accounts).
+    ICP = env["ir.config_parameter"].sudo()
+    ICP.set_param("auth_signup.invitation_scope", "b2c")
+
+    websites = env["website"].sudo().search([])
+    websites.write({"account_on_checkout": "mandatory"})
+
+
+def migrate(cr, version):
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    _cleanup_square(env)
+    _require_account_for_website_quotes(env)

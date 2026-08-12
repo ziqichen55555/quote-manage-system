@@ -5,22 +5,15 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Add shadow and rounded corners to the main sheet -->
             <xpath expr="//sheet" position="attributes">
                 <attribute name="class">o_form_sheet shadow-sm rounded-3</attribute>
             </xpath>
-            
-            <!-- Enhance the title area -->
             <xpath expr="//div[hasclass('oe_title')]" position="attributes">
                 <attribute name="class">oe_title mb-4</attribute>
             </xpath>
-            
-            <!-- Add some spacing to groups -->
             <xpath expr="//group[@name='sale_header']" position="attributes">
                 <attribute name="class">sale_header g-4</attribute>
             </xpath>
-            
-            <!-- Improve the button box -->
             <xpath expr="//div[@name='button_box']" position="attributes">
                 <attribute name="class">oe_button_box mb-3</attribute>
             </xpath>
@@ -36,32 +29,5 @@
                 <attribute name="class">o_sale_order_tree table-hover</attribute>
             </xpath>
         </field>
-    </record>
-
-    <!-- Hide Public User / anonymous website carts from Quotation menus (S91-type noise). -->
-    <record id="sale_order_view_search_hide_anonymous_cart" model="ir.ui.view">
-        <field name="name">sale.order.search.hide.anonymous.website.cart</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
-        <field name="arch" type="xml">
-            <filter name="draft" position="after">
-                <separator/>
-                <filter string="With customer contact"
-                        name="contactable_quotations"
-                        domain="[('quote_is_anonymous_website_cart', '=', False)]"/>
-                <filter string="Anonymous website carts"
-                        name="anonymous_website_carts"
-                        domain="[('quote_is_anonymous_website_cart', '=', True)]"/>
-            </filter>
-        </field>
-    </record>
-
-    <!-- Default: hide Public User carts; staff can clear filter or use "Anonymous website carts". -->
-    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
-        <field name="context">{'search_default_my_quotation': 1, 'search_default_contactable_quotations': 1}</field>
-    </record>
-
-    <record id="sale.action_quotations" model="ir.actions.act_window">
-        <field name="context">{'search_default_my_quotation': 1, 'search_default_contactable_quotations': 1}</field>
     </record>
 </odoo>
