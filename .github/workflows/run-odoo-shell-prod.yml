@@ -4,6 +4,7 @@
 #   * manual only (workflow_dispatch)
 #   * shares concurrency group prod-deploy with Deploy/Repair
 #   * fails if another odoo one-shot container is already running
+#   * NEVER parallel with SSH `docker compose run … odoo shell` — one shell at a time (~1GB droplet)
 #   * apply requires confirm_apply=APPLY (default is dry-run mode check only)
 name: Run Odoo shell on production
 

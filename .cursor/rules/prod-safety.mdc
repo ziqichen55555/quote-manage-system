@@ -9,12 +9,13 @@ alwaysApply: true
 
 1. **Never** merge to `main`, trigger Deploy / Repair / Odoo-shell Actions, or SSH into production unless the user **explicitly** says to (e.g. "deploy", "部署", "确认部署", "run on prod", "apply").
 2. **Never** run a second production job while Deploy / shell / repair is `in_progress`. Always `gh run list` first.
-3. One-off data fixes (`scripts/*_shell.py`):
+3. **Never run multiple production Odoo shells in parallel** (SSH `docker compose run … odoo shell`, GH “Run Odoo shell”, or mixed). Droplet is ~1GB RAM — concurrent one-shot `web` containers spike load and can take the site down. **One shell at a time**: wait for exit (or clean up hung `reware-web-run-*`) before starting another.
+4. One-off data fixes (`scripts/*_shell.py`):
    - Prefer feature branch + DRY_RUN.
    - Do **not** merge just to "upload a script".
    - DRY RUN → paste output → wait for user OK → then APPLY (`DRY_RUN=False` + `confirm_apply=APPLY`).
-4. **Merge / push to `main` does NOT deploy.** Production deploy is manual only.
-5. If a production action might collide with Deploy, **stop and ask** — do not "just try GH Actions".
+5. **Merge / push to `main` does NOT deploy.** Production deploy is manual only.
+6. If a production action might collide with Deploy, **stop and ask** — do not "just try GH Actions".
 
 ## How to deploy (from Cursor — preferred)
 
@@ -33,4 +34,4 @@ When the user clearly asks to deploy (e.g. "deploy", "部署", "确认部署", "
 
 ## Why
 
-Past incidents: merge-triggered Deploy uploaded new addons while `-u` failed mid-upgrade → site down; concurrent Deploy + shell locked `docker compose run web odoo`. Deploy is Cursor-triggered / manual-only; agents must still follow process.
+Past incidents: merge-triggered Deploy uploaded new addons while `-u` failed mid-upgrade → site down; concurrent Deploy + shell locked `docker compose run web odoo`; multiple parallel `odoo shell` one-shots overloaded the 1GB droplet (high load / SSH and HTTPS timeouts). Deploy is Cursor-triggered / manual-only; agents must still follow process.

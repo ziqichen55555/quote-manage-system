@@ -68,3 +68,17 @@ When you no longer need `app`:
 1. Delete Squarespace A record for `app`
 2. Edit `Caddyfile`: remove `app.reware-project.com` from the site block
 3. `docker compose --env-file .env up -d --force-recreate caddy`
+
+## 6. Odoo shell on production — one at a time
+
+The droplet has ~1GB RAM. Each `docker compose run --rm web odoo shell …` starts an extra Odoo process.
+
+**Do not run multiple production shells in parallel** (SSH, GitHub “Run Odoo shell”, or both). Wait until the current shell exits before starting another. Hung one-shots appear as `reware-web-run-*`; remove them if they linger:
+
+```bash
+cd /root/reware
+docker ps -a --filter name=reware-web-run
+docker rm -f $(docker ps -aq --filter name=reware-web-run) 2>/dev/null
+```
+
+Parallel shells have caused high load and site/SSH timeouts.
