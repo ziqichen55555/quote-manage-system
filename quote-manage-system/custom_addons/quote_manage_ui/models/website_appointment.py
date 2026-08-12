@@ -14,6 +14,7 @@ _DEFAULT_TEAM_LOGINS = (
     're-ware@cocreativeit.com',
     'louismoncrieff@cocreativeit.com',
     'drewwright@cocreativeit.com',
+    'chrischen@cocreativeit.com',
 )
 
 

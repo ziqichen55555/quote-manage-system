@@ -3,7 +3,7 @@
     <data noupdate="1">
         <record id="icp_website_order_notify_email" model="ir.config_parameter">
             <field name="key">quote_manage_ui.website_order_notify_email</field>
-            <field name="value">re-ware@cocreativeit.com</field>
+            <field name="value">louismoncrieff@cocreativeit.com, drewwright@cocreativeit.com, chrischen@cocreativeit.com</field>
         </record>
     </data>
 
@@ -13,7 +13,7 @@
         <field name="model_id" ref="sale.model_sale_order"/>
         <field name="subject">Website quotation {{ object.name }} — awaiting payment (do not confirm)</field>
         <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted or '') }}</field>
-        <field name="email_to">{{ object.env['ir.config_parameter'].sudo().get_param('quote_manage_ui.website_order_notify_email', 're-ware@cocreativeit.com') }}</field>
+        <field name="email_to">{{ object.env['ir.config_parameter'].sudo().get_param('quote_manage_ui.website_order_notify_email', 'louismoncrieff@cocreativeit.com, drewwright@cocreativeit.com, chrischen@cocreativeit.com') }}</field>
         <field name="lang">{{ object.partner_id.lang }}</field>
         <field name="auto_delete" eval="True"/>
         <field name="description">Notify staff when a customer reaches checkout payment with an unpaid website quotation.</field>
@@ -52,7 +52,7 @@
         <field name="model_id" ref="sale.model_sale_order"/>
         <field name="subject">Website order {{ object.name }} — paid, process delivery</field>
         <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted or '') }}</field>
-        <field name="email_to">{{ object.env['ir.config_parameter'].sudo().get_param('quote_manage_ui.website_order_notify_email', 're-ware@cocreativeit.com') }}</field>
+        <field name="email_to">{{ object.env['ir.config_parameter'].sudo().get_param('quote_manage_ui.website_order_notify_email', 'louismoncrieff@cocreativeit.com, drewwright@cocreativeit.com, chrischen@cocreativeit.com') }}</field>
         <field name="lang">{{ object.partner_id.lang }}</field>
         <field name="auto_delete" eval="True"/>
         <field name="description">Notify Re-Ware staff when a website order is confirmed after payment.</field>

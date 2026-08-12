@@ -1,13 +1,53 @@
 # -*- coding: utf-8 -*-
-"""1.0.177 — Fixed $25 ex GST freight; unify shipping product + carrier."""
+"""1.0.177 — Fixed $25 freight; staff notify emails; Chris on appointment + Sales team."""
 
 from odoo import SUPERUSER_ID, api
+
+_STAFF_NOTIFY_EMAILS = (
+    "louismoncrieff@cocreativeit.com",
+    "drewwright@cocreativeit.com",
+    "chrischen@cocreativeit.com",
+)
+_TEAM_LOGINS = (
+    "re-ware@cocreativeit.com",
+    "louismoncrieff@cocreativeit.com",
+    "drewwright@cocreativeit.com",
+    "chrischen@cocreativeit.com",
+)
+_TEAM_PARAM = "quote_manage_ui.appointment_team_user_ids"
 
 
 def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
     ICP = env["ir.config_parameter"].sudo()
+    Users = env["res.users"].sudo()
+
     ICP.set_param("quote_manage_ui.default_freight_price", "25.0")
+    ICP.set_param(
+        "quote_manage_ui.website_order_notify_email",
+        ", ".join(_STAFF_NOTIFY_EMAILS),
+    )
+
+    team_users = Users.search([
+        ("login", "in", list(_TEAM_LOGINS)),
+        ("share", "=", False),
+        ("active", "=", True),
+    ])
+    mandatory_ids = set(team_users.ids)
+    raw = ICP.get_param(_TEAM_PARAM, "") or ""
+    configured_ids = {int(uid) for uid in raw.split(",") if uid.strip().isdigit()}
+    merged_ids = sorted(configured_ids | mandatory_ids)
+    if merged_ids:
+        ICP.set_param(_TEAM_PARAM, ",".join(str(uid) for uid in merged_ids))
+
+    sales_team = env["crm.team"].sudo().search([("name", "=", "Sales")], limit=1)
+    staff_three = Users.search([
+        ("login", "in", list(_STAFF_NOTIFY_EMAILS)),
+        ("share", "=", False),
+        ("active", "=", True),
+    ])
+    if sales_team and staff_three:
+        sales_team.write({"member_ids": [(4, uid) for uid in staff_three.ids]})
 
     metro = env.ref(
         "quote_manage_ui.delivery_carrier_rw_au_metro_weight",
