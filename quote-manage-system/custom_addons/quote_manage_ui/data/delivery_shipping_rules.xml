@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <!-- Starter regex list. Edit this system parameter anytime without code deploy. -->
         <record id="icp_rural_postcode_patterns" model="ir.config_parameter">
             <field name="key">quote_manage_ui.rural_postcode_patterns</field>
             <field name="value">^(08|09|28|44[7-9]|4[7-9]|57|67|69|7[1-9]|8[7-9]|9[7-9])</field>
         </record>
 
+        <record id="icp_default_freight_price" model="ir.config_parameter">
+            <field name="key">quote_manage_ui.default_freight_price</field>
+            <field name="value">25.0</field>
+        </record>
+
         <record id="product_product_shipping_metro_weight" model="product.product">
-            <field name="name">Shipping - Metro by weight</field>
-            <field name="default_code">RW_SHIP_METRO_WEIGHT</field>
+            <field name="name">Shipping - Standard</field>
+            <field name="default_code">RW_SHIP_STANDARD</field>
             <field name="type">service</field>
             <field name="categ_id" ref="delivery.product_category_deliveries"/>
             <field name="sale_ok" eval="False"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="list_price">0.0</field>
-            <!-- Standard purchase/COGS cost for freight; customer price comes from carrier rules. -->
+            <field name="list_price">25.0</field>
             <field name="standard_price">25.0</field>
             <field name="invoice_policy">order</field>
         </record>
@@ -27,50 +30,33 @@
             <field name="categ_id" ref="delivery.product_category_deliveries"/>
             <field name="sale_ok" eval="False"/>
             <field name="purchase_ok" eval="False"/>
-            <field name="list_price">0.0</field>
+            <field name="list_price">25.0</field>
             <field name="standard_price">25.0</field>
             <field name="invoice_policy">order</field>
         </record>
 
         <record id="delivery_carrier_rw_au_metro_weight" model="delivery.carrier">
             <field name="name">Australia Standard Shipping</field>
-            <field name="delivery_type">base_on_rule</field>
+            <field name="delivery_type">fixed</field>
             <field name="sequence">20</field>
+            <field name="website_published" eval="True"/>
             <field name="country_ids" eval="[(6, 0, [ref('base.au')])]"/>
             <field name="product_id" ref="quote_manage_ui.product_product_shipping_metro_weight"/>
-            <field name="rw_rural_mode">metro_only</field>
-            <field name="carrier_description">Standard shipping (metro): $30 up to 5kg, $60 over 5kg.</field>
-            <field name="price_rule_ids" eval="[
-                (0, 0, {
-                    'sequence': 10,
-                    'variable': 'weight',
-                    'operator': '&lt;=',
-                    'max_value': 5.0,
-                    'list_base_price': 30.0,
-                    'list_price': 0.0,
-                    'variable_factor': 'weight',
-                }),
-                (0, 0, {
-                    'sequence': 20,
-                    'variable': 'weight',
-                    'operator': '>',
-                    'max_value': 5.0,
-                    'list_base_price': 60.0,
-                    'list_price': 0.0,
-                    'variable_factor': 'weight',
-                }),
-            ]"/>
+            <field name="fixed_price">25.0</field>
+            <field name="rw_rural_mode">normal</field>
+            <field name="carrier_description">Standard shipping: $25 ex GST (fixed).</field>
         </record>
 
         <record id="delivery_carrier_rw_au_rural_quote" model="delivery.carrier">
             <field name="name">Rural / Remote Shipping (Contact us)</field>
             <field name="delivery_type">fixed</field>
             <field name="sequence">10</field>
+            <field name="website_published" eval="False"/>
             <field name="country_ids" eval="[(6, 0, [ref('base.au')])]"/>
             <field name="product_id" ref="quote_manage_ui.product_product_shipping_rural_quote"/>
-            <field name="fixed_price">0.0</field>
+            <field name="fixed_price">25.0</field>
             <field name="rw_rural_mode">rural_only</field>
-            <field name="carrier_description">Rural and remote postcodes require a manual freight quote. Please contact us before checkout.</field>
+            <field name="carrier_description">Rural and remote postcodes — contact us before checkout.</field>
         </record>
     </data>
 </odoo>
