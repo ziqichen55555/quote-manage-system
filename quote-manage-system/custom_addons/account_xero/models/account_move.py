@@ -25,9 +25,9 @@ class AccountMove(models.Model):
         )
         for move in invoices:
             company = move.company_id
-            if not company.xero_enabled or not company.xero_connected:
+            if not company.xero_enabled or not company.sudo().xero_connected:
                 continue
-            ok, message = company._xero_sync_invoice_safe(move)
+            ok, message = company.sudo()._xero_sync_invoice_safe(move)
             move._xero_post_chatter(_('Xero invoice'), ok, message)
         return posted
 

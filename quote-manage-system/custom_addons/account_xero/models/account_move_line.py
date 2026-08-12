@@ -15,10 +15,10 @@ class AccountMoveLine(models.Model):
         )
         for invoice in invoices:
             company = invoice.company_id
-            if not company.xero_enabled or not company.xero_connected:
+            if not company.xero_enabled or not company.sudo().xero_connected:
                 continue
             if invoice.xero_invoice_id:
                 continue
-            ok, message = company._xero_sync_invoice_safe(invoice)
+            ok, message = company.sudo()._xero_sync_invoice_safe(invoice)
             invoice._xero_post_chatter(_('Xero invoice'), ok, message)
         return res

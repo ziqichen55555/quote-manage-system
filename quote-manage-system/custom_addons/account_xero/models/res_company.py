@@ -75,9 +75,12 @@ class ResCompany(models.Model):
 
     @api.depends('xero_access_token', 'xero_tenant_id')
     def _compute_xero_connected(self):
+        # Tokens are Settings-only; compute via sudo so accountants can sync
+        # without Access Error on xero_access_token.
         for company in self:
+            secrets = company.sudo()
             company.xero_connected = bool(
-                company.xero_access_token and company.xero_tenant_id
+                secrets.xero_access_token and secrets.xero_tenant_id
             )
 
     def _xero_redirect_uri(self):
@@ -162,6 +165,7 @@ class ResCompany(models.Model):
 
     def _xero_store_tokens(self, payload):
         self.ensure_one()
+        self = self.sudo()
         expires_in = int(payload.get('expires_in', 1800))
         self.write({
             'xero_access_token': payload.get('access_token'),
@@ -171,6 +175,7 @@ class ResCompany(models.Model):
 
     def _xero_bind_tenant(self):
         self.ensure_one()
+        self = self.sudo()
         response = requests.get(
             const.OAUTH_CONNECTIONS_URL,
             headers={'Authorization': f'Bearer {self.xero_access_token}'},
@@ -194,6 +199,7 @@ class ResCompany(models.Model):
 
     def _xero_refresh_access_token(self):
         self.ensure_one()
+        self = self.sudo()
         if not self.xero_refresh_token:
             raise UserError(_('Xero session expired. Please reconnect under Settings.'))
         response = requests.post(
@@ -215,6 +221,8 @@ class ResCompany(models.Model):
 
     def _xero_ensure_token(self):
         self.ensure_one()
+        # Token fields are restricted to Administration / Settings; elevate for API use.
+        self = self.sudo()
         if not self.xero_access_token:
             raise UserError(_('Xero is not connected. Open Settings and click Connect to Xero.'))
         if self.xero_token_expires_at and self.xero_token_expires_at <= fields.Datetime.now():
@@ -222,6 +230,7 @@ class ResCompany(models.Model):
 
     def _xero_request(self, method, endpoint, payload=None, params=None):
         self.ensure_one()
+        self = self.sudo()
         self._xero_ensure_token()
         url = f'{const.API_BASE_URL}/{endpoint.lstrip("/")}'
         headers = {

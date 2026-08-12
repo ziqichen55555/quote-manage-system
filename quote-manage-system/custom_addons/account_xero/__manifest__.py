@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Xero Accounting Bridge',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.1.1',
     'category': 'Accounting/Accounting',
     'summary': 'Push Re-Ware customer invoices to Co-Creative IT Xero',
     'description': """
