@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Xero Accounting Bridge',
-    'version': '17.0.1.0.9',
+    'version': '17.0.1.1.0',
     'category': 'Accounting/Accounting',
-    'summary': 'Push Re-Ware customer invoices and payments to Co-Creative IT Xero',
+    'summary': 'Push Re-Ware customer invoices to Co-Creative IT Xero',
     'description': """
 Xero Accounting Bridge
 ======================
@@ -12,7 +12,7 @@ One-way sync from Odoo to an existing Xero organisation:
 * OAuth 2 connection to Xero
 * Customer contacts on first invoice
 * Posted customer invoices with Re-Ware tracking category
-* Posted customer payments reconciled to synced invoices
+* Payments stay in Odoo only (method/status are not pushed to Xero)
 
 Internal Co-Creative IT / Re-Ware module.
 """,

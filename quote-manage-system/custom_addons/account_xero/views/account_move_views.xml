@@ -22,15 +22,6 @@
                         </span>
                     </div>
                 </button>
-                <button name="action_xero_sync_payments"
-                        type="object"
-                        class="oe_stat_button"
-                        icon="fa-money"
-                        invisible="move_type != 'out_invoice' or state != 'posted' or not xero_invoice_id">
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Sync payment</span>
-                    </div>
-                </button>
                 <button name="action_xero_sync_all"
                         type="object"
                         class="oe_stat_button"
@@ -63,11 +54,11 @@
                         <field name="xero_invoice_id" readonly="1"/>
                         <field name="xero_sync_status" readonly="1"/>
                     </group>
-                    <group string="Linked payments">
+                    <group string="Payments">
                         <p class="text-muted">
-                            After registering payment on this invoice, use
-                            <strong>Sync payment</strong> above. Success or failure
-                            is shown here and in the invoice chatter.
+                            Payment method and status are recorded in Odoo only.
+                            Xero receives the invoice (AUTHORISED / unpaid); payment
+                            status is not synced to Xero.
                         </p>
                     </group>
                     <button name="action_open_xero_sync_logs"

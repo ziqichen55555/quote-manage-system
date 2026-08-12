@@ -8,6 +8,8 @@ class AccountMoveLine(models.Model):
 
     def reconcile(self):
         res = super().reconcile()
+        # Ensure the customer invoice exists in Xero after payment reconciliation.
+        # Do not push payment status/method to Xero — that stays in Odoo only.
         invoices = self.mapped('move_id').filtered(
             lambda move: move.move_type == 'out_invoice' and move.state == 'posted'
         )
@@ -15,10 +17,8 @@ class AccountMoveLine(models.Model):
             company = invoice.company_id
             if not company.xero_enabled or not company.xero_connected:
                 continue
-            if not invoice.xero_invoice_id:
-                ok, message = company._xero_sync_invoice_safe(invoice)
-                invoice._xero_post_chatter(_('Xero invoice'), ok, message)
-            pay_ok, pay_message = invoice._xero_sync_reconciled_payments()
-            if pay_message:
-                invoice._xero_post_chatter(_('Xero payment'), pay_ok, pay_message)
+            if invoice.xero_invoice_id:
+                continue
+            ok, message = company._xero_sync_invoice_safe(invoice)
+            invoice._xero_post_chatter(_('Xero invoice'), ok, message)
         return res

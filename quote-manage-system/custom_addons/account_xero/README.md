@@ -1,6 +1,6 @@
 # account_xero
 
-Push **Re-Ware** customer invoices and payments from Odoo 17 into the existing
+Push **Re-Ware** customer invoices from Odoo 17 into the existing
 **Co-Creative IT** Xero organisation (single ABN, no extra subscription).
 
 ## What syncs
@@ -8,8 +8,11 @@ Push **Re-Ware** customer invoices and payments from Odoo 17 into the existing
 | Odoo record | When | Xero object |
 |-------------|------|-------------|
 | `res.partner` | First invoice for customer | Contact |
-| `account.move` (`out_invoice`, posted) | On post (or manual button) | Sales invoice (`ACCREC`) |
-| `account.payment` (inbound customer, posted) | On post when linked to invoice | Payment |
+| `account.move` (`out_invoice`, posted) | On post (or manual button) | Sales invoice (`ACCREC`, AUTHORISED) |
+
+**Payments are not synced to Xero.** Odoo continues to record payment method and
+payment status locally; Xero invoices remain unpaid/AUTHORISED so settlement can
+be handled in Xero separately if needed.
 
 Every invoice line is tagged with the configured **Tracking Category** (default
 `Sales Channel` → `Re-Ware`) so sales can be filtered in Xero reports while
@@ -53,15 +56,15 @@ docker compose -f docker-compose.prod.yml --env-file .env restart web
 3. Click **Connect to Xero** and authorise the Co-Creative IT organisation
 4. Set account codes to match your Xero chart (defaults are placeholders):
    - **Revenue Account Code** — e.g. `200`
-   - **Bank Account Code** — bank account used for Stripe/Airwallex settlements
    - **Sales Tax Type** — usually `OUTPUT` for AU GST on sales
 5. **Test connection**
 
-Posted customer invoices and payments sync automatically. Use **Push to Xero**
-on an invoice or **Accounting → Configuration → Xero Sync Logs** to debug.
+Posted customer invoices sync automatically. Use **Push to Xero** on an invoice
+or **Accounting → Configuration → Xero Sync Logs** to debug.
 
 ## Notes
 
-- Sync failures do **not** block Odoo posting; errors are logged on the invoice/payment and in sync logs.
+- Sync failures do **not** block Odoo posting; errors are logged on the invoice and in sync logs.
 - Invoice lines include product description and serial numbers (`S/N: …`) when stock lots are linked.
 - Credit notes (`out_refund`) are not synced in v1.
+- Payment method/status remain fully usable in Odoo; they are never pushed to Xero.

@@ -22,7 +22,7 @@ class ResCompany(models.Model):
 
     xero_enabled = fields.Boolean(
         string='Sync to Xero',
-        help='Push posted customer invoices and payments to Xero.',
+        help='Push posted customer invoices to Xero. Payments stay in Odoo only.',
     )
     xero_client_id = fields.Char(string='Xero Client ID', groups='base.group_system')
     xero_client_secret = fields.Char(string='Xero Client Secret', groups='base.group_system')
@@ -55,7 +55,7 @@ class ResCompany(models.Model):
     xero_bank_account_code = fields.Char(
         string='Bank Account Code',
         default=const.DEFAULT_BANK_ACCOUNT_CODE,
-        help='Xero bank account used when recording customer payments.',
+        help='Legacy setting. Payments are no longer pushed to Xero.',
     )
     xero_default_tax_type = fields.Char(
         string='Sales Tax Type',
@@ -702,41 +702,20 @@ class ResCompany(models.Model):
             return False, message
 
     def _xero_sync_payment_safe(self, payment):
-        """Sync payment to Xero. Returns (success, user_message)."""
+        """Payments are not pushed to Xero; Odoo keeps payment method/status locally.
+
+        Returns (False, user_message) so callers do not treat this as a sync success.
+        """
         self.ensure_one()
-        if not self.xero_enabled:
-            message = _('Xero sync is turned off. Enable it under Accounting → Xero Integration.')
-            payment.sudo().write({'xero_sync_status': 'skipped', 'xero_sync_message': message})
-            return False, message
-        if not self.xero_connected:
-            message = _('Xero is not connected. Open Settings and click Connect to Xero.')
-            payment.sudo().write({'xero_sync_status': 'error', 'xero_sync_message': message})
-            return False, message
-        try:
-            with self.env.cr.savepoint():
-                xero_id = self._xero_sync_payment(payment)
-                payment.invalidate_recordset(['xero_sync_status', 'xero_sync_message'])
-                if xero_id:
-                    return True, payment.xero_sync_message or _('Payment synced to Xero.')
-                return False, payment.xero_sync_message or _('Payment was not synced to Xero.')
-        except UserError as exc:
-            message = xero_short_api_error(str(exc.args[0]))
-            payment.sudo().write({
-                'xero_sync_status': 'error',
-                'xero_sync_message': message,
-            })
-            self._xero_log('payment', 'account.payment', payment.id, 'error', message)
-            _logger.warning('Xero payment sync failed for %s: %s', payment.display_name, exc)
-            return False, message
-        except Exception as exc:  # noqa: BLE001
-            message = xero_short_api_error(str(exc))
-            payment.sudo().write({
-                'xero_sync_status': 'error',
-                'xero_sync_message': message,
-            })
-            self._xero_log('payment', 'account.payment', payment.id, 'error', message)
-            _logger.exception('Xero payment sync failed for %s', payment.display_name)
-            return False, message
+        message = _(
+            'Payment sync to Xero is disabled. Invoices are still pushed; '
+            'payment method and status stay in Odoo only.'
+        )
+        payment.sudo().write({
+            'xero_sync_status': 'skipped',
+            'xero_sync_message': message,
+        })
+        return False, message
 
     def _xero_cancel_invoice_safe(self, move):
         """Cancel invoice in Xero. Returns (success, user_message)."""

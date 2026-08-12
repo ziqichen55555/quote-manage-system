@@ -29,9 +29,6 @@ class AccountMove(models.Model):
                 continue
             ok, message = company._xero_sync_invoice_safe(move)
             move._xero_post_chatter(_('Xero invoice'), ok, message)
-            pay_ok, pay_message = move._xero_sync_reconciled_payments()
-            if pay_message:
-                move._xero_post_chatter(_('Xero payment'), pay_ok, pay_message)
         return posted
 
     def _xero_post_chatter(self, label, success, message):
@@ -43,31 +40,6 @@ class AccountMove(models.Model):
             body=f'<p><strong>{label}</strong> {icon}<br/>{message}</p>',
             subtype_xmlid='mail.mt_note',
         )
-
-    def _xero_sync_reconciled_payments(self):
-        """Returns (all_ok, combined_message)."""
-        self.ensure_one()
-        payments = self._get_reconciled_payments()
-        if not payments:
-            return True, ''
-        results = []
-        all_ok = True
-        for payment in payments:
-            ok, message = self.company_id._xero_sync_payment_safe(payment)
-            if not ok:
-                all_ok = False
-            if message:
-                results.append(f'{payment.display_name}: {message}')
-        return all_ok, '\n'.join(results)
-
-    def _get_reconciled_payments(self):
-        self.ensure_one()
-        payment_lines = self.line_ids.filtered(
-            lambda line: line.account_id.account_type in ('asset_receivable', 'liability_payable')
-        )
-        reconciled_lines = payment_lines.matched_debit_ids.debit_move_id | payment_lines.matched_credit_ids.credit_move_id
-        payments = reconciled_lines.move_id.payment_id
-        return payments.filtered(lambda pay: pay.state == 'posted')
 
     def action_xero_sync(self):
         self.ensure_one()
@@ -81,12 +53,6 @@ class AccountMove(models.Model):
             self.action_post()
         ok, message = self.company_id._xero_sync_invoice_safe(self)
         self._xero_post_chatter(_('Xero invoice (manual)'), ok, message)
-        pay_ok, pay_message = self._xero_sync_reconciled_payments()
-        if pay_message:
-            self._xero_post_chatter(_('Xero payment (manual)'), pay_ok, pay_message)
-            if not pay_ok:
-                message = f'{message}\n\n{pay_message}' if message else pay_message
-                ok = ok and pay_ok
         return xero_client_notification(
             _('Xero sync succeeded') if ok else _('Xero sync failed'),
             message,
@@ -94,29 +60,13 @@ class AccountMove(models.Model):
         )
 
     def action_xero_sync_payments(self):
+        """Payments are intentionally not pushed to Xero."""
         self.ensure_one()
-        if self.move_type != 'out_invoice' or self.state != 'posted':
-            return xero_client_notification(
-                _('Xero'),
-                _('Post the customer invoice before syncing payments.'),
-                'warning',
-            )
-        if not self.xero_invoice_id:
-            return xero_client_notification(
-                _('Xero'),
-                _('Sync the invoice to Xero first (Push to Xero).'),
-                'warning',
-            )
-        ok, message = self._xero_sync_reconciled_payments()
-        if not message:
-            message = _('No posted customer payment is linked to this invoice yet.')
-            ok = False
-        self._xero_post_chatter(_('Xero payment (manual)'), ok, message)
-        return xero_client_notification(
-            _('Xero payment synced') if ok else _('Xero payment not synced'),
-            message,
-            'success' if ok else 'danger',
+        message = _(
+            'Payment sync to Xero is disabled. Payment method and status stay in Odoo; '
+            'only the invoice is pushed to Xero.'
         )
+        return xero_client_notification(_('Xero payment not synced'), message, 'warning')
 
     def action_xero_sync_all(self):
         self.ensure_one()
@@ -142,13 +92,7 @@ class AccountMove(models.Model):
 
         ok, message = self.company_id._xero_sync_invoice_safe(self)
         self._xero_post_chatter(_('Xero invoice (manual)'), ok, message)
-        pay_ok, pay_message = self._xero_sync_reconciled_payments()
-        if pay_message:
-            self._xero_post_chatter(_('Xero payment (manual)'), pay_ok, pay_message)
-            if not pay_ok:
-                message = f'{message}\n\n{pay_message}' if message else pay_message
-        all_ok = ok and (pay_ok or not pay_message)
-        return all_ok, (message or _('Sync completed.'))
+        return ok, (message or _('Sync completed.'))
 
     @api.model
     def action_xero_sync_all_company_invoices(self):
