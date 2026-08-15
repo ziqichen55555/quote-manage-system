@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Re-Ware Operations Manual v1.0</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm 14mm 16mm 14mm;
+    }
+
+    :root {
+      --ink: #111;
+      --muted: #444;
+      --line: #bbb;
+      --rule: #222;
+      --box: #f4f4f4;
+      --box-border: #333;
+      --accent: #1a5c45;
+      --accent-bg: #e8f3ee;
+      --warn-bg: #f7efe6;
+      --warn-border: #8a5a2b;
+      --fail-bg: #f6eaea;
+      --fail-border: #8a3030;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 180mm;
+      margin: 0 auto;
+      padding: 10mm 6mm 14mm;
+    }
+
+    h1 {
+      font-size: 18pt;
+      margin: 0 0 6pt;
+      line-height: 1.2;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 9.5pt;
+      margin: 0 0 14pt;
+    }
+
+    h2 {
+      font-size: 12.5pt;
+      margin: 16pt 0 8pt;
+      padding-top: 6pt;
+      border-top: 1pt solid var(--rule);
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 11pt;
+      margin: 12pt 0 6pt;
+      page-break-after: avoid;
+    }
+
+    p { margin: 0 0 8pt; }
+
+    ul, ol {
+      margin: 4pt 0 10pt;
+      padding-left: 18pt;
+    }
+
+    li { margin: 2pt 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6pt 0 12pt;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 0.6pt solid var(--line);
+      padding: 5pt 6pt;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0f0f0;
+      font-weight: 700;
+    }
+
+    a {
+      color: #0b57d0;
+      text-decoration: underline;
+    }
+
+    .box {
+      border: 0.6pt solid var(--line);
+      padding: 8pt 10pt;
+      margin: 8pt 0 12pt;
+      page-break-inside: avoid;
+    }
+
+    .box.warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .box.ok {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+    }
+
+    pre.plain {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 9pt;
+      border: 0.6pt solid var(--line);
+      padding: 8pt 10pt;
+      margin: 6pt 0 12pt;
+      white-space: pre;
+    }
+
+    /* Flowchart */
+    .flow {
+      margin: 10pt 0 14pt;
+      page-break-inside: avoid;
+    }
+
+    .flow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .node {
+      display: inline-block;
+      min-width: 42mm;
+      max-width: 70mm;
+      text-align: center;
+      padding: 8pt 12pt;
+      border: 1.4pt solid var(--box-border);
+      border-radius: 14pt;
+      background: var(--box);
+      font-weight: 700;
+      font-size: 9.5pt;
+      line-height: 1.25;
+    }
+
+    .node.wide { min-width: 58mm; max-width: 90mm; }
+
+    .node.start {
+      background: #eaf1f8;
+      border-color: #2f5f8a;
+      border-radius: 18pt;
+    }
+
+    .node.odoo {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      border-style: dashed;
+    }
+
+    .node.pass {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+    }
+
+    .node.fail {
+      background: var(--fail-bg);
+      border-color: var(--fail-border);
+    }
+
+    .node.ready {
+      background: #e7f6ea;
+      border-color: #2f7a45;
+      border-radius: 10pt;
+    }
+
+    .arrow {
+      width: 0;
+      height: 0;
+      border-left: 5pt solid transparent;
+      border-right: 5pt solid transparent;
+      border-top: 8pt solid #333;
+      margin: 3pt 0 3pt;
+    }
+
+    .arrow-line {
+      width: 1.4pt;
+      height: 8pt;
+      background: #333;
+      margin: 0;
+    }
+
+    .v-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .branch {
+      display: flex;
+      justify-content: center;
+      gap: 18pt;
+      width: 100%;
+      margin-top: 2pt;
+      position: relative;
+    }
+
+    .branch::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 25%;
+      right: 25%;
+      height: 1.4pt;
+      background: #333;
+    }
+
+    .branch-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 42%;
+      max-width: 70mm;
+    }
+
+    .branch-col .arrow-line { height: 10pt; }
+
+    .label {
+      font-size: 8pt;
+      color: var(--muted);
+      font-weight: 600;
+      margin: 2pt 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .note {
+      font-size: 8.5pt;
+      color: var(--muted);
+      text-align: center;
+      margin: 6pt 0 0;
+      max-width: 120mm;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8pt;
+      margin: 0 0 12pt;
+    }
+
+    .btn-pdf {
+      appearance: none;
+      border: 1.4pt solid #1a5c45;
+      background: #1a5c45;
+      color: #fff;
+      font: 600 10.5pt "Helvetica Neue", Helvetica, Arial, sans-serif;
+      padding: 8pt 14pt;
+      border-radius: 8pt;
+      cursor: pointer;
+    }
+
+    .btn-pdf:hover { background: #144836; }
+
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; margin: 0; padding: 0; }
+      a { color: #0b57d0; text-decoration: underline; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="toolbar">
+      <button type="button" class="btn-pdf" onclick="window.print()">Save as PDF</button>
+    </div>
+    <h1>Re-Ware Operations Manual v1.0</h1>
+    <p class="meta">
+      Working standard · All Re-Ware staff · Sales, Inventory, Returns, Warehouse areas · Version 1.0 · 2026-08-15
+    </p>
+
+    <h2>0. Purpose of this manual</h2>
+    <p>This document defines Re-Ware’s standard operating processes for sales, inventory, returns, and warehouse areas.</p>
+    <p>It is based on:</p>
+    <table>
+      <thead>
+        <tr><th>Source</th><th>Role in this manual</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="https://www.iso.org/standard/62085.html">ISO 9001 — Quality management systems</a></td>
+          <td>Purpose, trigger, steps, responsibility, control, definition of done</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.iso.org/standard/75792.html">ISO 10013 — Guidance for documented information</a></td>
+          <td>Keep documentation practical and proportionate</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.lean.org/lexicon-terms/standardized-work/">Lean Enterprise Institute — Standardized Work</a></td>
+          <td>Document the current best-known way of working</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.lean.org/lexicon-terms/pdca/">PDCA (Plan–Do–Check–Act)</a></td>
+          <td>Improve the standard over time (v1.0 → v1.1 → …)</td>
+        </tr>
+        <tr>
+          <td><a href="https://kanbanguides.org/">Kanban Guide</a></td>
+          <td>Make work visible through physical warehouse areas</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.odoo.com/documentation/17.0/applications/inventory_and_mrp/inventory/warehouses_storage/inventory_management/warehouses.html">Odoo 17 — Warehouses</a></td>
+          <td>Warehouse concepts</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.odoo.com/documentation/17.0/applications/inventory_and_mrp/inventory/product_management/product_tracking/serial_numbers.html">Odoo 17 — Serial numbers</a></td>
+          <td>Serial tracking on receipts / deliveries</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.odoo.com/documentation/17.0/applications/sales/sales/products_prices/returns.html">Odoo 17 — Returns and refunds</a></td>
+          <td>Customer returns and credit notes</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This is not an ISO certification project. The frameworks above support how we design and write processes. Odoo is the system of record for sellable stock and sales transactions.</p>
+
+    <h3>When Odoo is used (current Re-Ware practice)</h3>
+    <table>
+      <thead>
+        <tr><th>Stage</th><th>Odoo?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Physical moves between warehouse areas</td><td><strong>No</strong></td></tr>
+        <tr><td>After wipe succeeds — upload / receive stock with serial</td><td><strong>Yes</strong></td></tr>
+        <tr><td>Sales / delivery / invoice</td><td><strong>Yes</strong></td></tr>
+        <tr><td>Customer return validate</td><td><strong>Yes</strong></td></tr>
+        <tr><td>Faulty return (no Repair stock in Odoo yet)</td><td><strong>Yes</strong> — validate return, then remove from stock</td></tr>
+      </tbody>
+    </table>
+
+    <h2>1. Three things that must stay separate</h2>
+    <table>
+      <thead>
+        <tr><th>Concept</th><th>Meaning</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Physical location</strong></td><td>Where is the laptop sitting?</td><td>Area: Pending Install</td></tr>
+        <tr><td><strong>Processing status</strong></td><td>What still needs to happen?</td><td>Needs installation</td></tr>
+        <tr><td><strong>Odoo On Hand</strong></td><td>System quantity in sellable stock</td><td>On Hand = 1</td></tr>
+      </tbody>
+    </table>
+    <div class="box warn">
+      <strong>Critical rules</strong><br />
+      Wiped ≠ Ready for sale.<br />
+      Odoo On Hand ≠ Ready to sell to a customer.<br />
+      Do not label a pending-installation area as <strong>Available</strong>. That name implies the device can be sold.
+    </div>
+
+    <h2>2. Warehouse areas</h2>
+    <p>Areas are <strong>physical</strong> zones (labels, shelves, or bays). Combine if space is limited, but keep names clear.</p>
+    <p>Re-Ware does <strong>not</strong> currently mirror every area as a separate stock location in Odoo. Odoo holds sellable / received stock after a successful wipe. <strong>Repair</strong> is a physical area only for now.</p>
+
+    <h3>Required areas</h3>
+    <table>
+      <thead>
+        <tr><th>Area</th><th>Meaning</th><th>Sell?</th><th>In Odoo today?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Incoming</strong></td><td>Newly received, not processed</td><td>No</td><td>No</td></tr>
+        <tr><td><strong>Wipe</strong></td><td>Waiting for / in data wipe</td><td>No</td><td>No</td></tr>
+        <tr><td><strong>Pending Install</strong></td><td>Wiped, waiting OS / drivers / setup</td><td>No</td><td>No (stock already uploaded after wipe)</td></tr>
+        <tr><td><strong>QC / Testing</strong></td><td>Installed, waiting test</td><td>No</td><td>No</td></tr>
+        <tr><td><strong>Ready for Sale</strong></td><td>Fully processed, OK to sell</td><td><strong>Yes</strong></td><td>Sell from Odoo on-hand stock</td></tr>
+        <tr><td><strong>Repair</strong></td><td>Failed QC or known fault</td><td>No</td><td><strong>No Repair stock location yet</strong></td></tr>
+        <tr><td><strong>Returns</strong></td><td>Customer returns waiting processing</td><td>No</td><td>Via return transfer only</td></tr>
+        <tr><td><strong>Sold / Dispatch</strong></td><td>Sold, waiting pickup or courier</td><td>No</td><td>Delivery validated</td></tr>
+      </tbody>
+    </table>
+
+    <div class="box ok">
+      <strong>Sales rule:</strong> Only sell devices that are physically in <strong>Ready for Sale</strong> and exist in Odoo with the correct serial.
+    </div>
+
+    <h2>3. Workflow diagrams</h2>
+
+    <h3>3.1 Device processing flow (intake → sale)</h3>
+    <div class="flow">
+      <div class="flow-col">
+        <div class="node start">Incoming</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node">Wipe</div>
+        <div class="label">Wipe succeeds</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node odoo wide">Upload stock to Odoo<br /><span style="font-weight:600;font-size:8.5pt;">(serial) — only Odoo step in this flow</span></div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node">Pending Install</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node">Install</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node">QC / Testing</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="branch">
+          <div class="branch-col">
+            <div class="label">Pass</div>
+            <div class="arrow-line"></div>
+            <div class="arrow"></div>
+            <div class="node ready">Ready for Sale</div>
+            <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+            <div class="node pass">Sold / Dispatch</div>
+          </div>
+          <div class="branch-col">
+            <div class="label">Fail</div>
+            <div class="arrow-line"></div>
+            <div class="arrow"></div>
+            <div class="node fail">Repair<br /><span style="font-weight:600;font-size:8pt;">physical only</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="note">Rounded boxes = physical areas. Dashed green box = Odoo action. Area moves after wipe are physical only (no Odoo location update).</p>
+    </div>
+
+    <h3>3.2 Customer return flow</h3>
+    <div class="flow">
+      <div class="flow-col">
+        <div class="node start">Customer return</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node">Returns area</div>
+        <div class="label">Record serial + reason</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node odoo wide">Odoo: Return from Delivery<br /><span style="font-weight:600;font-size:8.5pt;">then Validate when device is back</span></div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="node wide">Inspect device</div>
+        <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+
+        <div class="branch">
+          <div class="branch-col">
+            <div class="label">OK to reprocess</div>
+            <div class="arrow-line"></div>
+            <div class="arrow"></div>
+            <div class="node">Wipe</div>
+            <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+            <div class="node">Pending Install</div>
+            <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+            <div class="node">Install / QC</div>
+            <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+            <div class="node ready">Ready for Sale</div>
+          </div>
+          <div class="branch-col">
+            <div class="label">Has problems</div>
+            <div class="arrow-line"></div>
+            <div class="arrow"></div>
+            <div class="node odoo wide">Remove from Odoo stock<br /><span style="font-weight:600;font-size:8pt;">adjustment / scrap</span></div>
+            <div class="v-stack"><div class="arrow-line"></div><div class="arrow"></div></div>
+            <div class="node fail">Repair<br /><span style="font-weight:600;font-size:8pt;">physical only</span></div>
+          </div>
+        </div>
+
+        <div class="node odoo wide" style="margin-top:14pt;">If refund needed after invoice<br /><span style="font-weight:600;font-size:8.5pt;">Odoo Credit Note (alongside stock path)</span></div>
+      </div>
+      <p class="note">Always Validate the return first. Faulty units must not stay as sellable on-hand stock — remove from Odoo, then place in physical Repair.</p>
+    </div>
+
+    <h3>Ready for Sale — minimum checklist</h3>
+    <ul>
+      <li>Wipe done (if required)</li>
+      <li>Stock uploaded to Odoo with serial (after successful wipe)</li>
+      <li>OS / software installed to Re-Ware standard</li>
+      <li>Basic QC passed (power, screen, keyboard, battery, ports as applicable)</li>
+      <li>Condition / grade noted</li>
+      <li>Photos / listing ready if selling online</li>
+      <li>Device placed in the <strong>Ready for Sale</strong> area</li>
+    </ul>
+
+    <h2>4. Process: Sales (in-store / phone / counter)</h2>
+    <p><strong>Purpose:</strong> Sell the correct device, at the correct price, with the correct serial, and update stock.</p>
+    <p><strong>Trigger:</strong> Customer wants to buy / order is agreed.</p>
+    <p><strong>Responsibility:</strong> Sales staff. For high-value sales, a second person should check price and serial where practical.</p>
+
+    <h3>4.1 Process steps</h3>
+    <ol>
+      <li>Confirm the device is in <strong>Ready for Sale</strong>.</li>
+      <li>Confirm product, price, and serial with the customer.</li>
+      <li>Create and confirm the Sales Order in Odoo.</li>
+      <li>On delivery, assign the correct serial number.</li>
+      <li>Validate delivery when the device is handed over or collected by courier.</li>
+      <li>Complete invoice and payment per Re-Ware finance rules.</li>
+      <li>Move the unit out of Ready for Sale (or via Dispatch if used).</li>
+    </ol>
+
+    <h3>4.2 Odoo steps (Sales + Delivery)</h3>
+    <ol>
+      <li>Open <strong>Sales</strong>.</li>
+      <li>Click <strong>New</strong>.</li>
+      <li>Select <strong>Customer</strong>.</li>
+      <li>Add product line(s).</li>
+      <li>Check unit price (and tax if shown).</li>
+      <li>Click <strong>Confirm</strong>.</li>
+      <li>Open the <strong>Delivery</strong> smart button.</li>
+      <li>Open detailed operations for the product line.</li>
+      <li>Select the correct <strong>Lot/Serial Number</strong> (use an existing serial; do not create a new one on delivery).</li>
+      <li>Set <strong>Done</strong> quantity.</li>
+      <li>Click <strong>Validate</strong>.</li>
+      <li>Create / confirm <strong>Invoice</strong> and register payment as required.</li>
+    </ol>
+
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Selling from Wipe, Pending Install, or Repair</li>
+      <li>Validating delivery without checking the serial</li>
+      <li>Leaving an incorrect price from an old quotation</li>
+      <li>Handing over the device without validating delivery (stock becomes wrong)</li>
+    </ul>
+
+    <h3>Definition of done</h3>
+    <ul>
+      <li>Customer has the device (or courier has collected it)</li>
+      <li>Delivery validated with the correct serial</li>
+      <li>Payment / invoice completed per rules</li>
+      <li>Physical area updated</li>
+    </ul>
+    <p><strong>Record:</strong> Sales Order + Delivery + Invoice in Odoo</p>
+
+    <h2>5. Process: Intake and wipe (when stock enters Odoo)</h2>
+    <p><strong>Purpose:</strong> Receive devices physically, wipe them, then upload stock to Odoo only after wipe succeeds.</p>
+    <p><strong>Trigger:</strong> Goods arrive from supplier, trade-in, or other intake.</p>
+
+    <h3>5.1 Process steps (physical first)</h3>
+    <ol>
+      <li>Place the device in <strong>Incoming</strong>.</li>
+      <li>Identify and label the serial number.</li>
+      <li>Move to <strong>Wipe</strong> (or skip wipe if not required).</li>
+      <li>Complete wipe / data clear.</li>
+    </ol>
+
+    <h3>5.2 When wipe succeeds — upload to Odoo</h3>
+    <ol>
+      <li>Receive / upload the device into Odoo with the correct <strong>Serial Number</strong>.</li>
+      <li>Move the device physically to <strong>Pending Install</strong>.</li>
+    </ol>
+    <div class="box warn">
+      Do <strong>not</strong> upload stock to Odoo for devices that failed wipe or are not yet wiped.
+    </div>
+
+    <h3>5.3 After upload (physical only — no Odoo area moves)</h3>
+    <ol>
+      <li>Install OS / software.</li>
+      <li>Move to <strong>QC / Testing</strong>.</li>
+      <li>Pass → move to <strong>Ready for Sale</strong>.</li>
+      <li>Fail → move to physical <strong>Repair</strong> (do not create Repair stock in Odoo until that location exists).</li>
+    </ol>
+
+    <h3>Definition of done (upload point)</h3>
+    <ul>
+      <li>Wipe complete (if required)</li>
+      <li>Serial in Odoo</li>
+      <li>Device in <strong>Pending Install</strong> (or next correct physical area)</li>
+    </ul>
+
+    <div class="box ok">
+      <strong>Control:</strong> No device is sold without an Odoo record and serial created after successful wipe.
+    </div>
+
+    <h2>6. Process: Moves between areas (physical only)</h2>
+    <p><strong>Purpose:</strong> Keep devices in the correct labelled physical area as work progresses.</p>
+    <p><strong>Trigger:</strong> A device finishes a stage (for example, wipe complete, install complete, QC complete).</p>
+    <div class="box warn">
+      <strong>Odoo:</strong> There is <strong>no Odoo step</strong> for moving between areas. Re-Ware does not update Odoo locations for Incoming / Wipe / Pending Install / QC / Repair moves. Stock is uploaded once after wipe succeeds (see Section 5).
+    </div>
+
+    <h3>Steps</h3>
+    <ol>
+      <li>Complete the physical work for that stage.</li>
+      <li>Move the device to the next labelled area.</li>
+      <li>After wipe succeeds: upload stock to Odoo (Section 5.2), then move to <strong>Pending Install</strong>.</li>
+      <li>For all other stage moves: physical move only — no Odoo action.</li>
+    </ol>
+    <p>After wipe, the next area is <strong>Pending Install</strong>, not “Available”.</p>
+
+    <h2>7. Process: Customer returns</h2>
+    <p><strong>Purpose:</strong> Receive the returned device safely, update Odoo, then decide wipe / restock / repair handling.</p>
+    <p><strong>Trigger:</strong> Customer returns a product.</p>
+    <div class="box warn">
+      Re-Ware does <strong>not</strong> have a Repair stock location in Odoo yet. Faulty returns must not remain as sellable on-hand stock.
+    </div>
+
+    <h3>7.1 Process steps</h3>
+    <ol>
+      <li>Place the device in <strong>Returns</strong> immediately.</li>
+      <li>Record serial and reason.</li>
+      <li>Process the return in Odoo and <strong>Validate</strong> when the device is physically back (this brings stock back into Odoo).</li>
+      <li>Inspect the device.</li>
+    </ol>
+
+    <p><strong>If the device is OK to reprocess / resell later</strong></p>
+    <ol start="5">
+      <li>Move physically to Wipe / Pending Install / QC as needed.</li>
+      <li>Only treat as sellable again when it meets Ready for Sale rules (and stock in Odoo is correct).</li>
+    </ol>
+
+    <p><strong>If the device has problems (cannot stay in sellable stock)</strong></p>
+    <ol start="5">
+      <li>Still <strong>Validate</strong> the return in Odoo first (so the delivery / return history is correct).</li>
+      <li>Then <strong>remove it from Odoo stock</strong> (inventory adjustment / scrap — so it is not sellable on hand).</li>
+      <li>Move the device physically to <strong>Repair</strong>.</li>
+      <li>Do not put it in Ready for Sale until repaired, re-wiped if required, and stock is correctly handled again.</li>
+    </ol>
+
+    <ol start="9">
+      <li>If a refund is required after invoicing, issue a Credit Note.</li>
+    </ol>
+
+    <h3>7.2 Odoo — return before invoice</h3>
+    <p>Reference: <a href="https://www.odoo.com/documentation/17.0/applications/sales/sales/products_prices/returns.html">Odoo 17 — Returns and refunds</a></p>
+    <ol>
+      <li>Open the <strong>Sales Order</strong>.</li>
+      <li>Open <strong>Delivery</strong>.</li>
+      <li>On the validated delivery, click <strong>Return</strong>.</li>
+      <li>Adjust quantities if it is a partial return.</li>
+      <li>Confirm <strong>Return</strong> (creates the incoming return operation).</li>
+      <li>When the device is back, click <strong>Validate</strong>.</li>
+    </ol>
+    <p>Delivered quantity on the sales order updates. Invoice later only for what the customer keeps.</p>
+
+    <h3>7.3 Odoo — return after invoice</h3>
+    <ol>
+      <li>Complete the reverse transfer as above (Delivery → Return → Validate when received).</li>
+      <li>Open <strong>Invoices</strong> from the Sales Order.</li>
+      <li>Click <strong>Credit Note</strong>.</li>
+      <li>Enter reason, journal, and date.</li>
+      <li>Choose <strong>Reverse</strong> (or Reverse and Create Invoice).</li>
+      <li>Confirm the credit note.</li>
+    </ol>
+
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Putting a return on Ready for Sale without validating the Odoo return</li>
+      <li>Leaving a faulty return in Odoo on-hand stock (looks sellable)</li>
+      <li>Refunding without validating the return transfer</li>
+      <li>Skipping wipe / QC before reselling a return</li>
+    </ul>
+
+    <h3>Definition of done</h3>
+    <ul>
+      <li>Device in Returns, then moved to the correct next physical area</li>
+      <li>Return transfer validated</li>
+      <li>Faulty units removed from Odoo stock and placed in physical Repair</li>
+      <li>Credit note completed if money must be refunded</li>
+    </ul>
+
+    <h2>8. Operating standards</h2>
+    <table>
+      <thead>
+        <tr><th>Check</th><th>Standard</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ready for Sale area</td><td>Only sellable, QC-passed devices</td></tr>
+        <tr><td>Odoo vs Ready shelf</td><td>Devices sold from Ready exist in Odoo with the correct serial</td></tr>
+        <tr><td>Returns</td><td>No unlabelled devices left in Returns</td></tr>
+        <tr><td>Faulty returns</td><td>Validated in Odoo, then removed from sellable stock</td></tr>
+        <tr><td>Sales</td><td>Every handed-over laptop has a validated delivery and serial</td></tr>
+      </tbody>
+    </table>
+
+    <h2>9. Continuous improvement</h2>
+    <pre class="plain">PLAN  → update the SOP
+DO    → operate to the SOP
+CHECK → find gaps and failures
+ACT   → publish the next version</pre>
+    <table>
+      <thead>
+        <tr><th>Version</th><th>Date</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>v1.0</td>
+          <td>2026-08-15</td>
+          <td>First published standard: areas, sales, wipe-then-Odoo upload, returns, physical-only area moves</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>10. Planned for later versions</h2>
+    <ul>
+      <li>Match area names to labels already used in the office</li>
+      <li>Merge existing Odoo click guides into each process</li>
+      <li>Add Repair stock handling in Odoo when ready</li>
+      <li>Purchasing</li>
+      <li>eBay / website pack and ship</li>
+      <li>Stocktake</li>
+    </ul>
+  </div>
+</body>
+</html>
