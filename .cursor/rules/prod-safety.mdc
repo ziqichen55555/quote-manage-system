@@ -10,7 +10,11 @@ alwaysApply: true
 1. **Never** merge to `main`, trigger Deploy / Repair / Odoo-shell Actions, or SSH into production unless the user **explicitly** says to (e.g. "deploy", "部署", "确认部署", "run on prod", "apply").
 2. **Never** run a second production job while Deploy / shell / repair is `in_progress`. Always `gh run list` first.
 3. **Never run multiple production Odoo shells in parallel** (SSH `docker compose run … odoo shell`, GH “Run Odoo shell”, or mixed). Droplet is ~1GB RAM — concurrent one-shot `web` containers spike load and can take the site down. **One shell at a time**: wait for exit (or clean up hung `reware-web-run-*`) before starting another.
-4. One-off data fixes (`scripts/*_shell.py`):
+4. **Stuck Server Recovery (DigitalOcean API)**:
+   - If the server is unresponsive (SSH banner timeout / 504), do **not** keep retrying SSH.
+   - Use the DigitalOcean API (if `DIGITALOCEAN_TOKEN` is configured) to perform a **Power Cycle**.
+   - **Never** perform a hard reboot unless SSH/Repair workflow has failed for >5 minutes.
+5. One-off data fixes (`scripts/*_shell.py`):
    - Prefer feature branch + DRY_RUN.
    - Do **not** merge just to "upload a script".
    - DRY RUN → paste output → wait for user OK → then APPLY (`DRY_RUN=False` + `confirm_apply=APPLY`).
