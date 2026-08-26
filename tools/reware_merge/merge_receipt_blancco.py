@@ -1233,6 +1233,7 @@ def merge_data(
 
         ssd_type = str(bl.get("ssd_type", "") if bl is not None else "")
         ssd_size = parse_size_gb(bl.get("disk_capacity", "") if bl is not None else "")
+        ram_gb = parse_size_gb(bl.get("ram", "") if bl is not None else "")
         if no_ssd:
             ssd_type = ""
             ssd_size = ""
@@ -1246,7 +1247,12 @@ def merge_data(
         cmos_tier = effective_cmos_tier(status, cmos_raw)
         cmos_code = cmos_tier_code(cmos_tier)
         if is_laptop_product(model_name, mtm, system_version):
-            shop_sku = f"{mtm}-{tier_code}"
+            # Always use full spec SKU for Lenovo laptops to match Odoo behavior
+            if str(mtm).startswith("20"):
+                touch_flag = "T" if touch.lower() == "yes" else "N"
+                shop_sku = f"{mtm}-{ram_gb}G-{ssd_size}G-{touch_flag}-{tier_code}"
+            else:
+                shop_sku = f"{mtm}-{tier_code}"
         else:
             shop_sku = mtm
         if cmos_code:

@@ -5,7 +5,7 @@ import re
 
 import requests
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -16,6 +16,14 @@ IMAGE_EXT_RE = re.compile(r'\.(png|jpe?g|webp|gif)(\?.*)?$', re.IGNORECASE)
 
 class ProductTemplate(models.Model):
     _inherit = "product.template"
+
+    public_categ_ids = fields.Many2many(
+        string="Shop Filter Category",
+        help="Which /shop category this product appears under (Laptops, Desktops & Mini PCs, "
+             "Monitors, Docks, Accessories, …). Merge-file import fills this automatically. "
+             "For products you add by hand, set it here so the shop filters can find it. "
+             "This is not the same as Product Category (inventory/accounting).",
+    )
 
     def action_quote_deduplicate_attribute_lines(self):
         """Remove duplicate *active* attribute lines with identical attribute + values.
