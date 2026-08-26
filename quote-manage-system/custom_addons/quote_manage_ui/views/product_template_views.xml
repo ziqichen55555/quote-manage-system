@@ -36,4 +36,58 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Shop filter category on General Information (next to Product Category).
+         website_sale only puts public_categ_ids in the Sales → eCommerce Shop
+         group, which is easy to miss when adding products by hand. -->
+    <record id="product_template_form_shop_filter_category" model="ir.ui.view">
+        <field name="name">product.template.form.shop.filter.category</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='group_standard_price']/field[@name='categ_id']" position="after">
+                <field name="public_categ_ids"
+                       widget="many2many_tags"
+                       string="Shop Filter Category"
+                       placeholder="e.g. Laptops, Desktops…"
+                       options="{'no_create': True, 'no_quick_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_tree_shop_filter_category" model="ir.ui.view">
+        <field name="name">product.template.tree.shop.filter.category</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="public_categ_ids"
+                       widget="many2many_tags"
+                       string="Shop Filter Category"
+                       optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_search_shop_filter_category" model="ir.ui.view">
+        <field name="name">product.template.search.shop.filter.category</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="public_categ_ids" string="Shop Filter Category"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_form_shop_group_categ_label" model="ir.ui.view">
+        <field name="name">product.template.form.shop.group.categ.label</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="website_sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='shop']/field[@name='public_categ_ids']" position="attributes">
+                <attribute name="string">Shop Filter Category</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>

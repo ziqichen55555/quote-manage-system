@@ -1014,7 +1014,17 @@ class ProductCsvImporter(models.AbstractModel):
                 if is_laptop
                 else ""
             )
-            if len(by_mtm_configs.get((mtm, gen), set())) == 1:
+            # Always use expanded specification SKU for Lenovo/Laptops
+            # to prevent auto-simplifying to base MTM when only one config exists.
+            if is_laptop and mtm.startswith("20"):
+                base_code = self._merged_sku_code(
+                    mtm,
+                    model_name,
+                    self._merged_str(sample, "RAM (GB)", "RAM"),
+                    self._merged_str(sample, "SSD size (GB)", "SSD size"),
+                    self._merged_str(sample, "Touch"),
+                )
+            elif len(by_mtm_configs.get((mtm, gen), set())) == 1:
                 base_code = mtm
             else:
                 base_code = self._merged_sku_code(
