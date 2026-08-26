@@ -18,7 +18,7 @@ else:
                 # Check current stock for this SN
                 quants = env["stock.quant"].sudo().search([("lot_id", "=", ml.lot_id.id), ("quantity", ">", 0)])
                 stock_locs = [f"{q.location_id.display_name}({q.quantity:g})" for q in quants]
-                print(f"    SN: {ml.lot_id.name}, Qty In Move: {ml.qty_done or ml.quantity:g}, Current Stock: {', '.join(stock_locs) or 'None'}")
+                print(f"    SN: {ml.lot_id.name}, Qty In Move: {ml.quantity:g}, Current Stock: {', '.join(stock_locs) or 'None'}")
 
     # 2. Check recent chatter (very limited)
     print("\nRecent Chatter (last 5):")
