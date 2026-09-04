@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Rename SN PC1EYJWS to PC1EYJWS-OLD for S00097 / WH/OUT/00082."""
+DRY_RUN = False # Set to False to apply changes
 
 SERIAL_OLD = "PC1EYJWS"
 SERIAL_NEW = "PC1EYJWS-OLD"
