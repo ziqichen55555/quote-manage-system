@@ -48,6 +48,12 @@ class RewareAuthSignupHome(AuthSignupHome):
             values = super()._prepare_signup_values(qcontext, **kwargs)
         except TypeError:
             values = super()._prepare_signup_values(qcontext)
+
+        # Only require these fields for new signups, not password resets
+        # Odoo uses the same do_signup for both, but reset password shouldn't enforce address.
+        if request.httprequest.path != "/web/signup":
+            return values
+
         phone = (qcontext.get("phone") or "").strip()
         street = (qcontext.get("street") or "").strip()
         city = (qcontext.get("city") or "").strip()
