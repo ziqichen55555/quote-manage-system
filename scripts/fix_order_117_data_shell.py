@@ -26,7 +26,6 @@ else:
         new_inv.action_post()
         print(f"Created and posted $0 invoice: {new_inv.name}")
     
-    order.action_confirm() # Refresh status
     print(f"New Order Total: {order.amount_total}")
     print("Fix completed.")
 
