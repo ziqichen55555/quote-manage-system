@@ -43,10 +43,11 @@ class RewareAuthSignupHome(AuthSignupHome):
             qcontext.setdefault("country_states", request.env["res.country.state"])
         return qcontext
 
-    def _prepare_signup_values(self, qcontext, *, validate_email=False):
-        values = super()._prepare_signup_values(
-            qcontext, validate_email=validate_email
-        )
+    def _prepare_signup_values(self, qcontext, **kwargs):
+        try:
+            values = super()._prepare_signup_values(qcontext, **kwargs)
+        except TypeError:
+            values = super()._prepare_signup_values(qcontext)
         phone = (qcontext.get("phone") or "").strip()
         street = (qcontext.get("street") or "").strip()
         city = (qcontext.get("city") or "").strip()
