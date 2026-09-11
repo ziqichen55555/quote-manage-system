@@ -2,7 +2,7 @@
 """Undo mistaken merge upload: reactivate 31 archived SKUs, remove 9 mistaken new products."""
 from datetime import datetime, timedelta
 
-DRY_RUN = True
+DRY_RUN = False
 confirm_apply = ""  # set confirm_apply=APPLY in GH workflow when DRY_RUN=False
 
 PT = env["product.template"].sudo().with_context(active_test=False)
@@ -96,8 +96,7 @@ if len(archived_batch) > 15:
     print(f"  ... and {len(archived_batch) - 15} more")
 
 restored = []
-deleted = []
-skipped_delete = []
+archived_new = []
 
 print("\n--- Phase A: restore archived ---")
 for tmpl in archived_batch:
@@ -108,30 +107,22 @@ for tmpl in archived_batch:
         tmpl.product_variant_ids.write({"active": True})
     restored.append(label)
 
-print("\n--- Phase B: remove mistaken new products ---")
+print("\n--- Phase B: zero stock + archive mistaken new products ---")
 for tmpl in new_products:
     label = f"ID={tmpl.id} ref={tmpl.default_code}"
     blockers = unlink_blockers(tmpl)
-    if blockers and any("on_hand" in b or "nonzero_quants" in b for b in blockers):
-        print(f"  {label}: clearing stock first ({', '.join(blockers)})")
-        zero_product_stock(tmpl)
-        blockers = unlink_blockers(tmpl)
     if blockers:
-        skipped_delete.append((label, blockers))
-        print(f"SKIP DELETE {label}: {', '.join(blockers)}")
-        continue
-    print(f"{'[DRY] DELETE' if DRY_RUN else 'DELETE'} {label}")
+        print(f"  {label}: clearing stock ({', '.join(blockers)})")
+    zeroed = zero_product_stock(tmpl)
+    print(f"{'[DRY] ARCHIVE' if DRY_RUN else 'ARCHIVE'} {label} (zeroed {zeroed} quants)")
     if not DRY_RUN:
-        tmpl.unlink()
-    deleted.append(label)
+        tmpl.write({"active": False, "sale_ok": False})
+        tmpl.product_variant_ids.write({"active": False})
+    archived_new.append(label)
 
 print("\n" + "=" * 72)
 print(f"Would restore / restored: {len(restored)}")
-print(f"Would delete / deleted: {len(deleted)}")
-print(f"Skipped delete: {len(skipped_delete)}")
-if skipped_delete:
-    for label, blockers in skipped_delete:
-        print(f"  {label}: {', '.join(blockers)}")
+print(f"Would archive / archived: {len(archived_new)}")
 
 if DRY_RUN:
     print("\nPreview only. Set DRY_RUN=False + confirm_apply=APPLY to apply.")
