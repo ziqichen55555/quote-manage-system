@@ -110,6 +110,20 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         values["categories"] = lazy(
             lambda: self._quote_wsale_root_categories_with_products()
         )
+        category = values.get("category")
+        if not category or not category.id:
+            res.update({
+                "title": "Refurbished & Second-Hand Laptops Australia | Re-Ware",
+                "website_meta_description": (
+                    "Browse refurbished laptops, second-hand notebooks and ex-lease "
+                    "desktops from Re-Ware. Tested stock, serial tracking where "
+                    "applicable, delivery across Australia."
+                ),
+                "website_meta_keywords": (
+                    "refurbished laptops, second hand laptops, refurbished computers "
+                    "Australia, ex lease laptops, Re-Ware"
+                ),
+            })
         return res
 
     def _prepare_product_values(self, product, category="", search="", **kwargs):

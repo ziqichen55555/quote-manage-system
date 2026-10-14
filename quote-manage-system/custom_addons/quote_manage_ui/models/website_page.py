@@ -539,3 +539,82 @@ class WebsitePage(models.Model):
                 ('name', '=', 'Shop'),
                 ('name', '=', 'Partners'),
             ]).unlink()
+
+    @api.model
+    def _quote_manage_ui_apply_seo_metadata(self):
+        """Update SEO database fields only — no QWeb arch / visible layout changes."""
+        Page = self.sudo().with_context(active_test=False)
+        Category = self.env["product.public.category"].sudo()
+
+        page_seo = {
+            "/": {
+                "website_meta_title": "Refurbished Laptops & Desktops Australia | Re-Ware",
+                "website_meta_description": (
+                    "Re-Ware supplies quality refurbished and second-hand laptops, "
+                    "desktops and IT equipment in Australia. Browse tested ex-lease "
+                    "systems with clear warranty and nationwide delivery."
+                ),
+                "website_meta_keywords": (
+                    "refurbished laptops, second hand laptops, refurbished computers "
+                    "Australia, ex lease IT, Re-Ware"
+                ),
+            },
+        }
+        for url, vals in page_seo.items():
+            for page in Page.search([("url", "=", url)]):
+                page.write(vals)
+
+        cat_seo = {
+            "Laptops": {
+                "website_meta_title": "Refurbished Laptops Australia | Re-Ware",
+                "website_meta_description": (
+                    "Shop refurbished and second-hand laptops — ThinkPad, HP, Dell "
+                    "and more. Ex-lease stock, tested by Re-Ware, shipped across Australia."
+                ),
+                "website_meta_keywords": (
+                    "refurbished laptops Australia, second hand laptops, ex lease laptops"
+                ),
+            },
+            "Desktops & Mini PCs": {
+                "website_meta_title": "Refurbished Desktops & Mini PCs | Re-Ware",
+                "website_meta_description": (
+                    "Refurbished desktops, mini PCs and workstations from Re-Ware. "
+                    "Quality-checked ex-lease systems for home and business in Australia."
+                ),
+                "website_meta_keywords": (
+                    "refurbished desktops, second hand computers, mini PC Australia"
+                ),
+            },
+        }
+        for name, vals in cat_seo.items():
+            for cat in Category.search([("name", "=", name), ("parent_id", "=", False)]):
+                cat.write(vals)
+
+        xmlid_pages = (
+            ("quote_manage_ui.about_us_page", {
+                "website_meta_title": "About Re-Ware | Refurbished IT Australia",
+                "website_meta_description": (
+                    "Learn about Re-Ware and Co-Creative IT — refurbishing and "
+                    "supplying second-hand laptops and IT equipment across Australia."
+                ),
+            }),
+            ("quote_manage_ui.our_why_page", {
+                "website_meta_title": "Why Refurbished IT | Re-Ware",
+                "website_meta_description": (
+                    "Why choose refurbished laptops and desktops? Lower cost, less "
+                    "e-waste, and enterprise-grade hardware from Re-Ware."
+                ),
+            }),
+            ("quote_manage_ui.book_appointment_page", {
+                "website_meta_title": "Book a Consultation | Re-Ware",
+                "website_meta_description": (
+                    "Book a consultation with Re-Ware for refurbished laptops, "
+                    "desktops and IT sourcing in Australia."
+                ),
+            }),
+        )
+        for xmlid, vals in xmlid_pages:
+            page = self.env.ref(xmlid, raise_if_not_found=False)
+            if page:
+                page.sudo().write(vals)
+        return True
