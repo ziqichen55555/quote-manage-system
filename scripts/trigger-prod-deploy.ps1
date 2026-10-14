@@ -42,14 +42,15 @@ function Get-LatestDeployRun {
 }
 
 # Block if another prod job is already running
-$allRuns = ConvertFrom-GhJsonArray (gh run list --limit 20 --json status,name,databaseId,url 2>&1 | Out-String).Trim()
+$listRaw = gh run list --limit 20 --json status,name,databaseId,url 2>&1 | Out-String
+$allRuns = ConvertFrom-GhJsonArray $listRaw.Trim()
 $running = @($allRuns | Where-Object {
     $_.status -in @("queued", "in_progress", "pending", "waiting") -and
     $_.name -match "Deploy production|Repair production|Run Odoo shell"
 })
 
 if ($running.Count -gt 0) {
-    Write-Host "Blocked — production job already active:" -ForegroundColor Yellow
+    Write-Host "Blocked - production job already active:" -ForegroundColor Yellow
     $running | ForEach-Object { Write-Host ("  [{0}] {1}  {2}" -f $_.status, $_.name, $_.url) }
     Fail "Wait for it to finish (or Repair if stuck), then retry."
 }
@@ -81,16 +82,16 @@ foreach ($attempt in 1..12) {
 Write-Host ""
 if (-not $run -or -not $run.databaseId) {
     Write-Host "Deploy workflow was triggered." -ForegroundColor Green
-    Write-Host "GitHub has not listed the run yet (this is normal for 30-60s)." -ForegroundColor Yellow
+    Write-Host "GitHub has not listed the run yet (normal for 30-60 seconds)." -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Check status:"
     Write-Host '  gh run list --workflow "Deploy production" --limit 3'
-    Write-Host '  gh run watch <id> --exit-status'
+    Write-Host "  gh run watch <id> --exit-status"
     exit 0
 }
 
-Write-Host "Triggered: $($run.displayTitle)"
-Write-Host "Status:    $($run.status)"
-Write-Host "Watch:     gh run watch $($run.databaseId) --exit-status"
-Write-Host "URL:       $($run.url)"
+Write-Host ("Triggered: {0}" -f $run.displayTitle)
+Write-Host ("Status:    {0}" -f $run.status)
+Write-Host ("Watch:     gh run watch {0} --exit-status" -f $run.databaseId)
+Write-Host ("URL:       {0}" -f $run.url)
 Write-Host ""
