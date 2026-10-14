@@ -5,7 +5,7 @@ from odoo.http import request
 
 # Content must match the file Google gave you (one line). If Verify fails, open your
 # downloaded googlec499c9fd6e43910e.html and replace this string to match exactly.
-_GSC_HTML_BODY = "google-site-verification: googlec499c9fd6e43910e.html\n"
+_GSC_HTML_BODY = "google-site-verification: googlec499c9fd6e43910e.html"
 
 
 class GoogleSiteVerification(http.Controller):
