@@ -154,15 +154,15 @@ foreach ($path in $paths) {
 }
 
 Write-Host ""
-Write-Host "=== Google indexing (manual — meta tags alone do not get you on page 1) ===" -ForegroundColor Cyan
-Write-Host "1. Open Google Search Console: https://search.google.com/search-console"
-Write-Host "   Add property: https://www.reware-project.com (Domain or URL prefix)."
-Write-Host "2. Verify ownership (DNS TXT on reware-project.com is most reliable)."
-Write-Host "3. Sitemaps -> Submit: https://www.reware-project.com/sitemap.xml"
-Write-Host "4. URL inspection -> Request indexing for / and /shop (repeat weekly for new products)."
-Write-Host "5. Add a clear link on https://www.cocreativeit.com/reware -> shop (helps Google discover you)."
-Write-Host "6. Competitive queries (refurbished laptops) take weeks/months; check progress with:"
-Write-Host "   site:reware-project.com   in Google (0 results = not indexed yet)."
+Write-Host "=== Google indexing (manual; meta tags alone do not rank you on page 1) ===" -ForegroundColor Cyan
+Write-Host "1. Google Search Console: https://search.google.com/search-console"
+Write-Host "   Property: https://www.reware-project.com"
+Write-Host "2. Verify site (DNS TXT record on the domain is most reliable)."
+Write-Host "3. Sitemaps: submit https://www.reware-project.com/sitemap.xml"
+Write-Host "4. URL inspection: request indexing for / and /shop."
+Write-Host "5. Link from https://www.cocreativeit.com/reware to the shop URL."
+Write-Host "6. Track indexing: search Google for site:reware-project.com"
+Write-Host "   Zero results usually means not indexed yet, not a broken site."
 Write-Host ""
 
 if ($fail -gt 0) {
