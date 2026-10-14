@@ -542,21 +542,69 @@ class WebsitePage(models.Model):
 
     @api.model
     def _quote_manage_ui_apply_seo_metadata(self):
-        """Update SEO database fields only — no QWeb arch / visible layout changes."""
+        """Update SEO database fields only — no QWeb arch / visible layout changes.
+
+        One page = one search intent (retail, B2B recycling, impact, or product category).
+        """
         Page = self.sudo().with_context(active_test=False)
         Category = self.env["product.public.category"].sudo()
 
+        # Retail + B2B on homepage only; other pages stay focused.
         page_seo = {
             "/": {
-                "website_meta_title": "Refurbished Laptops & Desktops Australia | Re-Ware",
-                "website_meta_description": (
-                    "Re-Ware supplies quality refurbished and second-hand laptops, "
-                    "desktops and IT equipment in Australia. Browse tested ex-lease "
-                    "systems with clear warranty and nationwide delivery."
+                "website_meta_title": (
+                    "Re-Ware | Refurbished IT Shop & Corporate Recycling — Perth WA"
                 ),
-                "website_meta_keywords": (
-                    "refurbished laptops, second hand laptops, refurbished computers "
-                    "Australia, ex lease IT, Re-Ware"
+                "website_meta_description": (
+                    "Shop refurbished laptops and IT across Australia, or work with "
+                    "Re-Ware on secure corporate device collection, data erasure and "
+                    "community reuse in Western Australia. By Co-Creative IT."
+                ),
+            },
+            "/aboutus": {
+                "website_meta_title": "About Re-Ware | Perth Refurbished IT & Co-Creative IT",
+                "website_meta_description": (
+                    "Re-Ware is a Co-Creative IT initiative in Perth: refurbishing "
+                    "ex-lease devices for affordable resale and community programs "
+                    "across Western Australia."
+                ),
+            },
+            "/our-why": {
+                "website_meta_title": "Why Re-Ware | Digital Inclusion & Less E-Waste",
+                "website_meta_description": (
+                    "Refurbished IT reduces e-waste and helps close the digital divide "
+                    "in WA. Learn how Re-Ware partners with organisations to reuse "
+                    "enterprise devices responsibly."
+                ),
+            },
+            "/partners": {
+                "website_meta_title": "Re-Ware Partners | Corporate & Community IT Programs",
+                "website_meta_description": (
+                    "Partner with Re-Ware on circular IT: corporate donations, "
+                    "refurbishment and redistribution to community programs in "
+                    "Western Australia."
+                ),
+            },
+            "/book-appointment": {
+                "website_meta_title": "Book a Re-Ware Consultation | Corporate IT & Shop",
+                "website_meta_description": (
+                    "Book a free Re-Ware consultation — bulk device donations, secure "
+                    "processing, refurbished procurement, or shop enquiries. Perth-based, "
+                    "serving Australia."
+                ),
+            },
+            "/returns": {
+                "website_meta_title": "Returns & 3-Month Warranty | Re-Ware Shop",
+                "website_meta_description": (
+                    "Re-Ware certified refurbished hardware includes a 3-month warranty. "
+                    "Returns and support for shop purchases across Australia."
+                ),
+            },
+            "/contactus": {
+                "website_meta_title": "Contact Re-Ware | Perth WA",
+                "website_meta_description": (
+                    "Contact Re-Ware in Perth for refurbished IT sales, corporate "
+                    "recycling and donation programs. Email re-ware@cocreativeit.com."
                 ),
             },
         }
@@ -566,23 +614,45 @@ class WebsitePage(models.Model):
 
         cat_seo = {
             "Laptops": {
-                "website_meta_title": "Refurbished Laptops Australia | Re-Ware",
+                "website_meta_title": "Refurbished Laptops Australia | Re-Ware Shop",
                 "website_meta_description": (
-                    "Shop refurbished and second-hand laptops — ThinkPad, HP, Dell "
-                    "and more. Ex-lease stock, tested by Re-Ware, shipped across Australia."
-                ),
-                "website_meta_keywords": (
-                    "refurbished laptops Australia, second hand laptops, ex lease laptops"
+                    "Ex-lease and second-hand laptops — ThinkPad, HP, Dell and more. "
+                    "Graded, tested and warranty-backed. Delivered Australia-wide from Perth."
                 ),
             },
             "Desktops & Mini PCs": {
                 "website_meta_title": "Refurbished Desktops & Mini PCs | Re-Ware",
                 "website_meta_description": (
-                    "Refurbished desktops, mini PCs and workstations from Re-Ware. "
-                    "Quality-checked ex-lease systems for home and business in Australia."
+                    "Refurbished desktops, mini PCs and workstations for home and "
+                    "business. Quality-checked ex-lease stock from Re-Ware, Australia."
                 ),
-                "website_meta_keywords": (
-                    "refurbished desktops, second hand computers, mini PC Australia"
+            },
+            "Monitors & Displays": {
+                "website_meta_title": "Refurbished Monitors & Displays | Re-Ware",
+                "website_meta_description": (
+                    "Certified refurbished monitors and display bundles from Re-Ware. "
+                    "Tested ex-lease screens with warranty — shop online in Australia."
+                ),
+            },
+            "Docks": {
+                "website_meta_title": "Refurbished USB-C Docks & Port Replicators | Re-Ware",
+                "website_meta_description": (
+                    "Refurbished HP, Lenovo and USB-C docking stations from Re-Ware. "
+                    "Enterprise-grade accessories with clear grading and warranty."
+                ),
+            },
+            "Accessories": {
+                "website_meta_title": "Refurbished PC Accessories | Re-Ware Shop",
+                "website_meta_description": (
+                    "Keyboards, mice, adapters and IT accessories from Re-Ware. "
+                    "Certified refurbished stock shipped across Australia."
+                ),
+            },
+            "Services": {
+                "website_meta_title": "IT Services | Co-Creative IT & Re-Ware",
+                "website_meta_description": (
+                    "Professional IT services from Co-Creative IT and Re-Ware — "
+                    "consulting, deployment support and refurbishment programs in WA."
                 ),
             },
         }
@@ -591,27 +661,11 @@ class WebsitePage(models.Model):
                 cat.write(vals)
 
         xmlid_pages = (
-            ("quote_manage_ui.about_us_page", {
-                "website_meta_title": "About Re-Ware | Refurbished IT Australia",
-                "website_meta_description": (
-                    "Learn about Re-Ware and Co-Creative IT — refurbishing and "
-                    "supplying second-hand laptops and IT equipment across Australia."
-                ),
-            }),
-            ("quote_manage_ui.our_why_page", {
-                "website_meta_title": "Why Refurbished IT | Re-Ware",
-                "website_meta_description": (
-                    "Why choose refurbished laptops and desktops? Lower cost, less "
-                    "e-waste, and enterprise-grade hardware from Re-Ware."
-                ),
-            }),
-            ("quote_manage_ui.book_appointment_page", {
-                "website_meta_title": "Book a Consultation | Re-Ware",
-                "website_meta_description": (
-                    "Book a consultation with Re-Ware for refurbished laptops, "
-                    "desktops and IT sourcing in Australia."
-                ),
-            }),
+            ("quote_manage_ui.about_us_page", page_seo["/aboutus"]),
+            ("quote_manage_ui.our_why_page", page_seo["/our-why"]),
+            ("quote_manage_ui.partners_page", page_seo["/partners"]),
+            ("quote_manage_ui.book_appointment_page", page_seo["/book-appointment"]),
+            ("quote_manage_ui.returns_policy_page", page_seo["/returns"]),
         )
         for xmlid, vals in xmlid_pages:
             page = self.env.ref(xmlid, raise_if_not_found=False)

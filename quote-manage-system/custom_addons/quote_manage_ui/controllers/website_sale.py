@@ -113,15 +113,11 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         category = values.get("category")
         if not category or not category.id:
             res.update({
-                "title": "Refurbished & Second-Hand Laptops Australia | Re-Ware",
+                "title": "Shop Refurbished Laptops & IT | Re-Ware Australia",
                 "website_meta_description": (
-                    "Browse refurbished laptops, second-hand notebooks and ex-lease "
-                    "desktops from Re-Ware. Tested stock, serial tracking where "
-                    "applicable, delivery across Australia."
-                ),
-                "website_meta_keywords": (
-                    "refurbished laptops, second hand laptops, refurbished computers "
-                    "Australia, ex lease laptops, Re-Ware"
+                    "Re-Ware online shop: refurbished laptops, desktops, monitors "
+                    "and accessories. Certified grading, 3-month warranty, delivery "
+                    "Australia-wide from Perth."
                 ),
             })
         return res
@@ -131,4 +127,8 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         out["categories"] = lazy(
             lambda: self._quote_wsale_root_categories_with_products()
         )
+        if not (product.website_meta_title or "").strip():
+            out["title"] = product._rw_seo_default_title()
+        if not (product.website_meta_description or "").strip():
+            out["website_meta_description"] = product._rw_seo_default_description()
         return out

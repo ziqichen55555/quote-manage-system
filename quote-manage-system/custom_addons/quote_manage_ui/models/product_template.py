@@ -426,35 +426,89 @@ class ProductTemplate(models.Model):
             ignore_no_variant=ignore_no_variant,
         )
 
+    def _rw_seo_public_category_hint(self):
+        """Short label from shop category for tailored head copy (not shown in UI)."""
+        self.ensure_one()
+        names = [n.lower() for n in self.public_categ_ids.mapped("name") if n]
+        joined = " ".join(names)
+        if "laptop" in joined:
+            return "laptop"
+        if "desktop" in joined or "mini pc" in joined:
+            return "desktop"
+        if "monitor" in joined or "display" in joined:
+            return "monitor"
+        if "dock" in joined:
+            return "dock"
+        if "service" in joined:
+            return "service"
+        return "it"
+
+    def _rw_seo_default_title(self):
+        self.ensure_one()
+        name = (self.name or "Refurbished IT").strip()
+        if len(name) > 85:
+            name = name[:82] + "..."
+        return f"Refurbished {name} | Re-Ware Australia"
+
     def _rw_seo_default_description(self):
         """Head-only fallback meta description for published shop products."""
         self.ensure_one()
         name = (self.name or "Refurbished IT equipment").strip()
         code = (self.default_code or "").strip()
-        text = (
-            f"Buy {name} from Re-Ware — refurbished and ex-lease laptops and PCs "
-            f"in Australia, quality-checked with clear warranty options."
-        )
+        hint = self._rw_seo_public_category_hint()
+        templates = {
+            "laptop": (
+                f"Buy refurbished {name} from Re-Ware — ex-lease laptop, tested "
+                f"and graded in WA with warranty-backed delivery across Australia."
+            ),
+            "desktop": (
+                f"Refurbished {name} from Re-Ware — ex-lease desktop or mini PC, "
+                f"quality-checked with warranty. Ships Australia-wide."
+            ),
+            "monitor": (
+                f"Certified refurbished {name} from Re-Ware. Tested display / "
+                f"monitor with warranty — shop ex-lease IT in Australia."
+            ),
+            "dock": (
+                f"Refurbished {name} from Re-Ware — enterprise dock or port "
+                f"replicator, graded and warranty-backed. Order online in Australia."
+            ),
+            "service": (
+                f"{name} — IT service from Co-Creative IT / Re-Ware, Perth WA. "
+                f"Contact us for refurbishment and deployment support."
+            ),
+            "it": (
+                f"Refurbished {name} from Re-Ware — certified ex-lease IT, "
+                f"tested with warranty. Delivered across Australia."
+            ),
+        }
+        text = templates.get(hint, templates["it"])
         if code:
-            text = f"{text} SKU {code}."
+            text = f"{text} Model / SKU: {code}."
         return text[:320]
 
     def get_website_meta(self):
-        """Fill Open Graph / meta description when SEO fields are empty (no body UI change)."""
+        """Fill Open Graph / meta when SEO fields are empty (no body UI change)."""
         self.ensure_one()
         meta = super().get_website_meta()
         if not self.website_published:
             return meta
-        desc = (self.website_meta_description or "").strip()
-        if desc:
-            return meta
-        desc = self._rw_seo_default_description()
         meta = dict(meta)
-        meta["meta_description"] = desc
         opengraph = dict(meta.get("opengraph_meta") or {})
-        opengraph["og:description"] = desc
-        meta["opengraph_meta"] = opengraph
         twitter = dict(meta.get("twitter_meta") or {})
-        twitter["twitter:description"] = desc
+
+        desc = (self.website_meta_description or "").strip()
+        if not desc:
+            desc = self._rw_seo_default_description()
+            meta["meta_description"] = desc
+            opengraph["og:description"] = desc
+            twitter["twitter:description"] = desc
+
+        if not (self.website_meta_title or "").strip():
+            title = self._rw_seo_default_title()
+            opengraph["og:title"] = title
+            twitter["twitter:title"] = title
+
+        meta["opengraph_meta"] = opengraph
         meta["twitter_meta"] = twitter
         return meta
