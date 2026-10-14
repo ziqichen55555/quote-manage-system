@@ -425,3 +425,36 @@ class ProductTemplate(models.Model):
             parent_combination=parent_combination,
             ignore_no_variant=ignore_no_variant,
         )
+
+    def _rw_seo_default_description(self):
+        """Head-only fallback meta description for published shop products."""
+        self.ensure_one()
+        name = (self.name or "Refurbished IT equipment").strip()
+        code = (self.default_code or "").strip()
+        text = (
+            f"Buy {name} from Re-Ware — refurbished and ex-lease laptops and PCs "
+            f"in Australia, quality-checked with clear warranty options."
+        )
+        if code:
+            text = f"{text} SKU {code}."
+        return text[:320]
+
+    def get_website_meta(self):
+        """Fill Open Graph / meta description when SEO fields are empty (no body UI change)."""
+        self.ensure_one()
+        meta = super().get_website_meta()
+        if not self.website_published:
+            return meta
+        desc = (self.website_meta_description or "").strip()
+        if desc:
+            return meta
+        desc = self._rw_seo_default_description()
+        meta = dict(meta)
+        meta["meta_description"] = desc
+        opengraph = dict(meta.get("opengraph_meta") or {})
+        opengraph["og:description"] = desc
+        meta["opengraph_meta"] = opengraph
+        twitter = dict(meta.get("twitter_meta") or {})
+        twitter["twitter:description"] = desc
+        meta["twitter_meta"] = twitter
+        return meta

@@ -1,0 +1,118 @@
+﻿=== ALL 113 active products with on-hand SN count (pre-import backup) ===
+ tmpl_id | variant_id |               sku                |                          name                           | sale_ok | on_hand_qty | sn_count 
+---------+------------+----------------------------------+---------------------------------------------------------+---------+-------------+----------
+     822 |        873 | 10A8A06QAU-CMOSP                 | ThinkCentre M93p                                        | t       |           0 |        0
+     823 |        874 | 10FGA004AU-CMOSP                 | ThinkCentre M900                                        | t       |           0 |        0
+     827 |        878 | 10SJ0004AU-CMOSP                 | ThinkCentre M920s                                       | t       |           0 |        0
+     857 |        908 | 20JTS15500-BT70-CMOSP            | ThinkPad T470s W10DG                                    | t       |           1 |        1
+     828 |        879 | 20L8SBL100-BTU70-CMOSP           | ThinkPad T480s                                          | t       |           1 |        1
+     859 |        910 | 20L8SDCE00-16G-256G-T-BT70-CMOSP | ThinkPad T480s                                          | t       |           0 |        0
+     860 |        911 | 20L8SDCE00-8G-256G-T-BT70-CMOSP  | ThinkPad T480S                                          | t       |           0 |        0
+     862 |        913 | 20L8SDCE00-8G-256G-T-BTU70-CMOSP | ThinkPad T480s                                          | t       |           3 |        3
+     831 |        882 | 20NYS4CP00-8G-256G-T-BT70-CMOSP  | ThinkPad T490s                                          | t       |          20 |       20
+     833 |        884 | 20NYS4CP00-8G-256G-T-BTU70-CMOSP | ThinkPad T490s                                          | t       |           1 |        1
+     835 |        886 | 20NYS4CP00-8G-512G-T-BT70-CMOSP  | ThinkPad T490s                                          | t       |           3 |        3
+     836 |        887 | 20NYS4CP00-8G-512G-T-BTU70-CMOSP | ThinkPad T490s                                          | t       |           0 |        0
+     863 |        914 | 20T0003UAU-BT70-CMOSP            | ThinkPad T14s Gen 1                                     | t       |           3 |        3
+     839 |        890 | 20T1S6C300-BT70-CMOSP            | ThinkPad T14s Gen 1                                     | t       |          18 |       18
+     840 |        891 | 20T1S6C300-BTU70-CMOSP           | ThinkPad T14s Gen 1                                     | t       |           2 |        2
+     864 |        915 | 20W4004TAU-16G-512G-T-BT70-CMOSP | ThinkPad T15 Gen 2i                                     | t       |          15 |       15
+     865 |        916 | 20W4004TAU-24G-512G-T-BT70-CMOSP | ThinkPad T15 Gen 2i                                     | t       |           1 |        1
+     844 |        895 | 20WN0025AU-BT70-CMOSP            | ThinkPad T14s Gen 2i                                    | t       |           9 |        9
+     846 |        897 | 20WNA07YAU-BT70-CMOSP            | ThinkPad T14s Gen 2i                                    | t       |           1 |        1
+     866 |        917 | 20WNA07YAU-BTU70-CMOSP           | ThinkPad T14s Gen 2i                                    | t       |           0 |        0
+     867 |        918 | 20WNS1M500-BT70-CMOSP            | ThinkPad T14s Gen 2i                                    | t       |           7 |        7
+     868 |        919 | 20WNS1M500-BTU70-CMOSP           | ThinkPad T14s Gen 2i                                    | t       |           1 |        1
+     870 |        921 | 20WNS6LL00-BT70-CMOSP            | ThinkPad T14s Gen 2i                                    | t       |          20 |       20
+     871 |        922 | 20WNS8B700-BT70-CMOSP            | ThinkPad T14s Gen 2i                                    | t       |           1 |        1
+     711 |        711 | 26D32AA                          | HP G5 USB-C Dock                                        | t       |           0 |        0
+     848 |        899 | 30B5S0PF00-CMOSP                 | ThinkStation P510                                       | t       |           1 |        1
+     872 |        923 | 3209A93-CMOSP                    | ThinkCentre M92p                                        | t       |           0 |        0
+     714 |        714 | 3FF69AA                          | HP G3 USB-C Dock                                        | t       |           0 |        0
+     715 |        715 | 40AF0135AU                       | Lenovo THINKPAD HYBRID USB-C Dock new in box            | t       |           0 |        0
+     716 |        716 | 40AJ0135AU                       | Lenovo ThinkPad USB                                     | t       |           0 |        0
+     873 |        924 | 4518PT1-CMOSP                    | ThinkCentre M91p                                        | t       |           0 |        0
+     874 |        925 | 5536RE5-CMOSP                    | ThinkCentre M90p                                        | t       |           0 |        0
+     894 |        945 | ACERDV0817                       | Acer DV0817 Projector                                   | t       |           1 |        1
+     717 |        717 | AG066A                           | HP TFT7600 KVM                                          | t       |           0 |        0
+     718 |        718 | AIRCAP3502I-N-K9                 | Cisco Access Point                                      | t       |           0 |        0
+     893 |        944 | BENQPB2240                       | BenQ PB2240 Projector                                   | t       |           1 |        1
+     719 |        719 | BUNDLEDELL24                     | Dual 24 Monitor Bundle 2 x Dell 24" (P2422HE) monitors  | t       |           0 |        0
+     720 |        720 | BUNDLESA1450                     | Two Samsung S22C450 22"Monitors                         | t       |           0 |        0
+     721 |        721 | CCIT0001                         | Service - 1 Hour                                        | t       |           0 |        0
+     722 |        722 | CCITREWAREBAG                    | Re-Ware Lenovo backpack                                 | t       |           0 |        0
+     902 |        953 | CF-54H1436VA-BT70-CMOSP          | Panasonic Toughbook CF-54 Mk3                           | t       |           2 |        3
+     885 |        936 | CF-54H1436VA-BTU70-CMOSP         | Panasonic Toughbook CF-54 Mk3                           | t       |           0 |        0
+     878 |        929 | CF-54J1436VA                     | Panasonic Toughbook CF-54 mk 3                          | t       |           0 |        0
+     886 |        937 | CF-54J1436VA-BTU70-CMOSP         | Panasonic Toughbook CF-54 Mk3                           | t       |           1 |        1
+     887 |        938 | CF-AA5713A                       | Panasonic CF-AA5713A AC Adapter                         | t       |           0 |        0
+     724 |        724 | CISCO1941                        | Cisco 1941 series Integrated Services Router            | t       |           0 |        0
+     725 |        725 | CISCO2911                        | Cisco 2911 Integrated Services Router                   | t       |           0 |        0
+     890 |        941 | EPEB1723                         | Epson EB-1723 Portable Projector                        | t       |           1 |        1
+     726 |        726 | F24T450FQEXXY                    | Samsung 24" F24T450FQ USB hub 1080P WIFI                | t       |           0 |        0
+     918 |        969 | FH973AA                          | HP Display Port Male To DVI-D Female                    | t       |           0 |        0
+     916 |        967 | HDDVIMF8IN                       | HDMI Male To DVI Female 25cm                            | t       |           0 |        0
+     897 |        948 | LS32D85KTSNXY                    | Samsung 32" Monitor S32D850T WQHD business and professi | t       |           0 |        0
+     734 |        734 | MOUSE                            | Lenovo wired mouse                                      | t       |           0 |        0
+     754 |        754 | MR                               | Mondial Relay                                           | f       |           0 |        0
+     735 |        735 | MR18-HW                          | Meraki MR18-HW                                          | t       |           0 |        0
+     736 |        736 | MR42-HW                          | Meraki MR42-HW                                          | t       |           0 |        0
+     737 |        737 | MS220-24P                        | Meraki MS220-24P                                        | t       |           0 |        0
+     738 |        738 | MS220-48P                        | Meraki MS220-48P Switch                                 | t       |           0 |        0
+     739 |        739 | MTM7654                          | Lenovo Wired Keyboard                                   | t       |           0 |        0
+     891 |        942 | NECM322WG                        | NEC NP-M322WG WXGA Projector                            | t       |           1 |        1
+     889 |        940 | NECME331WG                       | NEC NP-ME331WG WXGA Projector                           | t       |           1 |        1
+     892 |        943 | NECV311WG                        | NEC NP-V311WG WXGA Projector                            | t       |           1 |        1
+     884 |        935 | RE65WAC                          | Re-Ware 65W USB-C AC Adapter                            | t       |           0 |        0
+     762 |        777 | RW_SHIP_RURAL_QUOTE              | Shipping - Rural quote required                         | f       |           0 |        0
+     761 |        776 | RW_SHIP_STANDARD                 | Shipping - Standard                                     | f       |           0 |        0
+     710 |        710 | S22A450BW                        | Dual 22" Samsung S22C450 monitor bundle + HP G4 Dock    | t       |           0 |        0
+     750 |        750 | S24E450                          | 24" Samsung Monitor S24E450                             | t       |           0 |        0
+     751 |        751 | WS-3750X-48P                     | Cisco Switch WS-3750X-48-P                              | t       |           0 |        0
+     755 |        755 |                                  | delivery                                                | f       |           0 |        0
+     802 |        852 |                                  | Dell K20A USB-C Dock                                    | t       |           0 |        0
+     849 |        900 |                                  | dual 22" screen bundle                                  | t       |           0 |        0
+     850 |        901 |                                  | dual 22" screen bundle                                  | t       |           0 |        0
+     851 |        902 |                                  | dual 22" screen bundle                                  | t       |           0 |        0
+     855 |        906 |                                  | HP 120W AC Adapter                                      | t       |           0 |        0
+     856 |        907 |                                  | Two Samsung 24" monitors with HP G4 dock                | t       |           0 |        0
+     875 |        926 |                                  | Panasonic DFT 30                                        | t       |           0 |        0
+     876 |        927 |                                  | Panasonic DFT 30 Camera                                 | t       |           0 |        0
+     877 |        928 |                                  | Surface Pro Dock bundle dual  22" screen with Microsoft | t       |           0 |        0
+     879 |        930 |                                  | HP probook 440 G4                                       | t       |           1 |        1
+     880 |        931 |                                  | Panasonic Lumix DMC-TZ20 Digital Camera                 | t       |           0 |        0
+     881 |        932 |                                  | Canon PowerShot A550                                    | t       |           0 |        0
+     882 |        933 |                                  | Canon PowerShot A530                                    | t       |           0 |        0
+     883 |        934 |                                  | Canon PowerShot A480                                    | t       |           0 |        0
+     888 |        939 |                                  | Wireless mouse                                          | t       |           0 |        0
+     895 |        946 |                                  | Square Reader (2nd Generation)                          | t       |           0 |        0
+     896 |        947 |                                  | HP Wired Keyboard TPA-D002K Brand New                   | t       |           0 |        0
+     898 |        949 |                                  | shipping Kingsley                                       | t       |           0 |        0
+     899 |        950 |                                  | usb_c                                                   | t       |           0 |        0
+     901 |        952 |                                  | dual 24" F24T450FQ Screen Bundle with HP G3 Dock        | t       |           0 |        0
+     903 |        954 |                                  | Jabra Lifechat LX-6000 brand new in box                 | t       |           0 |        0
+     904 |        955 |                                  | Dual 24" Screen Bundle 2 x Samsung S24a450 and HP G3 Do | t       |           0 |        0
+     905 |        956 |                                  | Dell Latitude 7320 Detachable                           | t       |           1 |        1
+     906 |        957 |                                  | hdmi                                                    | t       |           0 |        0
+     907 |        958 |                                  | Evoluent Vertical Mouse 4                               | t       |           0 |        0
+     908 |        959 |                                  | TOA P-2852 100V OR 8 Ohm Ceiling Mount Speaker          | t       |           0 |        0
+     909 |        960 |                                  | Cisco TTC8-02 Precision HD Camera 12x                   | t       |           0 |        0
+     910 |        961 |                                  | Actiontec ScreenBeam 960                                | t       |           0 |        0
+     911 |        962 |                                  | Logitech BCC950 Conference Cam                          | t       |           0 |        0
+     912 |        963 |                                  | Logitech Wireless Mouse M185                            | t       |           0 |        0
+     913 |        964 |                                  | Lenovo 12V 65W Travel Adaptor Charger                   | t       |           0 |        0
+     914 |        965 |                                  | Dell Mobile Wireless Gaming Mouse MS3320W               | t       |           0 |        0
+     915 |        966 |                                  | 4X90Q84427 ThinkPad Ethernet Extension Adapter Gen 2    | t       |           0 |        0
+     917 |        968 |                                  | Comsol Display Port Male To DVI-I Female (Packaged)     | t       |           0 |        0
+     919 |        970 |                                  | Display Port Male To DVI-I Female Adapter               | t       |           0 |        0
+     920 |        971 |                                  | Display Port To DVI-I Female Adaptor                    | t       |           0 |        0
+     921 |        972 |                                  | Display Port To DVI-D Female Adaptor                    | t       |           0 |        0
+     922 |        973 |                                  | Mini Display Port To DVI-I Adapter                      | t       |           0 |        0
+     923 |        974 |                                  | Display Port To VGA Adapter                             | t       |           0 |        0
+     924 |        975 |                                  | USB-C Male To VGA Female Adapter                        | t       |           0 |        0
+     925 |        976 |                                  | USB-C To HDMI Adapter                                   | t       |           0 |        0
+     926 |        977 |                                  | USB-C To DVI-I Adapter                                  | t       |           0 |        0
+     927 |        978 |                                  | Mini Display Port To HDMI Adapter                       | t       |           0 |        0
+     928 |        979 |                                  | HP USB-A To USB-C Adapter 1WC36AA                       | t       |           0 |        0
+(113 rows)
+

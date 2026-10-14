@@ -1,0 +1,117 @@
+﻿ssh :  Container reware-db-1 Running 
+At C:\Users\User\AppData\Local\Temp\ps-script-4f965008-5795-4152-abf1-b9fe953460d0.ps1:80 char:123
++ ... .py" -Raw | ssh -i "$env:USERPROFILE\.ssh\id_ed25519_do" -o StrictHos ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container reware-db-1 Running :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container reware-db-1 Waiting 
+ Container reware-db-1 Healthy 
+ Container reware-web-run-aa0a2f2ad1f5 Creating 
+ Container reware-web-run-aa0a2f2ad1f5 Created 
+2026-09-11 06:26:04,345 1 INFO ? odoo: Odoo version 17.0-20260528 
+2026-09-11 06:26:04,345 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-11 06:26:04,346 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', 
+'/var/lib/odoo/addons/17.0', '/mnt/extra-addons', '/mnt/custom-addons'] 
+2026-09-11 06:26:04,346 1 INFO ? odoo: database: odoo@db:5432 
+2026-09-11 06:26:04,509 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at 
+/usr/local/bin/wkhtmltopdf 
+2026-09-11 06:26:04,847 1 INFO ? odoo.service.server: Initiating shutdown 
+2026-09-11 06:26:04,848 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-11 06:26:04,890 1 INFO cocreativeit-quote odoo.modules.loading: loading 1 modules... 
+2026-09-11 06:26:04,903 1 INFO cocreativeit-quote odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 
+extra) 
+2026-09-11 06:26:05,059 1 INFO cocreativeit-quote odoo.modules.loading: loading 147 modules... 
+2026-09-11 06:26:07,025 1 INFO cocreativeit-quote odoo.modules.loading: 147 modules loaded in 1.96s, 0 queries (+0 
+extra) 
+2026-09-11 06:26:07,336 1 INFO cocreativeit-quote odoo.modules.loading: Modules loaded. 
+2026-09-11 06:26:07,369 1 INFO cocreativeit-quote odoo.modules.registry: Registry loaded in 2.520s 
+2026-09-11 06:26:10,833 1 INFO cocreativeit-quote odoo.models.unlink: User #1 deleted product.template.attribute.value 
+records with IDs: [8666] 
+2026-09-11 06:26:10,951 1 INFO cocreativeit-quote odoo.models.unlink: User #1 deleted product.template.attribute.value 
+records with IDs: [8690] 
+2026-09-11 06:26:11,200 1 INFO cocreativeit-quote odoo.models.unlink: User #1 deleted product.template.attribute.value 
+records with IDs: [8775] 
+2026-09-11 06:26:11,398 1 INFO cocreativeit-quote odoo.models.unlink: User #1 deleted product.template.attribute.value 
+records with IDs: [8815] 
+========================================================================
+ADD MERGED 48 TO OLD CMOSP SKUs
+DRY_RUN=False devices=48
+========================================================================
+  ADD PC1FVGPF -> 20NYS4CP00-8G-512G-T-BT70-CMOSP
+  ADD PC2CN0L0 -> 20WNS6LL00-BT70-CMOSP
+  ADD PC1FVFC4 -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC14S0AG -> 20L8SDCE00-8G-256G-T-BTU70-CMOSP
+  ADD PC14S1HB -> 20L8SDCE00-8G-256G-T-BTU70-CMOSP
+  ADD PC2CN0KP -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R4C0 -> 20WN0025AU-BT70-CMOSP
+  ADD PC27R4BD -> 20WN0025AU-BT70-CMOSP
+  ADD PC13Z0Z0 -> 20L8SBL100-BTU70-CMOSP
+  ADD PC2JNSG0 -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R1TA -> 20WN0025AU-BT70-CMOSP
+  ADD PC2CMZKL -> 20WNS6LL00-BT70-CMOSP
+  ADD PC2FFDFZ -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R3PG -> 20WN0025AU-BT70-CMOSP
+  ADD PC1FVERQ -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC27R4BX -> 20WN0025AU-BT70-CMOSP
+  ADD GM048TJE -> 20WNA07YAU-BT70-CMOSP
+  ADD PC2CN0KW -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R1WX -> 20WN0025AU-BT70-CMOSP
+  ADD PC2JNSDR -> 20WNS6LL00-BT70-CMOSP
+  ADD PC23W0AA -> 20WNS1M500-BT70-CMOSP
+  ADD PC2FFDH1 -> 20WNS6LL00-BT70-CMOSP
+  ADD PC1FVNGB -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC2FFDGF -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R3PA -> 20WN0025AU-BT70-CMOSP
+  ADD PC23W0C5 -> 20WNS1M500-BT70-CMOSP
+  ADD PC1TKK8M -> 20T0003UAU-BT70-CMOSP
+  ADD PC23W0E9 -> 20WNS1M500-BT70-CMOSP
+  ADD PC23W0DX -> 20WNS1M500-BT70-CMOSP
+  ADD PC23W0DS -> 20WNS1M500-BT70-CMOSP
+  ADD PC2JNTRQ -> 20WNS6LL00-BT70-CMOSP
+  ADD PC1FVND5 -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC2JLEXC -> 20WNS6LL00-BT70-CMOSP
+  ADD PC1FVGP1 -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC2JNTQS -> 20WNS6LL00-BT70-CMOSP
+  ADD PC2JNTQC -> 20WNS6LL00-BT70-CMOSP
+  ADD PC13Z10H -> 20L8SBL100-BTU70-CMOSP
+  ADD PC27R1VC -> 20WN0025AU-BT70-CMOSP
+  ADD PC27R3ZC -> 20WN0025AU-BT70-CMOSP
+  ADD PC1FVERH -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC1FVNJ5 -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC23W09H -> 20WNS1M500-BT70-CMOSP
+  ADD PC2CN0N5 -> 20WNS6LL00-BT70-CMOSP
+  ADD PC2CMZKK -> 20WNS6LL00-BT70-CMOSP
+  ADD PC1FVESX -> 20NYS4CP00-8G-256G-T-BT70-CMOSP
+  ADD PC23W08X -> 20WNS1M500-BT70-CMOSP
+  ADD PC2CN0K7 -> 20WNS6LL00-BT70-CMOSP
+  ADD PC27R4BF -> 20WN0025AU-BT70-CMOSP
+
+--- Phase 2: refresh battery ranges ---
+  20L8SBL100-BTU70-CMOSP: battery '57%-66%' -> '57%-91%' on_hand=3
+  20L8SDCE00-8G-256G-T-BTU70-CMOSP: battery '62%-67%' -> '57%-67%' on_hand=5
+  20NYS4CP00-8G-256G-T-BT70-CMOSP: battery '71%-103%' -> '71%-103%' on_hand=28
+  20NYS4CP00-8G-512G-T-BT70-CMOSP: battery '83%-103%' -> '83%-103%' on_hand=4
+  20T0003UAU-BT70-CMOSP: battery '103%' -> '103%' on_hand=4
+  20WN0025AU-BT70-CMOSP: battery '73%-99%' -> '72%-99%' on_hand=19
+  20WNA07YAU-BT70-CMOSP: battery '99%' -> '99%' on_hand=2
+  20WNS1M500-BT70-CMOSP: battery '99%' -> '99%' on_hand=14
+  20WNS6LL00-BT70-CMOSP: battery '89%-100%' -> '72%-100%' on_hand=36
+
+--- Summary ---
+  added: 48
+
+--- Verification ---
+  OK 20L8SBL100-BTU70-CMOSP: want=3 got=3
+  OK 20L8SDCE00-8G-256G-T-BTU70-CMOSP: want=5 got=5
+  OK 20NYS4CP00-8G-256G-T-BT70-CMOSP: want=28 got=28
+  OK 20NYS4CP00-8G-512G-T-BT70-CMOSP: want=4 got=4
+  OK 20T0003UAU-BT70-CMOSP: want=4 got=4
+  OK 20WN0025AU-BT70-CMOSP: want=19 got=19
+  OK 20WNA07YAU-BT70-CMOSP: want=2 got=2
+  OK 20WNS1M500-BT70-CMOSP: want=14 got=14
+  OK 20WNS6LL00-BT70-CMOSP: want=36 got=36
+
+Total on 9 SKUs: 115 (baseline 120 + 48 = 168)
+
+Committed.

@@ -1,0 +1,166 @@
+﻿ssh :  Container reware-db-1 Running 
+At C:\Users\User\AppData\Local\Temp\ps-script-6fa149c2-e372-41db-8fd9-27da29b1e9fa.ps1:162 char:6
++ '@ | ssh -i "$env:USERPROFILE\.ssh\id_ed25519_do" -o StrictHostKeyChe ...
++      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container reware-db-1 Running :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container reware-db-1 Waiting 
+ Container reware-db-1 Healthy 
+ Container reware-web-run-bc45701e5801 Creating 
+ Container reware-web-run-bc45701e5801 Created 
+2026-09-11 06:22:20,666 1 INFO ? odoo: Odoo version 17.0-20260528 
+2026-09-11 06:22:20,667 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-11 06:22:20,668 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', 
+'/var/lib/odoo/addons/17.0', '/mnt/extra-addons', '/mnt/custom-addons'] 
+2026-09-11 06:22:20,668 1 INFO ? odoo: database: odoo@db:5432 
+2026-09-11 06:22:20,885 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at 
+/usr/local/bin/wkhtmltopdf 
+2026-09-11 06:22:21,393 1 INFO ? odoo.service.server: Initiating shutdown 
+2026-09-11 06:22:21,395 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-11 06:22:21,478 1 INFO cocreativeit-quote odoo.modules.loading: loading 1 modules... 
+2026-09-11 06:22:21,499 1 INFO cocreativeit-quote odoo.modules.loading: 1 modules loaded in 0.02s, 0 queries (+0 
+extra) 
+2026-09-11 06:22:21,894 1 INFO cocreativeit-quote odoo.modules.loading: loading 147 modules... 
+2026-09-11 06:22:24,463 1 INFO cocreativeit-quote odoo.modules.loading: 147 modules loaded in 2.57s, 0 queries (+0 
+extra) 
+2026-09-11 06:22:24,940 1 INFO cocreativeit-quote odoo.modules.loading: Modules loaded. 
+2026-09-11 06:22:24,981 1 INFO cocreativeit-quote odoo.modules.registry: Registry loaded in 3.586s 
+TOTAL_DEVICES=48
+ON_TARGET=0
+NOT_ON_TARGET=48
+
+--- BY TARGET SKU ---
+
+20L8SBL100-BTU70-CMOSP (target id=828) count=2 on_target=0
+  model(s): ['?']
+  battery: ['85%-91%']
+  SN PC13Z0Z0 model= bat=85%-91% on_target=False
+  SN PC13Z10H model= bat=85%-91% on_target=False
+
+20L8SDCE00-8G-256G-T-BTU70-CMOSP (target id=862) count=2 on_target=0
+  model(s): ['?']
+  battery: ['57%-65%']
+  SN PC14S0AG model= bat=57%-65% on_target=False
+  SN PC14S1HB model= bat=57%-65% on_target=False
+
+20NYS4CP00-8G-256G-T-BT70-CMOSP (target id=831) count=8 on_target=0
+  model(s): ['?']
+  battery: ['103%']
+  SN PC1FVERH model= bat=103% on_target=False
+  SN PC1FVERQ model= bat=103% on_target=False
+  SN PC1FVESX model= bat=103% on_target=False
+  ... +5 more
+
+20NYS4CP00-8G-512G-T-BT70-CMOSP (target id=835) count=1 on_target=0
+  model(s): ['?']
+  battery: ['103%']
+  SN PC1FVGPF model= bat=103% on_target=False
+
+20T0003UAU-BT70-CMOSP (target id=863) count=1 on_target=0
+  model(s): ['?']
+  battery: ['103%']
+  SN PC1TKK8M model= bat=103% on_target=False
+
+20WN0025AU-BT70-CMOSP (target id=844) count=10 on_target=0
+  model(s): ['?']
+  battery: ['72%-99%']
+  SN PC27R1TA model= bat=72%-99% on_target=False
+  SN PC27R1VC model= bat=72%-99% on_target=False
+  SN PC27R1WX model= bat=72%-99% on_target=False
+  ... +7 more
+
+20WNA07YAU-BT70-CMOSP (target id=846) count=1 on_target=0
+  model(s): ['?']
+  battery: ['99%']
+  SN GM048TJE model= bat=99% on_target=False
+
+20WNS1M500-BT70-CMOSP (target id=867) count=7 on_target=0
+  model(s): ['?']
+  battery: ['99%']
+  SN PC23W08X model= bat=99% on_target=False
+  SN PC23W09H model= bat=99% on_target=False
+  SN PC23W0AA model= bat=99% on_target=False
+  ... +4 more
+
+20WNS6LL00-BT70-CMOSP (target id=870) count=16 on_target=0
+  model(s): ['?']
+  battery: ['72%-99%']
+  SN PC2CMZKK model= bat=72%-99% on_target=False
+  SN PC2CMZKL model= bat=72%-99% on_target=False
+  SN PC2CN0K7 model= bat=72%-99% on_target=False
+  ... +13 more
+
+--- JSON sample (first 5) ---
+[
+  {
+    "serial": "PC13Z0Z0",
+    "wrong_id": 929,
+    "wrong_sku": "20L8SBL100-8G-256G-N-BT70-CMOSP",
+    "target_id": 828,
+    "target_sku": "20L8SBL100-BTU70-CMOSP",
+    "wrong_model": "",
+    "wrong_battery": "85%-91%",
+    "wrong_battery_tier": "",
+    "target_model": "",
+    "target_battery": "57%-66%",
+    "wrong_on_hand": 0,
+    "on_target": false
+  },
+  {
+    "serial": "PC13Z10H",
+    "wrong_id": 929,
+    "wrong_sku": "20L8SBL100-8G-256G-N-BT70-CMOSP",
+    "target_id": 828,
+    "target_sku": "20L8SBL100-BTU70-CMOSP",
+    "wrong_model": "",
+    "wrong_battery": "85%-91%",
+    "wrong_battery_tier": "",
+    "target_model": "",
+    "target_battery": "57%-66%",
+    "wrong_on_hand": 0,
+    "on_target": false
+  },
+  {
+    "serial": "PC14S0AG",
+    "wrong_id": 930,
+    "wrong_sku": "20L8SDCE00-8G-256G-N-BTU70-CMOSP",
+    "target_id": 862,
+    "target_sku": "20L8SDCE00-8G-256G-T-BTU70-CMOSP",
+    "wrong_model": "",
+    "wrong_battery": "57%-65%",
+    "wrong_battery_tier": "",
+    "target_model": "",
+    "target_battery": "62%-67%",
+    "wrong_on_hand": 0,
+    "on_target": false
+  },
+  {
+    "serial": "PC14S1HB",
+    "wrong_id": 930,
+    "wrong_sku": "20L8SDCE00-8G-256G-N-BTU70-CMOSP",
+    "target_id": 862,
+    "target_sku": "20L8SDCE00-8G-256G-T-BTU70-CMOSP",
+    "wrong_model": "",
+    "wrong_battery": "57%-65%",
+    "wrong_battery_tier": "",
+    "target_model": "",
+    "target_battery": "62%-67%",
+    "wrong_on_hand": 0,
+    "on_target": false
+  },
+  {
+    "serial": "PC1FVERH",
+    "wrong_id": 931,
+    "wrong_sku": "20NYS4CP00-8G-256G-N-BT70-CMOSP",
+    "target_id": 831,
+    "target_sku": "20NYS4CP00-8G-256G-T-BT70-CMOSP",
+    "wrong_model": "",
+    "wrong_battery": "103%",
+    "wrong_battery_tier": "",
+    "target_model": "",
+    "target_battery": "71%-103%",
+    "wrong_on_hand": 0,
+    "on_target": false
+  }
+]

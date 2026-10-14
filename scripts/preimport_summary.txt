@@ -1,0 +1,6 @@
+﻿=== Product counts ===
+ active_all | active_sale_ok | active_with_sku 
+------------+----------------+-----------------
+        113 |            109 |              68
+(1 row)
+

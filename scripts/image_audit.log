@@ -1,0 +1,94 @@
+﻿ssh :  Container reware-db-1 Running 
+At C:\Users\User\AppData\Local\Temp\ps-script-c18f4594-9a83-4b47-b593-33b0f8395ed0.ps1:95 char:6
++ '@ | ssh -i "$env:USERPROFILE\.ssh\id_ed25519_do" -o StrictHostKeyChe ...
++      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container reware-db-1 Running :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container reware-db-1 Waiting 
+ Container reware-db-1 Healthy 
+ Container reware-web-run-a158e9ba19d6 Creating 
+ Container reware-web-run-a158e9ba19d6 Created 
+2026-09-11 06:20:53,103 1 INFO ? odoo: Odoo version 17.0-20260528 
+2026-09-11 06:20:53,105 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-11 06:20:53,105 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', 
+'/var/lib/odoo/addons/17.0', '/mnt/extra-addons', '/mnt/custom-addons'] 
+2026-09-11 06:20:53,106 1 INFO ? odoo: database: odoo@db:5432 
+2026-09-11 06:20:53,316 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at 
+/usr/local/bin/wkhtmltopdf 
+2026-09-11 06:20:53,689 1 INFO ? odoo.service.server: Initiating shutdown 
+2026-09-11 06:20:53,690 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-11 06:20:53,746 1 INFO cocreativeit-quote odoo.modules.loading: loading 1 modules... 
+2026-09-11 06:20:53,758 1 INFO cocreativeit-quote odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 
+extra) 
+2026-09-11 06:20:53,907 1 INFO cocreativeit-quote odoo.modules.loading: loading 147 modules... 
+2026-09-11 06:20:56,107 1 INFO cocreativeit-quote odoo.modules.loading: 147 modules loaded in 2.20s, 0 queries (+0 
+extra) 
+2026-09-11 06:20:56,545 1 INFO cocreativeit-quote odoo.modules.loading: Modules loaded. 
+2026-09-11 06:20:56,586 1 INFO cocreativeit-quote odoo.modules.registry: Registry loaded in 2.895s 
+active=114 sale_ok=110 with_image=100 missing_image=10
+
+--- Missing image (sale_ok, first 40) ---
+  id=850 sku=(no sku) pub=False qty=0 name=dual 22" screen bundle
+  id=851 sku=(no sku) pub=False qty=0 name=dual 22" screen bundle
+  id=849 sku=(no sku) pub=False qty=0 name=dual 22" screen bundle
+  id=906 sku=(no sku) pub=False qty=0 name=hdmi
+  id=898 sku=(no sku) pub=False qty=0 name=shipping Kingsley
+  id=856 sku=(no sku) pub=True qty=1 name=Two Samsung 24" monitors with HP G4 dock
+  id=899 sku=(no sku) pub=False qty=0 name=usb_c
+  id=888 sku=(no sku) pub=False qty=0 name=Wireless mouse
+  id=878 sku=CF-54J1436VA pub=False qty=0 name=Panasonic Toughbook CF-54 mk 3  
+  id=892 sku=NECV311WG pub=True qty=1 name=NEC NP-V311WG WXGA Projector
+
+--- restore_missing_images dry_run ---
+{
+  "copied": 1,
+  "no_donor": 9,
+  "sample_copied": [
+    {
+      "target": "CF-54J1436VA",
+      "target_id": 878,
+      "name": "Panasonic Toughbook CF-54 mk 3  ",
+      "from": "CF-54J1436VA",
+      "from_id": 780
+    }
+  ],
+  "sample_no_donor": [
+    {
+      "sku": false,
+      "name": "dual 22\" screen bundle"
+    },
+    {
+      "sku": false,
+      "name": "dual 22\" screen bundle"
+    },
+    {
+      "sku": false,
+      "name": "dual 22\" screen bundle"
+    },
+    {
+      "sku": false,
+      "name": "hdmi"
+    },
+    {
+      "sku": "NECV311WG",
+      "name": "NEC NP-V311WG WXGA Projector"
+    },
+    {
+      "sku": false,
+      "name": "shipping Kingsley"
+    },
+    {
+      "sku": false,
+      "name": "Two Samsung 24\" monitors with HP G4 dock"
+    },
+    {
+      "sku": false,
+      "name": "usb_c"
+    },
+    {
+      "sku": false,
+      "name": "Wireless mouse"
+    }
+  ]
+}
