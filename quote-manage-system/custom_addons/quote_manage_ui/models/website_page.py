@@ -618,3 +618,39 @@ class WebsitePage(models.Model):
             if page:
                 page.sudo().write(vals)
         return True
+
+    @api.model
+    def _quote_manage_ui_ensure_google_indexable(self):
+        """Head/indexing only: fix Odoo flags that block Google (no visible UI change)."""
+        Website = self.env["website"].sudo()
+        Page = self.sudo().with_context(active_test=False)
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        canonical = "https://www.reware-project.com"
+        for site in Website.search([]):
+            domain = (site.domain or "").strip().rstrip("/")
+            if domain.lower().replace("https://", "").replace("http://", "") not in (
+                "www.reware-project.com",
+                "reware-project.com",
+            ):
+                site.write({"domain": canonical})
+
+        base = (ICP.get_param("web.base.url") or "").strip().rstrip("/")
+        if base and "reware-project.com" in base and base != canonical:
+            ICP.set_param("web.base.url", canonical)
+
+        blocked = Page.search([
+            ("is_published", "=", True),
+            ("website_indexed", "=", False),
+            ("url", "!=", "/cookie-policy"),
+        ])
+        if blocked:
+            blocked.write({"website_indexed": True})
+        Page.search([("url", "=", "/")]).write({"website_indexed": True})
+
+        print("=== GOOGLE INDEXABILITY (read-only summary) ===")
+        print(f"web.base.url={ICP.get_param('web.base.url')}")
+        for site in Website.search([]):
+            print(f"website id={site.id} name={site.name!r} domain={site.domain!r}")
+        print(f"Pages unblocked (website_indexed=True): {len(blocked)}")
+        return True
