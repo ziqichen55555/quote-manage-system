@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+
 from odoo import _lt, api, models
 from odoo.tools import ormcache
 
@@ -52,3 +54,88 @@ class Website(models.Model):
         cart_values["main_button_href"] = "/web/signup?redirect=/shop/checkout?express=1"
         steps[0] = (cart_xmlids, cart_values)
         return steps
+
+    def _reware_structured_data_dict(self):
+        """Schema.org graph for brand disambiguation (head only, not reware.world)."""
+        self.ensure_one()
+        base = (self.domain or "https://www.reware-project.com").rstrip("/")
+        org_id = f"{base}/#organization"
+        website_id = f"{base}/#website"
+        return {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": org_id,
+                    "name": "Re-Ware",
+                    "alternateName": [
+                        "Re-Ware Project",
+                        "Reware Project",
+                        "reware project",
+                        "Re Ware",
+                        "re ware",
+                        "Re-Ware Co-Creative IT",
+                        "Reware Perth",
+                    ],
+                    "url": base,
+                    "logo": f"{base}/web/image/website/{self.id}/logo",
+                    "description": (
+                        "Re-Ware Project by Co-Creative IT — refurbished and "
+                        "second-hand computers, laptops, monitors, cables and "
+                        "IT equipment in Perth, Western Australia."
+                    ),
+                    "parentOrganization": {
+                        "@type": "Organization",
+                        "name": "Co-Creative IT",
+                        "url": "https://www.cocreativeit.com",
+                    },
+                    "sameAs": [
+                        "https://www.cocreativeit.com/reware",
+                        "https://www.cocreativeit.com/",
+                    ],
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": "102 Edward St",
+                        "addressLocality": "Perth",
+                        "addressRegion": "WA",
+                        "postalCode": "6000",
+                        "addressCountry": "AU",
+                    },
+                    "areaServed": {"@type": "Country", "name": "Australia"},
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": website_id,
+                    "url": base,
+                    "name": "Re-Ware Project",
+                    "alternateName": ["reware-project.com", "Re-Ware Shop"],
+                    "publisher": {"@id": org_id},
+                    "inLanguage": "en-AU",
+                    "potentialAction": {
+                        "@type": "SearchAction",
+                        "target": {
+                            "@type": "EntryPoint",
+                            "urlTemplate": f"{base}/shop?search={{search_term_string}}",
+                        },
+                        "query-input": "required name=search_term_string",
+                    },
+                },
+                {
+                    "@type": "Store",
+                    "@id": f"{base}/#store",
+                    "name": "Re-Ware Shop",
+                    "url": f"{base}/shop",
+                    "parentOrganization": {"@id": org_id},
+                    "address": {
+                        "@type": "PostalAddress",
+                        "addressLocality": "Perth",
+                        "addressRegion": "WA",
+                        "addressCountry": "AU",
+                    },
+                },
+            ],
+        }
+
+    def reware_structured_data_json_str(self):
+        self.ensure_one()
+        return json.dumps(self._reware_structured_data_dict(), ensure_ascii=False)

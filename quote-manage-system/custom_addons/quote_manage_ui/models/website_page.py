@@ -553,12 +553,12 @@ class WebsitePage(models.Model):
         page_seo = {
             "/": {
                 "website_meta_title": (
-                    "Re-Ware | Refurbished IT Shop & Corporate Recycling — Perth WA"
+                    "Re-Ware Project | Official reware-project.com — Perth WA"
                 ),
                 "website_meta_description": (
-                    "Shop refurbished laptops and IT across Australia, or work with "
-                    "Re-Ware on secure corporate device collection, data erasure and "
-                    "community reuse in Western Australia. By Co-Creative IT."
+                    "Official Re-Ware Project site (reware-project.com) by "
+                    "Co-Creative IT, Perth — shop refurbished and second-hand "
+                    "laptops, monitors, cables and IT. Corporate recycling WA."
                 ),
             },
             "/aboutus": {
@@ -655,7 +655,36 @@ class WebsitePage(models.Model):
                     "consulting, deployment support and refurbishment programs in WA."
                 ),
             },
+            "Projectors & AV": {
+                "website_meta_title": "Second-Hand Projectors & AV | Re-Ware Shop",
+                "website_meta_description": (
+                    "Refurbished and second-hand projectors and AV equipment "
+                    "from Re-Ware Perth. Ex-lease, tested, warranty — Australia."
+                ),
+            },
         }
+        cat_seo_fuzzy = (
+            ("Cables", {
+                "website_meta_title": "Refurbished Cables & Adapters | Re-Ware",
+                "website_meta_description": (
+                    "Second-hand and refurbished IT cables, adapters and "
+                    "accessories from Re-Ware. Shop online with warranty in Australia."
+                ),
+            }),
+            ("Digital Camera", {
+                "website_meta_title": "Second-Hand Digital Cameras | Re-Ware",
+                "website_meta_description": (
+                    "Refurbished / second-hand digital cameras and imaging "
+                    "gear from Re-Ware Perth. Tested ex-lease stock, Australia-wide."
+                ),
+            }),
+        )
+        for fragment, vals in cat_seo_fuzzy:
+            for cat in Category.search([
+                ("parent_id", "=", False),
+                ("name", "ilike", fragment),
+            ]):
+                cat.write(vals)
         for name, vals in cat_seo.items():
             for cat in Category.search([("name", "=", name), ("parent_id", "=", False)]):
                 cat.write(vals)

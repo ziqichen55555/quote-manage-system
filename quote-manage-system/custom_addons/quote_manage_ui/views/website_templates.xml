@@ -13,6 +13,13 @@
         </xpath>
     </template>
 
+    <!-- JSON-LD: tell Google Re-Ware Project (reware-project.com) is not reware.world -->
+    <template id="reware_structured_data" inherit_id="website.layout" name="Re-Ware Structured Data" priority="50">
+        <xpath expr="//head/meta[@name='generator']" position="after">
+            <script type="application/ld+json" t-out="website.sudo().reware_structured_data_json_str()"/>
+        </xpath>
+    </template>
+
     <!-- 2. Menu records (About / Our Why / Partners created later, after
          their page records so ref= resolves correctly). Shop, Trade-in
          and Services were dropped from the navigation per design feedback;

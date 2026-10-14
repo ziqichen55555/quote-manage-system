@@ -113,11 +113,11 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         category = values.get("category")
         if not category or not category.id:
             res.update({
-                "title": "Shop Refurbished Laptops & IT | Re-Ware Australia",
+                "title": "Re-Ware Shop | Second-Hand & Refurbished IT — Perth",
                 "website_meta_description": (
-                    "Re-Ware online shop: refurbished laptops, desktops, monitors "
-                    "and accessories. Certified grading, 3-month warranty, delivery "
-                    "Australia-wide from Perth."
+                    "Official Re-Ware shop (reware-project.com): second-hand and "
+                    "refurbished laptops, monitors, cables, cameras and IT. "
+                    "Warranty-backed — Co-Creative IT, Perth WA."
                 ),
             })
         return res

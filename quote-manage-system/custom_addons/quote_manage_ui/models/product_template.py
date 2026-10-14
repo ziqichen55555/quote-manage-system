@@ -439,16 +439,43 @@ class ProductTemplate(models.Model):
             return "monitor"
         if "dock" in joined:
             return "dock"
+        if "projector" in joined or "projectors" in joined:
+            return "projector"
+        if "camera" in joined or "digital camera" in joined:
+            return "camera"
+        if "cable" in joined or "adapter" in joined:
+            return "cable"
         if "service" in joined:
             return "service"
+        name_l = (self.name or "").lower()
+        if "camera" in name_l:
+            return "camera"
+        if "cable" in name_l or "adapter" in name_l:
+            return "cable"
+        if "projector" in name_l:
+            return "projector"
         return "it"
 
     def _rw_seo_default_title(self):
         self.ensure_one()
         name = (self.name or "Refurbished IT").strip()
-        if len(name) > 85:
-            name = name[:82] + "..."
-        return f"Refurbished {name} | Re-Ware Australia"
+        if len(name) > 75:
+            name = name[:72] + "..."
+        hint = self._rw_seo_public_category_hint()
+        prefix = {
+            "laptop": "Refurbished / Second-Hand",
+            "desktop": "Refurbished / Second-Hand",
+            "monitor": "Second-Hand / Refurbished",
+            "camera": "Second-Hand / Refurbished",
+            "cable": "Refurbished",
+            "dock": "Refurbished",
+            "projector": "Second-Hand / Refurbished",
+            "service": "",
+            "it": "Refurbished / Second-Hand",
+        }.get(hint, "Refurbished / Second-Hand")
+        if prefix:
+            return f"{prefix} {name} | Re-Ware Perth"
+        return f"{name} | Re-Ware Co-Creative IT Perth"
 
     def _rw_seo_default_description(self):
         """Head-only fallback meta description for published shop products."""
@@ -477,6 +504,18 @@ class ProductTemplate(models.Model):
                 f"{name} — IT service from Co-Creative IT / Re-Ware, Perth WA. "
                 f"Contact us for refurbishment and deployment support."
             ),
+            "camera": (
+                f"Second-hand / refurbished {name} from Re-Ware Perth — tested "
+                f"ex-lease equipment with warranty. Ships across Australia."
+            ),
+            "cable": (
+                f"Refurbished {name} — cables and adapters from Re-Ware, "
+                f"quality-checked IT accessories with warranty. Australia-wide delivery."
+            ),
+            "projector": (
+                f"Second-hand / refurbished {name} from Re-Ware — ex-lease projector "
+                f"or AV gear, graded and warranty-backed. Shop online in Australia."
+            ),
             "it": (
                 f"Refurbished {name} from Re-Ware — certified ex-lease IT, "
                 f"tested with warranty. Delivered across Australia."
@@ -486,6 +525,26 @@ class ProductTemplate(models.Model):
         if code:
             text = f"{text} Model / SKU: {code}."
         return text[:320]
+
+    @api.model
+    def _quote_manage_ui_backfill_published_product_seo(self):
+        """Persist head SEO on published products (helps Google index product intent)."""
+        products = self.sudo().search([
+            ("website_published", "=", True),
+            ("sale_ok", "=", True),
+        ])
+        updated = 0
+        for product in products:
+            vals = {}
+            if not (product.website_meta_title or "").strip():
+                vals["website_meta_title"] = product._rw_seo_default_title()
+            if not (product.website_meta_description or "").strip():
+                vals["website_meta_description"] = product._rw_seo_default_description()
+            if vals:
+                product.write(vals)
+                updated += 1
+        print(f"Backfilled SEO on {updated} published product(s).")
+        return updated
 
     def get_website_meta(self):
         """Fill Open Graph / meta when SEO fields are empty (no body UI change)."""
