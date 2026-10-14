@@ -42,16 +42,16 @@ if ($ConfirmDeploy -ne "DEPLOY") {
 Write-Host "Starting Deploy production (confirm_deploy=DEPLOY)..."
 gh workflow run "Deploy production" --ref main -f confirm_deploy=DEPLOY
 
-Start-Sleep -Seconds 3
-$run = gh run list --workflow="Deploy production" --limit 1 --json databaseId,url,status,displayTitle | ConvertFrom-Json
-if (-not $run) {
+Start-Sleep -Seconds 6
+$runs = @(gh run list --workflow="Deploy production" --limit 1 --json databaseId,url,status,displayTitle | ConvertFrom-Json)
+if (-not $runs -or $runs.Count -lt 1) {
     Fail "Workflow triggered but no run found yet — check: gh run list --workflow `"Deploy production`""
 }
+$run = $runs[0]
 
 Write-Host ""
-Write-Host "Triggered: $($run[0].displayTitle)"
-Write-Host "Status:    $($run[0].status)"
-Write-Host "Watch:     gh run watch $($run[0].databaseId)"
-Write-Host "URL:       $($run[0].url)"
+Write-Host "Triggered: $($run.displayTitle)"
+Write-Host "Status:    $($run.status)"
+Write-Host "Watch:     gh run watch $($run.databaseId) --exit-status"
+Write-Host "URL:       $($run.url)"
 Write-Host ""
-Write-Host "Tip: gh run watch $($run[0].databaseId) --exit-status"
