@@ -21,14 +21,14 @@ else:
         title = (home.website_meta_title or "").strip() or (
             "Re-Ware Project | Official reware-project.com - Perth WA"
         )
+        home.write({"website_indexed": False})
         home.write({
             "website_indexed": True,
             "website_meta_title": title,
         })
         view = home.view_id.sudo()
         if view:
-            # Touch view so ir.qweb / t-cache invalidates on all workers.
-            view.write({"arch_db": view.arch_db})
+            view.write({"name": view.name})
         print(f"after website_indexed={home.website_indexed}")
     env.registry.clear_cache()
     print("Done. If / still shows noindex, restart web: Repair production workflow.")
