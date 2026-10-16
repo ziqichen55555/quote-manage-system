@@ -20,6 +20,13 @@
         </xpath>
     </template>
 
+    <!-- Head t-cache must include website_indexed or robots noindex stays stale after DB fix. -->
+    <template id="reware_seo_head_tcache" inherit_id="website.layout" name="Re-Ware SEO head cache key" priority="60">
+        <xpath expr="//head" position="attributes">
+            <attribute name="t-cache">main_object, main_object.website_indexed, website.domain if main_object and main_object._name == 'website.page' and not request.session.debug and not editable and not translatable else None</attribute>
+        </xpath>
+    </template>
+
     <!-- 2. Menu records (About / Our Why / Partners created later, after
          their page records so ref= resolves correctly). Shop, Trade-in
          and Services were dropped from the navigation per design feedback;
