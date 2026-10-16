@@ -24,7 +24,6 @@ class SaleOrder(models.Model):
             "name",
             "email",
             "street",
-            "street2",
             "city",
             "zip",
             "country_id",

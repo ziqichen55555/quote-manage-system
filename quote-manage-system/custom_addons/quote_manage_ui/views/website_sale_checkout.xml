@@ -70,9 +70,9 @@
         </xpath>
         <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">(
-                'name,email,phone,street,street2,city,zip,country_id,state_id'
+                'name,email,phone,street,city,zip,country_id,state_id'
                 if address_mode == 'billing'
-                else 'name,phone,street,street2,city,zip,country_id,state_id'
+                else 'name,phone,street,city,zip,country_id,state_id'
             )</attribute>
         </xpath>
         <xpath expr="//label[@for='name']" position="replace">
@@ -99,12 +99,9 @@
             <attribute name="required">required</attribute>
         </xpath>
         <xpath expr="//label[@for='street2']" position="replace">
-            <label class="col-form-label" for="street2">
-                Apartment, suite, etc. <span class="text-danger">*</span>
+            <label class="col-form-label label-optional" for="street2">
+                Apartment, suite, etc. <span class="text-muted small">(optional)</span>
             </label>
-        </xpath>
-        <xpath expr="//input[@name='street2']" position="attributes">
-            <attribute name="required">required</attribute>
         </xpath>
         <xpath expr="//label[@for='city']" position="replace">
             <label class="col-form-label" for="city">City <span class="text-danger">*</span></label>

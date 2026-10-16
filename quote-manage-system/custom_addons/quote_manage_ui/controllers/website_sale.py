@@ -8,18 +8,17 @@ from odoo.tools import lazy
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
     def _get_mandatory_fields_billing(self, country_id=False):
-        """Re-Ware: phone, unit/line 2, and postcode always required on billing."""
+        """Re-Ware: phone and postcode always required; street2 optional (houses have none)."""
         req = super()._get_mandatory_fields_billing(country_id)
-        for fname in ("phone", "street2", "zip"):
+        for fname in ("phone", "zip"):
             if fname not in req:
                 req.append(fname)
         return req
 
     def _get_mandatory_fields_shipping(self, country_id=False):
         req = super()._get_mandatory_fields_shipping(country_id)
-        for fname in ("street2", "zip"):
-            if fname not in req:
-                req.append(fname)
+        if "zip" not in req:
+            req.append("zip")
         return req
 
     def shop_payment(self, **post):
