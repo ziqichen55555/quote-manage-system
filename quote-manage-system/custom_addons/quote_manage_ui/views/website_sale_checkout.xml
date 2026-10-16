@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Guest vs register: two clear paths on the cart (public visitors only). -->
+    <template id="reware_cart_checkout_paths" inherit_id="website_sale.navigation_buttons" name="Re-Ware Cart Checkout Paths" priority="50">
+        <xpath expr="//a[@name='website_sale_main_button']" position="replace">
+            <t t-if="xmlid == 'website_sale.cart' and website.is_public_user()">
+                <div class="d-flex flex-column gap-3 w-100 order-lg-3 ms-lg-auto">
+                    <div>
+                        <a role="button"
+                           class="btn btn-primary w-100"
+                           href="/web/signup?redirect=/shop/checkout%3Fexpress%3D1">
+                            Create account
+                            <i class="fa fa-angle-right ms-2 fw-light"/>
+                        </a>
+                        <p class="small text-muted mb-0 mt-2">
+                            Save your details and sign in anytime to view orders, quotes and payment history.
+                        </p>
+                    </div>
+                    <div>
+                        <a role="button"
+                           t-attf-class="btn btn-outline-primary w-100 #{not website_sale_order._is_cart_ready() and 'disabled' or ''}"
+                           href="/shop/checkout?express=1">
+                            Checkout without account
+                            <i class="fa fa-angle-right ms-2 fw-light"/>
+                        </a>
+                        <p class="small text-muted mb-0 mt-2">
+                            Enter your name, email, phone and address once. We will email your quote or payment link (no password).
+                        </p>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <a role="button" name="website_sale_main_button"
+                    t-attf-class="#{_cta_classes} btn btn-primary #{not website_sale_order._is_cart_ready() and 'disabled'} #{_form_send_navigation and 'order-lg-3 w-100 w-lg-auto ms-lg-auto' or 'w-100'}"
+                    t-att-href="step_specific_values['main_button_href']">
+                    <t t-out="step_specific_values['main_button']"/>
+                    <i class="fa fa-angle-right ms-2 fw-light"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="reware_cart_checkout_intro" inherit_id="website_sale.cart" name="Re-Ware Cart How To Checkout" priority="50">
+        <xpath expr="//h3[hasclass('mb-4')]" position="after">
+            <div t-if="website.is_public_user() and website_sale_order and website_sale_order.website_order_line"
+                 class="alert alert-light border mb-4 rw-cart-checkout-choice" role="status">
+                <p class="mb-1 fw-semibold">How would you like to continue?</p>
+                <p class="mb-0 small text-muted">
+                    <strong>Create account</strong> if you want a login for future orders.
+                    <strong>Checkout without account</strong> if you prefer a one-time quote or payment — we still need your contact and delivery details at the next step.
+                </p>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Guest checkout: clear copy + browser/server-aligned required fields on /shop/address -->
+    <template id="reware_address_guest_intro" inherit_id="website_sale.address" name="Re-Ware Guest Address Intro" priority="50">
+        <xpath expr="//span[contains(., 'Fill in your address')]" position="replace">
+            <span>Your contact and billing details</span>
+        </xpath>
+        <xpath expr="//form[contains(@class,'checkout_autoformat')]" position="before">
+            <div t-if="is_public_order and address_mode == 'billing'"
+                 class="alert alert-info mb-3" role="status">
+                <p class="mb-1 fw-semibold">Checkout without an account</p>
+                <p class="mb-0 small">
+                    Fields marked with <span class="text-danger">*</span> are required.
+                    We use them to email your quotation or payment link and to arrange delivery.
+                </p>
+            </div>
+        </xpath>
+        <xpath expr="//input[@name='field_required']" position="attributes">
+            <attribute name="t-att-value">(
+                'name,email,phone,street,city,country_id,state_id,zip'
+                if address_mode == 'billing'
+                else 'name,phone,street,city,country_id,state_id,zip'
+            )</attribute>
+        </xpath>
+        <xpath expr="//label[@for='name']" position="replace">
+            <label class="col-form-label" for="name">Full name <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//label[@for='email']" position="replace">
+            <label t-attf-class="col-form-label #{address_mode == 'shipping' and 'label-optional' or ''}" for="email">
+                Email <span t-if="address_mode == 'billing'" class="text-danger">*</span>
+            </label>
+        </xpath>
+        <xpath expr="//input[@name='email']" position="attributes">
+            <attribute name="t-att-required">address_mode == 'billing' and 'required' or None</attribute>
+        </xpath>
+        <xpath expr="//label[@for='phone']" position="replace">
+            <label class="col-form-label" for="phone">Phone <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//input[@name='phone']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='street']" position="replace">
+            <label class="col-form-label" for="street">Street and Number <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//input[@name='street']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='city']" position="replace">
+            <label class="col-form-label" for="city">City <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//input[@name='city']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='country_id']" position="replace">
+            <label class="col-form-label" for="country_id">Country <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//select[@name='country_id']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='state_id']" position="replace">
+            <label class="col-form-label" for="state_id">State / Territory <span class="text-danger">*</span></label>
+        </xpath>
+        <xpath expr="//select[@name='state_id']" position="attributes">
+            <attribute name="t-att-required">country and country.state_required and 'required' or None</attribute>
+        </xpath>
+        <xpath expr="//label[@for='zip']" position="replace">
+            <label t-attf-class="col-form-label #{not (country and country.zip_required) and 'label-optional' or ''}" for="zip">
+                Postcode <span t-if="country and country.zip_required" class="text-danger">*</span>
+            </label>
+        </xpath>
+        <xpath expr="//input[@name='zip']" position="attributes">
+            <attribute name="t-att-required">country and country.zip_required and 'required' or None</attribute>
+        </xpath>
+        <xpath expr="//input[@name='name']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+    </template>
+</odoo>

@@ -17,8 +17,34 @@ class SaleOrder(models.Model):
         help="Staff notified: paid website order confirmed.",
     )
 
+    def _quote_billing_mandatory_field_names(self, partner):
+        """Match website checkout billing rules (+ phone on Re-Ware shop)."""
+        country = partner.country_id
+        names = ["name", "email", "street", "city", "country_id", "phone"]
+        if country:
+            if country.state_required:
+                names.append("state_id")
+            if country.zip_required:
+                names.append("zip")
+        return names
+
+    def _quote_partner_has_complete_billing(self, partner):
+        if not partner:
+            return False
+        for fname in self._quote_billing_mandatory_field_names(partner):
+            if fname == "phone":
+                if not (partner.phone or partner.mobile or "").strip():
+                    return False
+            elif fname in ("country_id", "state_id"):
+                if not partner[fname]:
+                    return False
+            else:
+                if not (partner[fname] or "").strip():
+                    return False
+        return True
+
     def _quote_has_contactable_customer(self):
-        """Account partner must have name, email and phone (no Public User)."""
+        """Real customer (not Public User) with billing contact + address."""
         self.ensure_one()
         if not self.website_id:
             return True
@@ -26,11 +52,7 @@ class SaleOrder(models.Model):
         public_partner = self.website_id.user_id.partner_id
         if not partner or partner == public_partner:
             return False
-        return bool(
-            (partner.name or "").strip()
-            and (partner.email or "").strip()
-            and (partner.phone or partner.mobile or "").strip()
-        )
+        return self._quote_partner_has_complete_billing(partner)
 
     @api.depends("company_id", "website_id")
     def _compute_require_payment(self):
@@ -39,17 +61,16 @@ class SaleOrder(models.Model):
         for order in self.filtered("website_id"):
             order.require_payment = True
 
-    def _is_cart_ready(self):
-        ready = super()._is_cart_ready()
-        if not ready:
-            return False
-        if self.website_id and not self._quote_has_contactable_customer():
-            return False
-        return True
-
     def _check_cart_is_ready_to_be_paid(self):
         self._rw_ensure_default_freight()
         super()._check_cart_is_ready_to_be_paid()
+        if self.website_id and not self._quote_has_contactable_customer():
+            raise ValidationError(
+                _(
+                    "Please complete your name, email, phone and billing address "
+                    "before placing a quotation or paying."
+                )
+            )
         self.filtered(
             lambda o: o.website_id and o.state in ("draft", "sent")
         )._send_website_quotation_staff_notification()

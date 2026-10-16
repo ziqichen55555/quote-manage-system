@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Website shop: require account + contact details before quotation/payment."""
+"""Website shop: guest or registered checkout; contact + billing address before payment."""
 from odoo import _
 from odoo.addons.website_sale.controllers import main as website_sale_controller
 from odoo.http import request
@@ -7,18 +7,6 @@ from odoo.tools import lazy
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
-    def checkout_redirection(self, order):
-        """Mandatory account: send guests to signup (not guest checkout)."""
-        redirection = super().checkout_redirection(order)
-        if (
-            redirection
-            and request.website.account_on_checkout == "mandatory"
-            and request.website.is_public_user()
-            and "/web/login" in (redirection.location or "")
-        ):
-            return request.redirect("/web/signup?redirect=/shop/checkout")
-        return redirection
-
     def _get_mandatory_fields_billing(self, country_id=False):
         """Phone required so unpaid quotations remain contactable."""
         req = super()._get_mandatory_fields_billing(country_id)
@@ -36,20 +24,12 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         errors = super()._get_shop_payment_errors(order)
         if not order:
             return errors
-        if request.website.is_public_user():
-            errors.append((
-                _("Account required"),
-                _(
-                    "Please create an account or sign in before placing a "
-                    "quotation or paying."
-                ),
-            ))
-        elif not order._quote_has_contactable_customer():
+        if not order._quote_has_contactable_customer():
             errors.append((
                 _("Customer details required"),
                 _(
-                    "Please complete your name, email and phone on your account "
-                    "or address before placing a quotation or paying."
+                    "Please complete your name, email, phone and billing address "
+                    "before placing a quotation or paying."
                 ),
             ))
         return errors

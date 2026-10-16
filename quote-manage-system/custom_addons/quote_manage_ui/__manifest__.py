@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.183',
+    'version': '1.0.185',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -45,6 +45,7 @@
         'views/report_payment_receipt_templates.xml',
         'views/website_templates.xml',
         'views/auth_signup_templates.xml',
+        'views/website_sale_checkout.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/product_import_wizard_views.xml',
