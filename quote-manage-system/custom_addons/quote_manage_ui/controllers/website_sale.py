@@ -8,10 +8,18 @@ from odoo.tools import lazy
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
     def _get_mandatory_fields_billing(self, country_id=False):
-        """Phone required so unpaid quotations remain contactable."""
+        """Re-Ware: phone, unit/line 2, and postcode always required on billing."""
         req = super()._get_mandatory_fields_billing(country_id)
-        if "phone" not in req:
-            req.append("phone")
+        for fname in ("phone", "street2", "zip"):
+            if fname not in req:
+                req.append(fname)
+        return req
+
+    def _get_mandatory_fields_shipping(self, country_id=False):
+        req = super()._get_mandatory_fields_shipping(country_id)
+        for fname in ("street2", "zip"):
+            if fname not in req:
+                req.append(fname)
         return req
 
     def shop_payment(self, **post):

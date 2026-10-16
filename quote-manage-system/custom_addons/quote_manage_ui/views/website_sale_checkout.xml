@@ -70,9 +70,9 @@
         </xpath>
         <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">(
-                'name,email,phone,street,city,country_id,state_id,zip'
+                'name,email,phone,street,street2,city,zip,country_id,state_id'
                 if address_mode == 'billing'
-                else 'name,phone,street,city,country_id,state_id,zip'
+                else 'name,phone,street,street2,city,zip,country_id,state_id'
             )</attribute>
         </xpath>
         <xpath expr="//label[@for='name']" position="replace">
@@ -98,6 +98,14 @@
         <xpath expr="//input[@name='street']" position="attributes">
             <attribute name="required">required</attribute>
         </xpath>
+        <xpath expr="//label[@for='street2']" position="replace">
+            <label class="col-form-label" for="street2">
+                Apartment, suite, etc. <span class="text-danger">*</span>
+            </label>
+        </xpath>
+        <xpath expr="//input[@name='street2']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
         <xpath expr="//label[@for='city']" position="replace">
             <label class="col-form-label" for="city">City <span class="text-danger">*</span></label>
         </xpath>
@@ -117,12 +125,12 @@
             <attribute name="t-att-required">country and country.state_required and 'required' or None</attribute>
         </xpath>
         <xpath expr="//label[@for='zip']" position="replace">
-            <label t-attf-class="col-form-label #{not (country and country.zip_required) and 'label-optional' or ''}" for="zip">
-                Postcode <span t-if="country and country.zip_required" class="text-danger">*</span>
+            <label class="col-form-label" for="zip">
+                Postcode <span class="text-danger">*</span>
             </label>
         </xpath>
         <xpath expr="//input[@name='zip']" position="attributes">
-            <attribute name="t-att-required">country and country.zip_required and 'required' or None</attribute>
+            <attribute name="required">required</attribute>
         </xpath>
         <xpath expr="//input[@name='name']" position="attributes">
             <attribute name="required">required</attribute>

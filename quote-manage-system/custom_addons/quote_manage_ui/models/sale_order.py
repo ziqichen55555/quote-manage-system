@@ -20,12 +20,18 @@ class SaleOrder(models.Model):
     def _quote_billing_mandatory_field_names(self, partner):
         """Match website checkout billing rules (+ phone on Re-Ware shop)."""
         country = partner.country_id
-        names = ["name", "email", "street", "city", "country_id", "phone"]
-        if country:
-            if country.state_required:
-                names.append("state_id")
-            if country.zip_required:
-                names.append("zip")
+        names = [
+            "name",
+            "email",
+            "street",
+            "street2",
+            "city",
+            "zip",
+            "country_id",
+            "phone",
+        ]
+        if country and country.state_required:
+            names.append("state_id")
         return names
 
     def _quote_partner_has_complete_billing(self, partner):
