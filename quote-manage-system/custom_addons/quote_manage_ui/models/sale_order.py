@@ -80,6 +80,12 @@ class SaleOrder(models.Model):
             lambda o: o.website_id and o.state in ("draft", "sent")
         )._send_website_quotation_staff_notification()
 
+    def write(self, vals):
+        res = super().write(vals)
+        if "carrier_id" in vals:
+            self._rw_ensure_default_freight()
+        return res
+
     @api.model_create_multi
     def create(self, vals_list):
         orders = super().create(vals_list)
@@ -87,6 +93,7 @@ class SaleOrder(models.Model):
         return orders
 
     def _rw_default_freight_price(self):
+        """Flat AUD ex GST per order (by post)."""
         icp = self.env["ir.config_parameter"].sudo()
         raw = icp.get_param("quote_manage_ui.default_freight_price", "25.0")
         try:
@@ -94,45 +101,94 @@ class SaleOrder(models.Model):
         except (TypeError, ValueError):
             return 25.0
 
-    def _rw_get_default_carrier(self):
+    def _rw_get_post_carrier(self):
         return self.env.ref(
             "quote_manage_ui.delivery_carrier_rw_au_metro_weight",
             raise_if_not_found=False,
         )
 
-    def _rw_needs_freight_line(self):
+    def _rw_get_pickup_carrier(self):
+        return self.env.ref(
+            "quote_manage_ui.delivery_carrier_rw_pickup_store",
+            raise_if_not_found=False,
+        )
+
+    def _rw_is_pickup_carrier(self, carrier):
+        pickup = self._rw_get_pickup_carrier()
+        return bool(pickup and carrier and carrier.id == pickup.id)
+
+    def rw_delivery_method_label(self):
+        """Customer-facing: By post | In-store pickup."""
+        self.ensure_one()
+        if self._rw_is_pickup_carrier(self.carrier_id):
+            return _("In-store pickup")
+        return _("By post")
+
+    def _rw_freight_product_lines(self):
+        self.ensure_one()
+        return self.order_line.filtered(
+            lambda l: not l.display_type
+            and not l.is_delivery
+            and l.product_id
+            and l.product_id.type != "service"
+        )
+
+    def _rw_should_apply_freight(self):
         self.ensure_one()
         if self.state in ("cancel", "done"):
             return False
-        if self.order_line.filtered("is_delivery"):
-            return False
-        product_lines = self.order_line.filtered(
-            lambda l: not l.display_type and not l.is_delivery
-        )
-        if not product_lines:
+        if not self._rw_freight_product_lines():
             return False
         if self.only_services:
             return False
         return True
 
+    def _get_delivery_methods(self):
+        carriers = super()._get_delivery_methods()
+        if not self.website_id:
+            return carriers
+        post = self._rw_get_post_carrier()
+        pickup = self._rw_get_pickup_carrier()
+        allowed = (post | pickup).exists()
+        if not allowed:
+            return carriers
+        return carriers.filtered(lambda c: c in allowed)
+
     def _rw_ensure_default_freight(self):
-        """Add fixed $25 ex GST shipping line when missing (editable by staff)."""
+        """Website freight: flat $25/order by post, or $0 in-store pickup."""
         if self.env.context.get("rw_skip_default_freight"):
             return
-        carrier = self._rw_get_default_carrier()
-        price = self._rw_default_freight_price()
+        post = self._rw_get_post_carrier()
+        pickup = self._rw_get_pickup_carrier()
         for order in self:
-            if not order._rw_needs_freight_line():
+            if not order._rw_should_apply_freight():
                 continue
             order_ctx = order.with_context(rw_skip_default_freight=True)
-            if carrier:
-                order_ctx.carrier_id = carrier
-                if carrier.delivery_type == "fixed":
-                    order_ctx._remove_delivery_line()
-                    order_ctx.set_delivery_line(carrier, price)
-                    order_ctx.delivery_rating_success = True
-                else:
-                    order_ctx._check_carrier_quotation(force_carrier_id=carrier.id)
+            carrier = order_ctx.carrier_id
+            if order_ctx._rw_is_pickup_carrier(carrier):
+                target = pickup
+                price = 0.0
+            else:
+                target = post
+                price = order_ctx._rw_default_freight_price()
+            if not target:
+                continue
+            order_ctx.carrier_id = target
+            order_ctx._remove_delivery_line()
+            order_ctx.set_delivery_line(target, price)
+            order_ctx.delivery_rating_success = True
+
+    def _get_confirmation_template(self):
+        self.ensure_one()
+        template = super()._get_confirmation_template()
+        if self.website_id:
+            custom = self.env.ref(
+                "quote_manage_ui.mail_template_sale_confirmation_reware",
+                raise_if_not_found=False,
+            )
+            if custom:
+                return custom
+        return template
 
     def _send_website_quotation_staff_notification(self):
         template = self.env.ref(
@@ -176,6 +232,18 @@ class SaleOrderLine(models.Model):
         lines = super().create(vals_list)
         lines.order_id._rw_ensure_default_freight()
         return lines
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {"product_id", "product_uom_qty"} & set(vals):
+            self.order_id._rw_ensure_default_freight()
+        return res
+
+    def unlink(self):
+        orders = self.order_id
+        res = super().unlink()
+        orders._rw_ensure_default_freight()
+        return res
 
     def _get_report_lot_names(self):
         """Serial/lot names for customer-facing sale PDFs (empty if none yet)."""

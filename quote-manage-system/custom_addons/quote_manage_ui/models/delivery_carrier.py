@@ -7,6 +7,11 @@ from odoo import fields, models
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
+    rw_store_pickup = fields.Boolean(
+        string="In-store pickup",
+        help="Website option with no shipping charge.",
+    )
+
     rw_rural_mode = fields.Selection(
         [
             ("normal", "Normal"),

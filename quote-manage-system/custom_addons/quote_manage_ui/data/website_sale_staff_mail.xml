@@ -32,6 +32,7 @@
         <li><strong>Email:</strong> <t t-out="object.partner_id.email or ''">email</t></li>
         <li><strong>Phone:</strong> <t t-out="object.partner_id.phone or object.partner_id.mobile or ''">phone</t></li>
         <li><strong>Total (incl. freight):</strong> <t t-out="format_amount(object.amount_total, object.currency_id) or ''">$0.00</t></li>
+        <li><strong>Delivery method:</strong> <t t-out="object.rw_delivery_method_label() or ''">By post</t></li>
     </ul>
     <p>
         <a t-att-href="('%s/my/orders/%s' % (object.get_base_url(), object.id))">
@@ -68,6 +69,7 @@
         <li><strong>Email:</strong> <t t-out="object.partner_id.email or ''">email</t></li>
         <li><strong>Phone:</strong> <t t-out="object.partner_id.phone or object.partner_id.mobile or ''">phone</t></li>
         <li><strong>Total:</strong> <t t-out="format_amount(object.amount_total, object.currency_id) or ''">$0.00</t></li>
+        <li><strong>Delivery method:</strong> <t t-out="object.rw_delivery_method_label() or ''">By post</t></li>
     </ul>
     <p><strong>Delivery address</strong></p>
     <p>

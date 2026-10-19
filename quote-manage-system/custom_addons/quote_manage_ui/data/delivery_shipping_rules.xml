@@ -35,8 +35,20 @@
             <field name="invoice_policy">order</field>
         </record>
 
+        <record id="product_product_shipping_pickup_store" model="product.product">
+            <field name="name">Shipping - In-store pickup</field>
+            <field name="default_code">RW_SHIP_PICKUP</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="delivery.product_category_deliveries"/>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">0.0</field>
+            <field name="standard_price">0.0</field>
+            <field name="invoice_policy">order</field>
+        </record>
+
         <record id="delivery_carrier_rw_au_metro_weight" model="delivery.carrier">
-            <field name="name">Australia Standard Shipping</field>
+            <field name="name">Standard shipping (by post)</field>
             <field name="delivery_type">fixed</field>
             <field name="sequence">20</field>
             <field name="website_published" eval="True"/>
@@ -44,7 +56,21 @@
             <field name="product_id" ref="quote_manage_ui.product_product_shipping_metro_weight"/>
             <field name="fixed_price">25.0</field>
             <field name="rw_rural_mode">normal</field>
-            <field name="carrier_description">Standard shipping: $25 ex GST (fixed).</field>
+            <field name="rw_store_pickup" eval="False"/>
+            <field name="carrier_description">Flat $25 ex GST per order — we ship to your address.</field>
+        </record>
+
+        <record id="delivery_carrier_rw_pickup_store" model="delivery.carrier">
+            <field name="name">Pick up in store</field>
+            <field name="delivery_type">fixed</field>
+            <field name="sequence">10</field>
+            <field name="website_published" eval="True"/>
+            <field name="country_ids" eval="[(6, 0, [ref('base.au')])]"/>
+            <field name="product_id" ref="quote_manage_ui.product_product_shipping_pickup_store"/>
+            <field name="fixed_price">0.0</field>
+            <field name="rw_rural_mode">normal</field>
+            <field name="rw_store_pickup" eval="True"/>
+            <field name="carrier_description">Collect from Co-Creative IT / Re-Ware — no shipping charge.</field>
         </record>
 
         <record id="delivery_carrier_rw_au_rural_quote" model="delivery.carrier">
@@ -57,6 +83,14 @@
             <field name="fixed_price">25.0</field>
             <field name="rw_rural_mode">rural_only</field>
             <field name="carrier_description">Rural and remote postcodes — contact us before checkout.</field>
+        </record>
+    </data>
+    <data>
+        <!-- Odoo demo carrier must not compete on checkout (was 10% of order on prod). -->
+        <record id="delivery.free_delivery_carrier" model="delivery.carrier">
+            <field name="website_published" eval="False"/>
+            <field name="delivery_type">fixed</field>
+            <field name="fixed_price" eval="0"/>
         </record>
     </data>
 </odoo>

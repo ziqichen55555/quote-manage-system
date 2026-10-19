@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.189',
+    'version': '1.0.191',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -35,6 +35,7 @@
         'data/website_appointment_data.xml',
         'data/website_appointment_mail.xml',
         'data/website_sale_staff_mail.xml',
+        'data/website_sale_customer_mail.xml',
         # Snippets must be declared BEFORE website_templates.xml so the
         # <t t-call="quote_manage_ui.s_rw_*"/> references inside page archs
         # resolve cleanly during the same data-load.
