@@ -92,21 +92,64 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         )
         return res
 
+    def _quote_seo_in_stock_products(self, category=None, limit=24):
+        PT = request.env["product.template"].sudo()
+        return PT._rw_website_in_stock_published(limit=limit, category=category)
+
     def _get_additional_extra_shop_values(self, values, **post):
         res = super()._get_additional_extra_shop_values(values, **post)
         values["categories"] = lazy(
             lambda: self._quote_wsale_root_categories_with_products()
         )
         category = values.get("category")
-        if not category or not category.id:
+        cat_record = category if category and category.id else None
+        res["quote_seo_in_stock_products"] = lazy(
+            lambda: self._quote_seo_in_stock_products(category=cat_record, limit=24)
+        )
+        res["quote_seo_itemlist_json"] = lazy(
+            lambda: request.website.sudo()._reware_itemlist_json_str_for_products(
+                self._quote_seo_in_stock_products(category=cat_record, limit=12)
+            )
+        )
+        if not cat_record:
             res.update({
-                "title": "Re-Ware Shop | Second-Hand & Refurbished IT — Perth",
+                "title": (
+                    "Second-Hand & Refurbished Computers | Re-Ware Shop Australia"
+                ),
                 "website_meta_description": (
-                    "Official Re-Ware shop (reware-project.com): second-hand and "
-                    "refurbished laptops, monitors, cables, cameras and IT. "
-                    "Warranty-backed — Co-Creative IT, Perth WA."
+                    "Shop second-hand and refurbished computers at Re-Ware "
+                    "(reware-project.com): ex-lease laptops, desktops, monitors "
+                    "and IT in Perth. Graded, tested, warranty — Australia-wide."
                 ),
             })
+            in_stock = self._quote_seo_in_stock_products(limit=8)
+            snippet = request.env["product.template"].sudo()._rw_seo_meta_snippet_for_products(
+                in_stock, max_names=6
+            )
+            if snippet:
+                res["website_meta_description"] = (
+                    res["website_meta_description"] + snippet
+                )[:320]
+        elif not (category.website_meta_title or "").strip():
+            res.update({
+                "title": category._rw_seo_category_default_title(),
+            })
+        if cat_record and not (category.website_meta_description or "").strip():
+            desc = category._rw_seo_category_default_description()
+            in_stock = self._quote_seo_in_stock_products(category=cat_record, limit=8)
+            snippet = request.env["product.template"].sudo()._rw_seo_meta_snippet_for_products(
+                in_stock, max_names=6
+            )
+            res["website_meta_description"] = (desc + snippet)[:320]
+        elif cat_record and (category.website_meta_description or "").strip():
+            in_stock = self._quote_seo_in_stock_products(category=cat_record, limit=6)
+            snippet = request.env["product.template"].sudo()._rw_seo_meta_snippet_for_products(
+                in_stock, max_names=4, max_len=120
+            )
+            if snippet:
+                res["website_meta_description"] = (
+                    (category.website_meta_description or "") + snippet
+                )[:320]
         return res
 
     def _prepare_product_values(self, product, category="", search="", **kwargs):

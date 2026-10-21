@@ -126,3 +126,32 @@ class Website(models.Model):
     def reware_structured_data_json_str(self):
         self.ensure_one()
         return json.dumps(self._reware_structured_data_dict(), ensure_ascii=False)
+
+    def _reware_itemlist_json_str_for_products(self, products):
+        """ItemList JSON-LD for in-stock shop products (shop page only)."""
+        self.ensure_one()
+        products = products.exists()
+        if not products:
+            return ""
+        base = (self.domain or "https://www.reware-project.com").rstrip("/")
+        elements = []
+        for pos, product in enumerate(products, start=1):
+            path = (product.website_url or "").strip()
+            if not path:
+                continue
+            url = path if path.startswith("http") else f"{base}{path}"
+            elements.append({
+                "@type": "ListItem",
+                "position": pos,
+                "url": url,
+                "name": (product.name or "").strip() or "Refurbished IT",
+            })
+        if not elements:
+            return ""
+        payload = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "Re-Ware shop — refurbished & second-hand IT in stock",
+            "itemListElement": elements,
+        }
+        return json.dumps(payload, ensure_ascii=False)

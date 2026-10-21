@@ -16,6 +16,33 @@ _SHOP_ROOT_CATEGORY_SEQUENCE = {
 class ProductPublicCategory(models.Model):
     _inherit = "product.public.category"
 
+    def _rw_seo_category_default_title(self):
+        self.ensure_one()
+        name = (self.name or "").strip()
+        templates = {
+            "Laptops": "Refurbished & Second-Hand Laptops Australia | Re-Ware",
+            "Desktops & Mini PCs": "Refurbished Desktops & Second-Hand PCs | Re-Ware",
+            "Monitors & Displays": "Refurbished Monitors & Displays | Re-Ware Shop",
+        }
+        if name in templates:
+            return templates[name]
+        return f"Refurbished {name} | Re-Ware Shop Australia"
+
+    def _rw_seo_category_default_description(self):
+        self.ensure_one()
+        name = (self.name or "").strip()
+        if name == "Laptops":
+            return (
+                "Buy ex-lease and second-hand laptops online — ThinkPad, HP, Dell "
+                "and more. Graded, tested, warranty-backed. Re-Ware Perth, "
+                "Australia-wide delivery."
+            )
+        return (
+            f"Shop refurbished and second-hand {name.lower()} at Re-Ware "
+            "(reware-project.com). Ex-lease IT, graded and warranty-backed — "
+            "Perth, Australia."
+        )
+
     def _rw_website_stock_units(self):
         """Sellable units in this shop category (sum of on-hand qty)."""
         self.ensure_one()

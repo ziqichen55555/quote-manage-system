@@ -40,7 +40,7 @@
             <nav data-name="Navbar" aria-label="Main" class="navbar navbar-expand-lg d-none d-lg-block shadow-sm navbar-light o_colored_level o_cc rw-navbar">
                 <div class="container">
                     <a href="/" class="rw-brand me-auto d-inline-flex align-items-center gap-2">
-                        <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="" class="rw-brand-mark"/>
+                        <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="Re-Ware — refurbished and second-hand computers in Perth" class="rw-brand-mark"/>
                         <span>Re-Ware Project</span>
                     </a>
 
@@ -58,11 +58,14 @@
                                     </t>
                                 </t>
                             </t>
+                            <li class="nav-item">
+                                <a href="/shop" class="nav-link">Refurbished computers</a>
+                            </li>
                             <li class="nav-item ms-lg-2">
                                 <a href="/contactus" class="rw-btn-coral-red">Donate</a>
                             </li>
                             <li class="nav-item">
-                                <a href="/shop" class="rw-btn-coral-red" target="_blank" rel="noopener noreferrer">Shop</a>
+                                <a href="/shop" class="rw-btn-coral-red">Shop now</a>
                             </li>
                             <t t-call="website_sale.header_cart_link">
                                 <t t-set="_icon" t-value="True"/>
@@ -89,7 +92,7 @@
     <template id="template_header_mobile_force" inherit_id="website.template_header_mobile" name="Reware Header Mobile" priority="99">
         <xpath expr="//t[@t-call='website.placeholder_header_brand']" position="replace">
             <a href="/" class="rw-brand d-inline-flex align-items-center gap-2">
-                <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="" class="rw-brand-mark"/>
+                <img src="/quote_manage_ui/static/src/img/brand/reware-mark.png" alt="Re-Ware — refurbished and second-hand computers in Perth" class="rw-brand-mark"/>
                 <span>Re-Ware Project</span>
             </a>
         </xpath>
@@ -110,10 +113,13 @@
         </xpath>
         <xpath expr="//t[@t-call='website.header_call_to_action_large']" position="replace">
             <li class="nav-item w-100">
+                <a href="/shop" class="nav-link">Refurbished computers</a>
+            </li>
+            <li class="nav-item w-100">
                 <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate</a>
             </li>
             <li class="nav-item w-100">
-                <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block" target="_blank" rel="noopener noreferrer">Shop</a>
+                <a href="/shop" class="rw-btn-coral-red w-100 text-center d-block">Shop now</a>
             </li>
         </xpath>
         <!-- Drop the stock Odoo placeholders (demo phone "+1 555-555-5556",
@@ -151,6 +157,8 @@
                     </div>
                 </div>
                 <div class="rw-footer-bottom text-center">
+                    <a href="/shop">Refurbished &amp; second-hand computers</a>
+                    <span class="mx-2">·</span>
                     <a href="/terms-of-service">Terms</a>
                     <span class="mx-2">·</span>
                     <a href="/privacy">Privacy</a>
@@ -197,11 +205,18 @@
             <div class="row">
                 <div class="col-12 mb-4">
                     <div class="qm-comsol-shop-hero p-4 p-lg-5">
-                        <p class="rw-eyebrow mb-2">Product catalogue</p>
                         <div class="row align-items-start g-4 mb-0 mb-lg-4">
                             <div class="col-lg-7">
-                                <h2 class="fw-bold mb-3">Re-Ware certified hardware</h2>
-                                <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Professionally refurbished devices with consistent grading, documented testing, and warranty-backed delivery.</p>
+                                <t t-if="category">
+                                    <p class="rw-eyebrow mb-2">Second-hand &amp; refurbished IT — Re-Ware shop</p>
+                                    <h1 class="fw-bold mb-3" t-field="category.name"/>
+                                    <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Ex-lease and second-hand computers and IT — graded, tested, warranty-backed. Shipped Australia-wide from Perth.</p>
+                                </t>
+                                <t t-else="">
+                                    <p class="rw-eyebrow mb-2">Second-hand &amp; refurbished computers — Perth</p>
+                                    <h1 class="fw-bold mb-3">Re-Ware shop — refurbished laptops, monitors &amp; IT</h1>
+                                    <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Buy second-hand and ex-lease computers online: laptops, desktops, monitors, docks and accessories. Graded, tested and warranty-backed.</p>
+                                </t>
                             </div>
                             <div class="col-lg-5">
                                 <ul class="list-unstyled qm-comsol-value-list mb-0 small">
@@ -241,6 +256,20 @@
                                 </div>
                             </t>
                         </div>
+                        <t t-set="quote_in_stock" t-value="quote_seo_in_stock_products"/>
+                        <nav t-if="quote_in_stock" class="border-top pt-4 mt-2" aria-label="Refurbished IT in stock">
+                            <p class="small fw-semibold mb-2 mb-md-1">In stock now — shop second-hand &amp; refurbished:</p>
+                            <ul class="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2 small mb-0">
+                                <t t-foreach="quote_in_stock" t-as="seo_product">
+                                    <li class="col">
+                                        <a t-att-href="seo_product.website_url" t-att-title="seo_product.name">
+                                            <t t-esc="seo_product.name"/>
+                                        </a>
+                                    </li>
+                                </t>
+                            </ul>
+                        </nav>
+                        <script t-if="quote_seo_itemlist_json" type="application/ld+json" t-out="quote_seo_itemlist_json"/>
                     </div>
                 </div>
             </div>

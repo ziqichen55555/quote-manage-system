@@ -527,6 +527,47 @@ class ProductTemplate(models.Model):
         return text[:320]
 
     @api.model
+    def _rw_website_in_stock_published(self, limit=24, category=None):
+        """Published shop products with sellable qty (for SEO links / ItemList)."""
+        domain = [
+            ("website_published", "=", True),
+            ("sale_ok", "=", True),
+        ]
+        if category:
+            domain.append(("public_categ_ids", "in", category.id))
+        candidates = self.sudo().search(
+            domain, order="sequence, name, id", limit=500
+        )
+        keep = self.browse()
+        for product in candidates:
+            if product._rw_website_available_qty() <= 0:
+                continue
+            keep |= product
+            if len(keep) >= limit:
+                break
+        return keep
+
+    @api.model
+    def _rw_seo_meta_snippet_for_products(self, products, max_names=6, max_len=200):
+        """Short 'In stock: …' suffix for meta descriptions (head only)."""
+        parts = []
+        used = len(" In stock: .")
+        for product in products:
+            name = (product.name or "").strip()
+            if not name:
+                continue
+            if len(name) > 46:
+                name = name[:43] + "..."
+            sep = ", " if parts else ""
+            if used + len(sep) + len(name) > max_len:
+                break
+            parts.append(name)
+            used += len(sep) + len(name)
+        if not parts:
+            return ""
+        return " In stock: " + ", ".join(parts) + "."
+
+    @api.model
     def _quote_manage_ui_backfill_published_product_seo(self):
         """Persist head SEO on published products (helps Google index product intent)."""
         products = self.sudo().search([
