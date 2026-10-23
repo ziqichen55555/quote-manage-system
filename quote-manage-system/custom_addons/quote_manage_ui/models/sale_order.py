@@ -87,7 +87,9 @@ class SaleOrder(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if "carrier_id" in vals:
+        if "carrier_id" in vals and not self.env.context.get(
+            "rw_skip_carrier_freight_hook"
+        ):
             self._rw_ensure_default_freight()
         return res
 
@@ -224,6 +226,65 @@ class SaleOrder(models.Model):
         if not allowed:
             return carriers
         return carriers.filtered(lambda c: c in allowed)
+
+    def _check_carrier_quotation(self, force_carrier_id=None, keep_carrier=False):
+        """Website: one freight refresh via Re-Ware rules (pickup $0 / post by weight)."""
+        website = self.filtered("website_id")
+        backend = self - website
+        if backend:
+            super(SaleOrder, backend)._check_carrier_quotation(
+                force_carrier_id=force_carrier_id,
+                keep_carrier=keep_carrier,
+            )
+        DeliveryCarrier = self.env["delivery.carrier"]
+        for order in website:
+            order.ensure_one()
+            if order.only_services:
+                order.with_context(rw_force_delivery_remove=True)._remove_delivery_line()
+                continue
+            available = order._get_delivery_methods()
+            if force_carrier_id:
+                carrier = DeliveryCarrier.browse(force_carrier_id).exists()
+                if carrier and carrier not in available:
+                    post = order._rw_get_post_carrier()
+                    pickup = order._rw_get_pickup_carrier()
+                    if carrier in (post | pickup):
+                        available = post | pickup
+            else:
+                carrier = order.carrier_id
+                if not carrier or carrier not in available:
+                    carrier = DeliveryCarrier
+                    if (
+                        not keep_carrier
+                        and order.partner_shipping_id.property_delivery_carrier_id
+                    ):
+                        preferred = (
+                            order.partner_shipping_id.property_delivery_carrier_id
+                        )
+                        if preferred in available:
+                            carrier = preferred
+                    if not carrier or carrier not in available:
+                        for delivery in available:
+                            if delivery._match_address(order.partner_shipping_id):
+                                carrier = delivery
+                                break
+            vals = {"carrier_id": carrier.id if carrier else False}
+            order.with_context(rw_skip_carrier_freight_hook=True).write(vals)
+            order._quote_website_repair_cart()
+            order._rw_ensure_default_freight()
+            order.invalidate_recordset(
+                [
+                    "order_line",
+                    "website_order_line",
+                    "amount_delivery",
+                    "amount_untaxed",
+                    "amount_tax",
+                    "amount_total",
+                ]
+            )
+            order.delivery_rating_success = True
+            order.delivery_message = False
+        return bool(self.carrier_id)
 
     def _rw_ensure_default_freight(self):
         """By post: weight-based freight. In-store pickup: $0."""

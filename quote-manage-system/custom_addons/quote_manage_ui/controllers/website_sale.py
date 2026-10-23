@@ -196,7 +196,9 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
     def shop_payment(self, **post):
         order = request.website.sale_get_order()
         if order:
-            order.sudo()._rw_ensure_default_freight()
+            order_sudo = order.sudo()
+            order_sudo._quote_website_repair_cart()
+            order_sudo._rw_ensure_default_freight()
         return super().shop_payment(**post)
 
     def _get_shop_payment_errors(self, order):
