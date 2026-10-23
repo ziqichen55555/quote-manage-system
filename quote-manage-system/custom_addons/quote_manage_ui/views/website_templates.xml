@@ -717,8 +717,7 @@
         </field>
     </record>
 
-    <!-- 7f. Returns & Warranty — DRAFT skeleton. Terms in [square brackets]
-         are placeholders for Re-Ware to fill in via the Website Builder. -->
+    <!-- 7f. Returns & Warranty (aligned with Terms of Service + Refund Policy). -->
     <record id="returns_policy_page" model="website.page" forcecreate="True">
         <field name="name">Returns &amp; Warranty</field>
         <field name="url">/returns</field>
@@ -745,10 +744,10 @@
                                 <h2 class="mb-3">Easy returns.</h2>
                                 <p class="rw-about-body mb-3">If something isn't right, get in touch and we'll make it easy.</p>
                                 <ul class="rw-about-body mb-4">
-                                    <li><strong>Change of mind:</strong> [Define your change-of-mind window, e.g. return within 14 days, item unused and in original condition.]</li>
-                                    <li><strong>Faulty or not as described:</strong> [Covered under the 3-month warranty and your rights under Australian Consumer Law.]</li>
-                                    <li><strong>Return postage:</strong> [State who pays return shipping for change-of-mind vs faulty items.]</li>
-                                    <li><strong>Refund method &amp; timing:</strong> [e.g. refunded to the original payment method within 5 business days of receiving the return.]</li>
+                                    <li><strong>Change of mind:</strong> We may accept a return within <strong>30 days</strong> of delivery if the device is unused, in original condition and packaging, and you contact us first for approval. Change-of-mind returns are at our discretion; a restocking fee may apply (see our <a href="/refund">Refund Policy</a>).</li>
+                                    <li><strong>Faulty or not as described:</strong> Covered by our <strong>3-month (90-day)</strong> limited warranty and your rights under the <strong>Australian Consumer Law</strong>. We will repair, replace with the same or a similar device, or refund you for a covered fault.</li>
+                                    <li><strong>Return postage:</strong> For faulty or warranty returns, return shipping is at your cost; we pay shipping for any replacement we send. For approved change-of-mind returns, return postage is at your cost unless we agree otherwise in writing.</li>
+                                    <li><strong>Refund method &amp; timing:</strong> Approved refunds are returned to the original payment method after we receive and inspect the device. We aim to process refunds within <strong>5 business days</strong> of accepting the return.</li>
                                 </ul>
 
                                 <h2 class="mb-3">How to start a return.</h2>
