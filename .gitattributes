@@ -1,1 +1,1 @@
-*.sh text eol=lf
+scripts/prod-housekeeping.sh text eol=lf

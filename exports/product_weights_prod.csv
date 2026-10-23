@@ -1,4 +1,4 @@
-﻿product_id,default_code,product_name,internal_category,shop_categories,weight_kg
+product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 750,S24E450,"24"" Samsung Monitor S24E450",Monitors & Displays,Monitors & Displays,5
 915,,4X90Q84427 ThinkPad Ethernet Extension Adapter Gen 2,Chargers / Power Adapters,Cables & Adapters,0.5
 894,ACERDV0817,Acer DV0817 Projector,All,Projectors & AV,3
@@ -9,9 +9,9 @@
 881,,Canon PowerShot A550,All,Digital Camera,1
 724,CISCO1941,Cisco 1941 series Integrated Services Router,PC Accessories,Accessories,4
 725,CISCO2911,Cisco 2911 Integrated Services Router,PC Accessories,Accessories,4
-718,AIRCAP3502I-N-K9,Cisco Access Point,PC Accessories,Accessories,4
-751,WS-3750X-48P,Cisco Switch WS-3750X-48-P,PC Accessories,Accessories,4
-909,,Cisco TTC8-02 Precision HD Camera 12x,PC Accessories,Accessories,4
+718,AIRCAP3502I-N-K9,Cisco Access Point,PC Accessories,Accessories,1
+751,WS-3750X-48P,Cisco Switch WS-3750X-48-P,PC Accessories,Accessories,10
+909,,Cisco TTC8-02 Precision HD Camera 12x,PC Accessories,Accessories,2
 938,,COMSOL 1m DisplayPort Male to DisplayPort Male Cable,PC Accessories,Cables & Adapters,0.5
 917,,Comsol Display Port Male To DVI-I Female (Packaged),Chargers / Power Adapters,,0.5
 939,,Dell DisplayPort to DisplayPort Cable (1.8M),Chargers / Power Adapters,Cables & Adapters,0.5
@@ -24,10 +24,10 @@
 921,,Display Port To DVI-D Female Adaptor,Chargers / Power Adapters,Cables & Adapters,0.5
 920,,Display Port To DVI-I Female Adaptor,Chargers / Power Adapters,Cables & Adapters,0.5
 923,,Display Port To VGA Adapter,Chargers / Power Adapters,,0.5
-710,S22A450BW,"Dual 22"" Samsung S22C450 monitor bundle + HP G4 Dock",Monitors & Displays,Monitors & Displays,5
-850,,"dual 22"" screen bundle",All,,5
-851,,"dual 22"" screen bundle",All,,5
-849,,"dual 22"" screen bundle",All,,5
+710,S22A450BW,"Dual 22"" Samsung S22C450 monitor bundle + HP G4 Dock",Monitors & Displays,Monitors & Displays,7
+850,,"dual 22"" screen bundle",All,,7
+851,,"dual 22"" screen bundle",All,,7
+849,,"dual 22"" screen bundle",All,,7
 901,,"dual 24"" F24T450FQ Screen Bundle with HP G3 Dock",All,,8
 719,BUNDLEDELL24,"Dual 24 Monitor Bundle 2 x Dell 24"" (P2422HE) monitors + Dell K20A dock and AC adapter",Monitors & Displays,Monitors & Displays,8
 904,,"Dual 24"" Screen Bundle 2 x Samsung S24a450 and HP G3 Dock",Monitors & Displays,,8
@@ -71,10 +71,10 @@
 875,,Panasonic DFT 30,All,,1.5
 876,,Panasonic DFT 30 Camera,All,,1.5
 880,,Panasonic Lumix DMC-TZ20 Digital Camera,All,Digital Camera,1
-878,CF-54J1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,2.5
-902,CF-54H1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,2.5
-886,CF-54J1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,All,Laptops,2.5
-885,CF-54H1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,,2.5
+878,CF-54J1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3
+902,CF-54H1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3
+886,CF-54J1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,All,Laptops,3
+885,CF-54H1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,,3
 884,RE65WAC,Re-Ware 65W USB-C AC Adapter,PC Accessories,Cables & Adapters,0.5
 722,CCITREWAREBAG,Re-Ware Lenovo backpack,PC Accessories,Accessories,1.5
 726,F24T450FQEXXY,"Samsung 24"" F24T450FQ USB hub 1080P WIFI",Monitors & Displays,Monitors & Displays,5
