@@ -57,7 +57,7 @@
             <field name="fixed_price">25.0</field>
             <field name="rw_rural_mode">normal</field>
             <field name="rw_store_pickup" eval="False"/>
-            <field name="carrier_description">Flat $25 ex GST per order — we ship to your address.</field>
+            <field name="carrier_description">$25 ex GST per kg (rounded up, minimum 1 kg) — shipped to your address.</field>
         </record>
 
         <record id="delivery_carrier_rw_pickup_store" model="delivery.carrier">

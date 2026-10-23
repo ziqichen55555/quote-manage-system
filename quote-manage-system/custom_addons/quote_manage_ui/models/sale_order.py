@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import math
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -93,13 +95,38 @@ class SaleOrder(models.Model):
         return orders
 
     def _rw_default_freight_price(self):
-        """Flat AUD ex GST per order (by post)."""
+        """AUD ex GST per billable kg (by post). System param default 25.0."""
         icp = self.env["ir.config_parameter"].sudo()
         raw = icp.get_param("quote_manage_ui.default_freight_price", "25.0")
         try:
             return float(raw)
         except (TypeError, ValueError):
             return 25.0
+
+    def _rw_shipping_weight_kg(self):
+        """Sum qty×weight; any line without weight adds 1 kg once (whole order)."""
+        self.ensure_one()
+        total = 0.0
+        missing_weight = False
+        for line in self._rw_freight_product_lines():
+            weight = line.product_id.weight or 0.0
+            if weight <= 0:
+                missing_weight = True
+            else:
+                total += line.product_uom_qty * weight
+        if missing_weight:
+            total += 1.0
+        return total
+
+    def _rw_freight_billable_kg(self):
+        """Ceiling total kg, minimum 1 kg."""
+        self.ensure_one()
+        return max(1, math.ceil(self._rw_shipping_weight_kg()))
+
+    def _rw_freight_price_ex_gst(self):
+        """By post: ceil(kg)×rate ex GST, min 1 kg. Pickup callers use 0 separately."""
+        self.ensure_one()
+        return self._rw_freight_billable_kg() * self._rw_default_freight_price()
 
     def _rw_get_post_carrier(self):
         return self.env.ref(
@@ -155,7 +182,7 @@ class SaleOrder(models.Model):
         return carriers.filtered(lambda c: c in allowed)
 
     def _rw_ensure_default_freight(self):
-        """Website freight: flat $25/order by post, or $0 in-store pickup."""
+        """By post: weight-based freight. In-store pickup: $0."""
         if self.env.context.get("rw_skip_default_freight"):
             return
         post = self._rw_get_post_carrier()
@@ -170,7 +197,7 @@ class SaleOrder(models.Model):
                 price = 0.0
             else:
                 target = post
-                price = order_ctx._rw_default_freight_price()
+                price = order_ctx._rw_freight_price_ex_gst()
             if not target:
                 continue
             order_ctx.carrier_id = target

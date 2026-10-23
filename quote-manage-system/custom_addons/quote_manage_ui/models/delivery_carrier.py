@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class DeliveryCarrier(models.Model):
@@ -39,6 +39,36 @@ class DeliveryCarrier(models.Model):
             if re.match(pattern, postcode):
                 return True
         return False
+
+    def _rw_is_weight_post_carrier(self):
+        self.ensure_one()
+        if self.rw_store_pickup:
+            return False
+        post = self.env.ref(
+            "quote_manage_ui.delivery_carrier_rw_au_metro_weight",
+            raise_if_not_found=False,
+        )
+        return bool(post and self.id == post.id)
+
+    def fixed_rate_shipment(self, order):
+        if self._rw_is_weight_post_carrier():
+            order = order.sudo()
+            if not self._match_address(order.partner_shipping_id):
+                return {
+                    "success": False,
+                    "price": 0.0,
+                    "error_message": _(
+                        "This delivery method is not available for this address."
+                    ),
+                    "warning_message": False,
+                }
+            return {
+                "success": True,
+                "price": order._rw_freight_price_ex_gst(),
+                "error_message": False,
+                "warning_message": False,
+            }
+        return super().fixed_rate_shipment(order)
 
     def _is_available_for_order(self, order):
         available = super()._is_available_for_order(order)
