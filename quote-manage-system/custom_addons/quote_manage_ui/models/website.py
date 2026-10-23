@@ -183,7 +183,6 @@ class Website(models.Model):
             and (not order.website_id or order.website_id == self)
         ):
             order_sudo = order.sudo()
-            order_sudo._quote_website_repair_cart()
             request.session["sale_order_id"] = order_sudo.id
             request.session["website_sale_cart_quantity"] = order_sudo.cart_quantity
             cart_debug_log(

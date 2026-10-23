@@ -291,6 +291,9 @@ class SaleOrder(models.Model):
     def _quote_website_repair_cart(self):
         """Drop deleted line ids from cache (backend edits / stale website session)."""
         self.ensure_one()
+        if self.env.context.get("rw_repairing_cart"):
+            return
+        self = self.with_context(rw_repairing_cart=True)
         db_line_ids = set(
             self.env["sale.order.line"]
             .sudo()
