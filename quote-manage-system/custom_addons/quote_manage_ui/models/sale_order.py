@@ -170,6 +170,31 @@ class SaleOrder(models.Model):
             lines = order._quote_order_lines_for_ops()
             order.website_order_line = lines.filtered(lambda line: line._show_in_cart())
 
+    def _quote_website_product_cart_lines(self):
+        """Non-delivery lines stored on the SO (DB read for website carts)."""
+        self.ensure_one()
+        return self._quote_db_order_lines().filtered(
+            lambda line: not line.is_delivery
+            and not line.display_type
+            and line.product_id
+        )
+
+    @api.depends("order_line.product_uom_qty", "order_line.product_id")
+    def _compute_cart_info(self):
+        super()._compute_cart_info()
+        for order in self.filtered("website_id"):
+            if order.cart_quantity:
+                continue
+            product_lines = order._quote_website_product_cart_lines()
+            if not product_lines:
+                continue
+            order.cart_quantity = int(
+                sum(product_lines.mapped("product_uom_qty"))
+            )
+            order.only_services = all(
+                line.product_id.type == "service" for line in product_lines
+            )
+
     def _rw_freight_product_lines(self):
         self.ensure_one()
         return self._quote_order_lines_for_ops().filtered(
@@ -223,6 +248,9 @@ class SaleOrder(models.Model):
             order_ctx._remove_delivery_line()
             order_ctx.set_delivery_line(target, price)
             order_ctx.delivery_rating_success = True
+            order.invalidate_recordset(
+                ["website_order_line", "cart_quantity", "only_services"]
+            )
 
     def _get_confirmation_template(self):
         self.ensure_one()
@@ -279,6 +307,19 @@ class SaleOrder(models.Model):
         self.order_line.exists()
 
     def _remove_delivery_line(self):
+        # website_sale.cart() strips delivery when carrier_id is set; Re-Ware weight
+        # freight re-adds on line unlink → MissingError → session cleared.
+        if request and getattr(request, "httprequest", None):
+            path = (request.httprequest.path or "").split("?", 1)[0].rstrip("/") or "/"
+            # Only skip on cart page GET — not /shop/cart/update_json (needs line refresh).
+            if path == "/shop/cart":
+                cart_debug_log(
+                    self.env,
+                    "remove_delivery_line.skipped",
+                    path=request.httprequest.path,
+                    order_ids=self.ids,
+                )
+                return
         for order in self:
             order._quote_website_repair_cart()
         delivery_lines = self.env["sale.order.line"].sudo().search(
@@ -422,8 +463,10 @@ class SaleOrderLine(models.Model):
         if not self:
             return True
         orders = self.order_id
+        only_delivery = all(line.is_delivery for line in self)
         res = super().unlink()
-        orders._rw_ensure_default_freight()
+        if not only_delivery and not self.env.context.get("rw_skip_default_freight"):
+            orders._rw_ensure_default_freight()
         return res
 
     def _get_report_lot_names(self):

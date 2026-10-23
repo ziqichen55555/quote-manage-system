@@ -40,6 +40,16 @@
         </xpath>
     </template>
 
+    <template id="quote_cart_debug_panel" inherit_id="website_sale.cart" name="Quote cart debug panel" priority="5">
+        <xpath expr="//h3[hasclass('mb-4')]" position="before">
+            <div t-if="quote_cart_debug_json" class="alert alert-warning mb-3 font-monospace small" role="status">
+                <p class="fw-bold mb-2">Cart debug (dev only — copy this block to support)</p>
+                <pre class="mb-0 small" style="max-height: 20rem; overflow: auto; white-space: pre-wrap;" t-esc="quote_cart_debug_json"/>
+                <p class="mb-0 mt-2 small text-muted">JSON also: /shop/cart/debug or /quote-cart-debug</p>
+            </div>
+        </xpath>
+    </template>
+
     <template id="reware_cart_checkout_intro" inherit_id="website_sale.cart" name="Re-Ware Cart How To Checkout" priority="50">
         <xpath expr="//h3[hasclass('mb-4')]" position="after">
             <div t-if="website.is_public_user() and website_sale_order and website_sale_order.website_order_line"

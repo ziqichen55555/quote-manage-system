@@ -73,6 +73,7 @@ def sale_order_cart_debug_dict(order):
     ghost_exists = []
     for lid in stale_ids:
         ghost_exists.append({"id": lid, "exists": bool(order.env["sale.order.line"].browse(lid).exists())})
+    product_lines = order._quote_website_product_cart_lines()
     try:
         website_lines = order.website_order_line
         website_rows = [_line_row(l) for l in website_lines]
@@ -93,7 +94,11 @@ def sale_order_cart_debug_dict(order):
         "stale_cached_line_ids": stale_ids,
         "stale_line_exists_check": ghost_exists,
         "db_lines": [_line_row(l) for l in db_lines],
+        "db_product_line_count": len(product_lines),
         "website_order_lines": website_rows,
+        "cart_qty_mismatch": bool(
+            product_lines and not (cart_qty if isinstance(cart_qty, int) else 0)
+        ),
     }
 
 
@@ -102,9 +107,15 @@ def build_cart_debug_payload(env):
     order = None
     if request and request.website:
         order = request.website.sale_get_order()
+    user = env.user
     payload = {
         "debug_enabled": True,
         "icp_key": ICP_KEY,
+        "visitor": {
+            "user_id": user.id,
+            "login": user.login,
+            "is_public": user._is_public(),
+        },
         "request": meta,
         "cart": sale_order_cart_debug_dict(order),
     }

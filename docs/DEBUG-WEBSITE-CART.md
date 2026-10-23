@@ -23,6 +23,8 @@ Settings → Technical → System Parameters → create:
 
 Turn off with `0` when finished. **Do not leave `1` on production** unless you are actively investigating.
 
+If the URL shows **404 Page Not Found**, debug is usually **still off** (older builds hid the route). After setting the parameter, **restart Odoo** (`docker compose restart web`). Newer code returns **403** with plain text when debug is off.
+
 ---
 
 ## 2. Log output
@@ -52,13 +54,24 @@ Each line includes **user**, **session** (`sale_order_id`, `website_sale_cart_qu
 
 ---
 
-## 3. JSON snapshot (logged-in user)
+## 3. JSON snapshot (guest or logged-in)
 
-While debug is enabled, open in the browser (same session as the broken cart):
+Use the **same browser session** as your test (important for guests: same incognito window).
+
+**Guest / 访客:** log out of Odoo, or use a private/incognito window — do **not** log in. Add to cart, then open debug URL in that **same** window.
+
+While debug is enabled:
 
 ```text
 http://localhost:8069/shop/cart/debug
+http://localhost:8069/quote-cart-debug
 ```
+
+Or open **`/shop/cart`** — a yellow **Cart debug** box appears at the top (same JSON).
+
+Check routes from PowerShell: `.\scripts\test-local-cart-debug.ps1`
+
+Use **8069** (Odoo) or **8070** (nginx). Do **not** use the production URL while testing locally.
 
 (Use your local port / db if different.)
 
@@ -88,5 +101,5 @@ If `stale_cached_line_ids` is non-empty, the ORM cache still references deleted 
 
 1. 设 `QUOTE_WEBSITE_CART_DEBUG=1` 或系统参数 `quote_manage_ui.website_cart_debug=1`。  
 2. Odoo 日志级别 INFO，搜 `[quote cart]`。  
-3. 登录后访问 `/shop/cart/debug` 看 DB 行 vs 缓存行 vs 角标数量。  
+3. **访客**：无痕窗口加购后，同一窗口打开 `/shop/cart/debug`（无需登录；JSON 里 `visitor.is_public` 应为 true）。  
 4. 查完记得关掉 debug，生产环境不要长期开着。

@@ -7,8 +7,6 @@ from odoo.addons.website_sale.controllers import main as website_sale_controller
 from odoo.exceptions import MissingError
 from odoo.http import request
 from odoo.tools import lazy
-from werkzeug.exceptions import NotFound
-
 from odoo.addons.quote_manage_ui.website_cart_debug import (
     build_cart_debug_payload,
     cart_debug_enabled,
@@ -27,8 +25,26 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
             return res
         except MissingError as err:
             cart_debug_log(request.env, "route.cart.missing", error=str(err))
-            request.website._quote_reset_website_cart_session()
-            return request.redirect("/shop/cart")
+            so_id = request.session.get("sale_order_id")
+            if so_id:
+                request.env["sale.order"].sudo().browse(so_id).exists()._quote_website_repair_cart()
+            try:
+                return super().cart(
+                    access_token=access_token, revive=revive, **post
+                )
+            except MissingError:
+                so_id = request.session.get("sale_order_id")
+                order = (
+                    request.env["sale.order"].sudo().browse(so_id).exists()
+                    if so_id
+                    else request.env["sale.order"]
+                )
+                if order and order._quote_website_product_cart_lines():
+                    order._quote_website_repair_cart()
+                    request.website._quote_sync_website_cart_session(order)
+                else:
+                    request.website._quote_reset_website_cart_session()
+                return request.redirect("/shop/cart")
 
     def cart_update_json(
         self,
@@ -78,19 +94,46 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
     @http.route(
         ["/shop/cart/debug"],
         type="http",
-        auth="user",
+        auth="public",
         website=True,
         sitemap=False,
     )
     def quote_cart_debug(self, **kw):
-        """JSON cart snapshot when quote_manage_ui.website_cart_debug=1."""
+        """JSON cart snapshot when quote_manage_ui.website_cart_debug=1 (guest OK)."""
         if not cart_debug_enabled(request.env):
-            raise NotFound()
+            return request.make_response(
+                "Cart debug is off. Set system parameter "
+                "quote_manage_ui.website_cart_debug = 1 (or "
+                "QUOTE_WEBSITE_CART_DEBUG=1 on the server).\n",
+                status=403,
+                headers=[("Content-Type", "text/plain; charset=utf-8")],
+            )
         payload = build_cart_debug_payload(request.env)
         return request.make_response(
             json.dumps(payload, indent=2, default=str),
             headers=[("Content-Type", "application/json; charset=utf-8")],
         )
+
+    @http.route(
+        ["/quote-cart-debug"],
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def quote_cart_debug_alias(self, **kw):
+        """Same JSON as /shop/cart/debug (easier to spot if shop routes 404)."""
+        return self.quote_cart_debug(**kw)
+
+    def _cart_values(self, **post):
+        values = super()._cart_values(**post)
+        if cart_debug_enabled(request.env):
+            values["quote_cart_debug_json"] = json.dumps(
+                build_cart_debug_payload(request.env),
+                indent=2,
+                default=str,
+            )
+        return values
 
     def shop(self, page=0, category=None, search="", **post):
         try:

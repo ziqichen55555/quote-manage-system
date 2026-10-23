@@ -138,6 +138,38 @@ class Website(models.Model):
             request.session.pop("sale_order_id", None)
             request.session.pop("website_sale_cart_quantity", None)
 
+    def sale_reset(self):
+        """Do not wipe session when DB still has product lines (freight / cache glitches)."""
+        sale_order_id = request.session.get("sale_order_id") if request else None
+        if sale_order_id:
+            order = (
+                self.env["sale.order"]
+                .sudo()
+                .browse(sale_order_id)
+                .exists()
+            )
+            if order.website_id and order._quote_website_product_cart_lines():
+                order.invalidate_recordset(
+                    ["website_order_line", "cart_quantity", "only_services"]
+                )
+                qty = order.cart_quantity or int(
+                    sum(
+                        order._quote_website_product_cart_lines().mapped(
+                            "product_uom_qty"
+                        )
+                    )
+                )
+                request.session["sale_order_id"] = order.id
+                request.session["website_sale_cart_quantity"] = qty
+                cart_debug_log(
+                    self.env,
+                    "sale_reset.blocked",
+                    order_id=order.id,
+                    session_qty=qty,
+                )
+                return
+        super().sale_reset()
+
     def _quote_sync_website_cart_session(self, order):
         """Header badge reads session qty first — keep it aligned with the SO."""
         if not request or not request.session:
