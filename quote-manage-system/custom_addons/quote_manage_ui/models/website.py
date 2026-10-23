@@ -2,6 +2,7 @@
 import json
 
 from odoo import api, models
+from odoo.http import request
 from odoo.tools import ormcache
 
 
@@ -126,6 +127,36 @@ class Website(models.Model):
     def reware_structured_data_json_str(self):
         self.ensure_one()
         return json.dumps(self._reware_structured_data_dict(), ensure_ascii=False)
+
+    def _quote_reset_website_cart_session(self):
+        if request and request.session:
+            request.session.pop("sale_order_id", None)
+            request.session.pop("website_sale_cart_quantity", None)
+
+    def sale_get_order(self, force_create=False, update_pricelist=False):
+        """Drop session cart when SO missing, not draft, or wrong site (stale line ids)."""
+        sale_order_id = request.session.get("sale_order_id") if request else None
+        order = super().sale_get_order(
+            force_create=force_create, update_pricelist=update_pricelist
+        )
+        if sale_order_id and not order:
+            self._quote_reset_website_cart_session()
+            if force_create:
+                order = super().sale_get_order(
+                    force_create=True, update_pricelist=update_pricelist
+                )
+            return order
+        if not order:
+            return order
+        if order.state != "draft" or (order.website_id and order.website_id != self):
+            self._quote_reset_website_cart_session()
+            if force_create:
+                return super().sale_get_order(
+                    force_create=True, update_pricelist=update_pricelist
+                )
+            return self.env["sale.order"]
+        order.sudo()._quote_website_repair_cart()
+        return order
 
     def _reware_itemlist_json_str_for_products(self, products):
         """ItemList JSON-LD for in-stock shop products (shop page only)."""

@@ -256,19 +256,7 @@
                                 </div>
                             </t>
                         </div>
-                        <t t-set="quote_in_stock" t-value="quote_seo_in_stock_products"/>
-                        <nav t-if="quote_in_stock" class="border-top pt-4 mt-2" aria-label="Refurbished IT in stock">
-                            <p class="small fw-semibold mb-2 mb-md-1">In stock now — shop second-hand &amp; refurbished:</p>
-                            <ul class="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2 small mb-0">
-                                <t t-foreach="quote_in_stock" t-as="seo_product">
-                                    <li class="col">
-                                        <a t-att-href="seo_product.website_url" t-att-title="seo_product.name">
-                                            <t t-esc="seo_product.name"/>
-                                        </a>
-                                    </li>
-                                </t>
-                            </ul>
-                        </nav>
+                        <!-- SEO only: ItemList JSON-LD + meta "In stock:" (no visible product list). -->
                         <script t-if="quote_seo_itemlist_json" type="application/ld+json" t-out="quote_seo_itemlist_json"/>
                     </div>
                 </div>

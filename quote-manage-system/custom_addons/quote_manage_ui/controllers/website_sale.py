@@ -2,11 +2,23 @@
 """Website shop: guest or registered checkout; contact + billing address before payment."""
 from odoo import _
 from odoo.addons.website_sale.controllers import main as website_sale_controller
+from odoo.exceptions import MissingError
 from odoo.http import request
 from odoo.tools import lazy
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
+    def shop(self, page=0, category=None, search="", **post):
+        try:
+            return super().shop(
+                page=page, category=category, search=search, **post
+            )
+        except MissingError:
+            request.website._quote_reset_website_cart_session()
+            return super().shop(
+                page=page, category=category, search=search, **post
+            )
+
     def _get_mandatory_fields_billing(self, country_id=False):
         """Re-Ware: phone and postcode always required; street2 optional (houses have none)."""
         req = super()._get_mandatory_fields_billing(country_id)

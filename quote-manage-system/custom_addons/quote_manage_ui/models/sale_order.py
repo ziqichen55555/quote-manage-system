@@ -2,7 +2,8 @@
 import math
 
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import MissingError, ValidationError
+from odoo.http import request
 
 
 class SaleOrder(models.Model):
@@ -236,6 +237,40 @@ class SaleOrder(models.Model):
             lambda o: o.website_id and not o.rw_website_sale_staff_notified
         )._send_website_sale_staff_notification()
         return res
+
+    def _quote_website_repair_cart(self):
+        """Invalidate stale one2many cache after lines removed in backend."""
+        self.ensure_one()
+        self.invalidate_recordset(["order_line"])
+        self.order_line.exists()
+
+    def _cart_find_product_line(self, product_id, line_id=None, **kwargs):
+        if line_id:
+            line = self.env["sale.order.line"].sudo().browse(int(line_id))
+            if not line.exists() or line.order_id != self:
+                return self.env["sale.order.line"]
+        return super()._cart_find_product_line(
+            product_id, line_id=line_id, **kwargs
+        )
+
+    def _cart_update(self, product_id, line_id=None, add_qty=0, set_qty=0, **kwargs):
+        if line_id is not False and line_id is not None:
+            line = self.env["sale.order.line"].sudo().browse(int(line_id))
+            if not line.exists() or line.order_id != self:
+                line_id = None
+        try:
+            return super()._cart_update(
+                product_id,
+                line_id=line_id,
+                add_qty=add_qty,
+                set_qty=set_qty,
+                **kwargs,
+            )
+        except MissingError:
+            if request and request.session:
+                request.session.pop("sale_order_id", None)
+                request.session.pop("website_sale_cart_quantity", None)
+            raise
 
     def _send_website_sale_staff_notification(self):
         template = self.env.ref(
