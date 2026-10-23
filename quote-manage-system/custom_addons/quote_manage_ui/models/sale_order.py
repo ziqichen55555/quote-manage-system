@@ -336,13 +336,22 @@ class SaleOrder(models.Model):
         # website_sale.cart() strips delivery when carrier_id is set; Re-Ware weight
         # freight re-adds on line unlink → MissingError → session cleared.
         if not self.env.context.get("rw_force_delivery_remove"):
+            if self.env.context.get("rw_in_cart_update"):
+                cart_debug_log(
+                    self.env,
+                    "remove_delivery_line.skipped",
+                    reason="rw_in_cart_update",
+                    order_ids=self.ids,
+                )
+                return
             if request and getattr(request, "httprequest", None):
                 path = (
                     (request.httprequest.path or "").split("?", 1)[0].rstrip("/")
                     or "/"
                 )
-                # Only skip on cart page GET — not /shop/cart/update_json (needs line refresh).
-                if path == "/shop/cart":
+                # Skip on all /shop/cart* routes: Odoo _cart_update calls remove before qty
+                # change; Re-Ware refreshes shipping via _rw_ensure_default_freight instead.
+                if path == "/shop/cart" or path.startswith("/shop/cart/"):
                     cart_debug_log(
                         self.env,
                         "remove_delivery_line.skipped",
@@ -386,27 +395,35 @@ class SaleOrder(models.Model):
         )
         to_delete.unlink()
 
-    def _cart_find_product_line(self, product_id, line_id=None, **kwargs):
-        if line_id:
+    def _quote_resolve_cart_line_id(self, product_id, line_id=None):
+        """Map stale website line_id to a live product line on this order."""
+        self.ensure_one()
+        product_id = int(product_id)
+        if line_id is not False and line_id is not None:
             line = self.env["sale.order.line"].sudo().browse(int(line_id))
-            if not line.exists() or line.order_id != self:
-                return self.env["sale.order.line"]
+            if (
+                line.exists()
+                and line.order_id == self
+                and not line.is_delivery
+                and line.product_id.id == product_id
+            ):
+                return line.id
+        lines = self._quote_website_product_cart_lines().filtered(
+            lambda l: l.product_id.id == product_id
+        )
+        return lines[:1].id if lines else None
+
+    def _cart_find_product_line(self, product_id, line_id=None, **kwargs):
+        line_id = self._quote_resolve_cart_line_id(product_id, line_id=line_id)
+        if line_id is False:
+            return self.env["sale.order.line"]
         return super()._cart_find_product_line(
             product_id, line_id=line_id, **kwargs
         )
 
     def _cart_update(self, product_id, line_id=None, add_qty=0, set_qty=0, **kwargs):
-        if line_id is not False and line_id is not None:
-            line = self.env["sale.order.line"].sudo().browse(int(line_id))
-            if not line.exists() or line.order_id != self:
-                cart_debug_log(
-                    self.env,
-                    "cart_update.bad_line_id",
-                    order_id=self.id,
-                    line_id=line_id,
-                    line_exists=line.exists(),
-                )
-                line_id = None
+        self._quote_website_repair_cart()
+        line_id = self._quote_resolve_cart_line_id(product_id, line_id=line_id)
         cart_debug_log(
             self.env,
             "cart_update.in",
@@ -416,22 +433,15 @@ class SaleOrder(models.Model):
             add_qty=add_qty,
             set_qty=set_qty,
         )
+        order = self.with_context(rw_in_cart_update=True)
         try:
-            out = super()._cart_update(
+            out = super(SaleOrder, order)._cart_update(
                 product_id,
                 line_id=line_id,
                 add_qty=add_qty,
                 set_qty=set_qty,
                 **kwargs,
             )
-            cart_debug_log(
-                self.env,
-                "cart_update.out",
-                order_id=self.id,
-                line_id=out.get("line_id"),
-                quantity=out.get("quantity"),
-            )
-            return out
         except MissingError as err:
             cart_debug_log(
                 self.env,
@@ -439,23 +449,33 @@ class SaleOrder(models.Model):
                 order_id=self.id,
                 error=str(err),
             )
-            self._quote_website_repair_cart()
-            line_id = None
-            out = super()._cart_update(
+            order._quote_website_repair_cart()
+            line_id = order._quote_resolve_cart_line_id(product_id, line_id=None)
+            out = super(SaleOrder, order)._cart_update(
                 product_id,
                 line_id=line_id,
                 add_qty=add_qty,
                 set_qty=set_qty,
                 **kwargs,
             )
-            cart_debug_log(
-                self.env,
-                "cart_update.out_after_retry",
-                order_id=self.id,
-                line_id=out.get("line_id"),
-                quantity=out.get("quantity"),
+        if order.website_id:
+            order._rw_ensure_default_freight()
+            order.invalidate_recordset(
+                ["order_line", "website_order_line", "cart_quantity"]
             )
-            return out
+            resolved = order._quote_resolve_cart_line_id(
+                product_id, line_id=out.get("line_id")
+            )
+            if resolved:
+                out["line_id"] = resolved
+        cart_debug_log(
+            self.env,
+            "cart_update.out",
+            order_id=self.id,
+            line_id=out.get("line_id"),
+            quantity=out.get("quantity"),
+        )
+        return out
 
     def _send_website_sale_staff_notification(self):
         template = self.env.ref(
@@ -477,12 +497,16 @@ class SaleOrderLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         lines = super().create(vals_list)
-        lines.order_id._rw_ensure_default_freight()
+        if not self.env.context.get("rw_in_cart_update"):
+            lines.order_id._rw_ensure_default_freight()
         return lines
 
     def write(self, vals):
         res = super().write(vals)
-        if {"product_id", "product_uom_qty"} & set(vals):
+        if (
+            not self.env.context.get("rw_in_cart_update")
+            and {"product_id", "product_uom_qty"} & set(vals)
+        ):
             self.order_id._rw_ensure_default_freight()
         return res
 
@@ -493,7 +517,11 @@ class SaleOrderLine(models.Model):
         orders = self.order_id
         only_delivery = all(line.is_delivery for line in self)
         res = super().unlink()
-        if not only_delivery and not self.env.context.get("rw_skip_default_freight"):
+        if (
+            not only_delivery
+            and not self.env.context.get("rw_skip_default_freight")
+            and not self.env.context.get("rw_in_cart_update")
+        ):
             orders._rw_ensure_default_freight()
         return res
 

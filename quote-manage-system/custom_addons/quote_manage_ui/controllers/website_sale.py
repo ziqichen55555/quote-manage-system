@@ -88,8 +88,41 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
                 "route.cart_update_json.missing",
                 error=str(err),
             )
-            request.website._quote_reset_website_cart_session()
-            raise
+            so_id = request.session.get("sale_order_id")
+            order = (
+                request.env["sale.order"].sudo().browse(so_id).exists()
+                if so_id
+                else request.env["sale.order"]
+            )
+            retry_line_id = line_id
+            if order:
+                order._quote_website_repair_cart()
+                retry_line_id = order._quote_resolve_cart_line_id(
+                    product_id, line_id=line_id
+                )
+                request.website._quote_sync_website_cart_session(order)
+            try:
+                out = super().cart_update_json(
+                    product_id,
+                    line_id=retry_line_id,
+                    add_qty=add_qty,
+                    set_qty=set_qty,
+                    display=display,
+                    product_custom_attribute_values=product_custom_attribute_values,
+                    no_variant_attribute_values=no_variant_attribute_values,
+                    **kw,
+                )
+                cart_debug_log(
+                    request.env,
+                    "route.cart_update_json.out_after_retry",
+                    cart_quantity=out.get("cart_quantity")
+                    if isinstance(out, dict)
+                    else None,
+                )
+                return out
+            except MissingError:
+                request.website._quote_reset_website_cart_session()
+                raise
 
     @http.route(
         ["/shop/cart/debug"],
