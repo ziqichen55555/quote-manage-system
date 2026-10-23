@@ -1,21 +1,96 @@
 # -*- coding: utf-8 -*-
 """Website shop: guest or registered checkout; contact + billing address before payment."""
-from odoo import _
+import json
+
+from odoo import _, http
 from odoo.addons.website_sale.controllers import main as website_sale_controller
 from odoo.exceptions import MissingError
 from odoo.http import request
 from odoo.tools import lazy
+from werkzeug.exceptions import NotFound
+
+from odoo.addons.quote_manage_ui.website_cart_debug import (
+    build_cart_debug_payload,
+    cart_debug_enabled,
+    cart_debug_log,
+)
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
     def cart(self, access_token=None, revive="", **post):
+        cart_debug_log(request.env, "route.cart.in", access_token=bool(access_token))
         try:
-            return super().cart(
+            res = super().cart(
                 access_token=access_token, revive=revive, **post
             )
-        except MissingError:
+            cart_debug_log(request.env, "route.cart.out", ok=True)
+            return res
+        except MissingError as err:
+            cart_debug_log(request.env, "route.cart.missing", error=str(err))
             request.website._quote_reset_website_cart_session()
             return request.redirect("/shop/cart")
+
+    def cart_update_json(
+        self,
+        product_id,
+        line_id=None,
+        add_qty=None,
+        set_qty=None,
+        display=True,
+        product_custom_attribute_values=None,
+        no_variant_attribute_values=None,
+        **kw,
+    ):
+        cart_debug_log(
+            request.env,
+            "route.cart_update_json.in",
+            product_id=product_id,
+            line_id=line_id,
+            add_qty=add_qty,
+            set_qty=set_qty,
+        )
+        try:
+            out = super().cart_update_json(
+                product_id,
+                line_id=line_id,
+                add_qty=add_qty,
+                set_qty=set_qty,
+                display=display,
+                product_custom_attribute_values=product_custom_attribute_values,
+                no_variant_attribute_values=no_variant_attribute_values,
+                **kw,
+            )
+            cart_debug_log(
+                request.env,
+                "route.cart_update_json.out",
+                cart_quantity=out.get("cart_quantity") if isinstance(out, dict) else None,
+            )
+            return out
+        except MissingError as err:
+            cart_debug_log(
+                request.env,
+                "route.cart_update_json.missing",
+                error=str(err),
+            )
+            request.website._quote_reset_website_cart_session()
+            raise
+
+    @http.route(
+        ["/shop/cart/debug"],
+        type="http",
+        auth="user",
+        website=True,
+        sitemap=False,
+    )
+    def quote_cart_debug(self, **kw):
+        """JSON cart snapshot when quote_manage_ui.website_cart_debug=1."""
+        if not cart_debug_enabled(request.env):
+            raise NotFound()
+        payload = build_cart_debug_payload(request.env)
+        return request.make_response(
+            json.dumps(payload, indent=2, default=str),
+            headers=[("Content-Type", "application/json; charset=utf-8")],
+        )
 
     def shop(self, page=0, category=None, search="", **post):
         try:

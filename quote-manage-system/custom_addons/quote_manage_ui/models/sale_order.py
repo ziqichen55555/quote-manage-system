@@ -5,6 +5,8 @@ from odoo import _, api, fields, models
 from odoo.exceptions import MissingError, UserError, ValidationError
 from odoo.http import request
 
+from odoo.addons.quote_manage_ui.website_cart_debug import cart_debug_log
+
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
@@ -264,8 +266,16 @@ class SaleOrder(models.Model):
             .ids
         )
         cached_ids = set(self.order_line.ids)
-        if cached_ids - db_line_ids:
+        stale = cached_ids - db_line_ids
+        if stale:
             self.invalidate_recordset(["order_line"])
+            cart_debug_log(
+                self.env,
+                "repair_cart.stale_cache",
+                order_id=self.id,
+                stale_cached_line_ids=sorted(stale),
+                db_line_ids=sorted(db_line_ids),
+            )
         self.order_line.exists()
 
     def _remove_delivery_line(self):
@@ -298,6 +308,13 @@ class SaleOrder(models.Model):
                     ]
                 )
             )
+        cart_debug_log(
+            self.env,
+            "remove_delivery_line",
+            order_ids=self.ids,
+            delivery_line_ids=delivery_lines.ids,
+            unlink_ids=to_delete.ids,
+        )
         to_delete.unlink()
 
     def _cart_find_product_line(self, product_id, line_id=None, **kwargs):
@@ -313,25 +330,63 @@ class SaleOrder(models.Model):
         if line_id is not False and line_id is not None:
             line = self.env["sale.order.line"].sudo().browse(int(line_id))
             if not line.exists() or line.order_id != self:
+                cart_debug_log(
+                    self.env,
+                    "cart_update.bad_line_id",
+                    order_id=self.id,
+                    line_id=line_id,
+                    line_exists=line.exists(),
+                )
                 line_id = None
+        cart_debug_log(
+            self.env,
+            "cart_update.in",
+            order_id=self.id,
+            product_id=product_id,
+            line_id=line_id,
+            add_qty=add_qty,
+            set_qty=set_qty,
+        )
         try:
-            return super()._cart_update(
+            out = super()._cart_update(
                 product_id,
                 line_id=line_id,
                 add_qty=add_qty,
                 set_qty=set_qty,
                 **kwargs,
             )
-        except MissingError:
+            cart_debug_log(
+                self.env,
+                "cart_update.out",
+                order_id=self.id,
+                line_id=out.get("line_id"),
+                quantity=out.get("quantity"),
+            )
+            return out
+        except MissingError as err:
+            cart_debug_log(
+                self.env,
+                "cart_update.missing_retry",
+                order_id=self.id,
+                error=str(err),
+            )
             self._quote_website_repair_cart()
             line_id = None
-            return super()._cart_update(
+            out = super()._cart_update(
                 product_id,
                 line_id=line_id,
                 add_qty=add_qty,
                 set_qty=set_qty,
                 **kwargs,
             )
+            cart_debug_log(
+                self.env,
+                "cart_update.out_after_retry",
+                order_id=self.id,
+                line_id=out.get("line_id"),
+                quantity=out.get("quantity"),
+            )
+            return out
 
     def _send_website_sale_staff_notification(self):
         template = self.env.ref(

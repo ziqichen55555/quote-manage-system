@@ -5,6 +5,11 @@ from odoo import api, models
 from odoo.http import request
 from odoo.tools import ormcache
 
+from odoo.addons.quote_manage_ui.website_cart_debug import (
+    cart_debug_log,
+    sale_order_cart_debug_dict,
+)
+
 
 class Website(models.Model):
     _inherit = "website"
@@ -137,6 +142,8 @@ class Website(models.Model):
         """Header badge reads session qty first — keep it aligned with the SO."""
         if not request or not request.session:
             return
+        prev_qty = request.session.get("website_sale_cart_quantity")
+        prev_so = request.session.get("sale_order_id")
         if (
             order
             and order.exists()
@@ -147,12 +154,35 @@ class Website(models.Model):
             order_sudo._quote_website_repair_cart()
             request.session["sale_order_id"] = order_sudo.id
             request.session["website_sale_cart_quantity"] = order_sudo.cart_quantity
+            cart_debug_log(
+                self.env,
+                "cart_sync",
+                prev_sale_order_id=prev_so,
+                prev_session_qty=prev_qty,
+                sale_order_id=order_sudo.id,
+                session_qty=order_sudo.cart_quantity,
+                **sale_order_cart_debug_dict(order_sudo),
+            )
         else:
             self._quote_reset_website_cart_session()
+            cart_debug_log(
+                self.env,
+                "cart_sync.reset",
+                prev_sale_order_id=prev_so,
+                prev_session_qty=prev_qty,
+                order_id=order.id if order and order.exists() else None,
+            )
 
     def sale_get_order(self, force_create=False, update_pricelist=False):
         """Drop session cart when SO missing, not draft, or wrong site (stale line ids)."""
         sale_order_id = request.session.get("sale_order_id") if request else None
+        cart_debug_log(
+            self.env,
+            "sale_get_order.in",
+            session_sale_order_id=sale_order_id,
+            force_create=force_create,
+            update_pricelist=update_pricelist,
+        )
         order = super().sale_get_order(
             force_create=force_create, update_pricelist=update_pricelist
         )
@@ -163,9 +193,16 @@ class Website(models.Model):
                     force_create=True, update_pricelist=update_pricelist
                 )
             self._quote_sync_website_cart_session(order)
+            cart_debug_log(
+                self.env,
+                "sale_get_order.out",
+                branch="session_so_missing",
+                order_id=order.id if order else None,
+            )
             return order
         if not order:
             self._quote_sync_website_cart_session(order)
+            cart_debug_log(self.env, "sale_get_order.out", branch="empty")
             return order
         if order.state != "draft" or (order.website_id and order.website_id != self):
             self._quote_reset_website_cart_session()
@@ -176,10 +213,22 @@ class Website(models.Model):
             else:
                 order = self.env["sale.order"]
             self._quote_sync_website_cart_session(order)
+            cart_debug_log(
+                self.env,
+                "sale_get_order.out",
+                branch="not_draft_or_wrong_site",
+                order_id=order.id if order else None,
+            )
             return order
         order = self.env["sale.order"].browse(order.id).sudo()
         order._quote_website_repair_cart()
         self._quote_sync_website_cart_session(order)
+        cart_debug_log(
+            self.env,
+            "sale_get_order.out",
+            branch="draft_ok",
+            **sale_order_cart_debug_dict(order),
+        )
         return order
 
     def _reware_itemlist_json_str_for_products(self, products):
