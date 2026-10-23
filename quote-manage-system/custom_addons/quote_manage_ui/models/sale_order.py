@@ -245,8 +245,12 @@ class SaleOrder(models.Model):
             if not target:
                 continue
             order_ctx.carrier_id = target
-            order_ctx._remove_delivery_line()
-            order_ctx.set_delivery_line(target, price)
+            order_ctx.with_context(
+                rw_force_delivery_remove=True,
+            )._remove_delivery_line()
+            order_ctx.with_context(
+                rw_force_delivery_remove=True,
+            ).set_delivery_line(target, price)
             order_ctx.delivery_rating_success = True
             order.invalidate_recordset(
                 ["website_order_line", "cart_quantity", "only_services"]
@@ -304,24 +308,45 @@ class SaleOrder(models.Model):
                 stale_cached_line_ids=sorted(stale),
                 db_line_ids=sorted(db_line_ids),
             )
+        delivery_count = self.env["sale.order.line"].sudo().search_count(
+            [("order_id", "=", self.id), ("is_delivery", "=", True)]
+        )
+        if (
+            delivery_count > 1
+            and not self.env.context.get("rw_consolidating_delivery")
+        ):
+            cart_debug_log(
+                self.env,
+                "repair_cart.duplicate_delivery",
+                order_id=self.id,
+                delivery_count=delivery_count,
+            )
+            self.env["sale.order.line"].sudo().search(
+                [("order_id", "=", self.id), ("is_delivery", "=", True)]
+            ).with_context(rw_skip_default_freight=True).unlink()
+            self.with_context(
+                rw_consolidating_delivery=True,
+            )._rw_ensure_default_freight()
         self.order_line.exists()
 
     def _remove_delivery_line(self):
         # website_sale.cart() strips delivery when carrier_id is set; Re-Ware weight
         # freight re-adds on line unlink → MissingError → session cleared.
-        if request and getattr(request, "httprequest", None):
-            path = (request.httprequest.path or "").split("?", 1)[0].rstrip("/") or "/"
-            # Only skip on cart page GET — not /shop/cart/update_json (needs line refresh).
-            if path == "/shop/cart":
-                cart_debug_log(
-                    self.env,
-                    "remove_delivery_line.skipped",
-                    path=request.httprequest.path,
-                    order_ids=self.ids,
+        if not self.env.context.get("rw_force_delivery_remove"):
+            if request and getattr(request, "httprequest", None):
+                path = (
+                    (request.httprequest.path or "").split("?", 1)[0].rstrip("/")
+                    or "/"
                 )
-                return
-        for order in self:
-            order._quote_website_repair_cart()
+                # Only skip on cart page GET — not /shop/cart/update_json (needs line refresh).
+                if path == "/shop/cart":
+                    cart_debug_log(
+                        self.env,
+                        "remove_delivery_line.skipped",
+                        path=request.httprequest.path,
+                        order_ids=self.ids,
+                    )
+                    return
         delivery_lines = self.env["sale.order.line"].sudo().search(
             [("order_id", "in", self.ids), ("is_delivery", "=", True)]
         )
