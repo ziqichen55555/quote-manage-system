@@ -133,6 +133,23 @@ class Website(models.Model):
             request.session.pop("sale_order_id", None)
             request.session.pop("website_sale_cart_quantity", None)
 
+    def _quote_sync_website_cart_session(self, order):
+        """Header badge reads session qty first — keep it aligned with the SO."""
+        if not request or not request.session:
+            return
+        if (
+            order
+            and order.exists()
+            and order.state == "draft"
+            and (not order.website_id or order.website_id == self)
+        ):
+            order_sudo = order.sudo()
+            order_sudo._quote_website_repair_cart()
+            request.session["sale_order_id"] = order_sudo.id
+            request.session["website_sale_cart_quantity"] = order_sudo.cart_quantity
+        else:
+            self._quote_reset_website_cart_session()
+
     def sale_get_order(self, force_create=False, update_pricelist=False):
         """Drop session cart when SO missing, not draft, or wrong site (stale line ids)."""
         sale_order_id = request.session.get("sale_order_id") if request else None
@@ -145,17 +162,24 @@ class Website(models.Model):
                 order = super().sale_get_order(
                     force_create=True, update_pricelist=update_pricelist
                 )
+            self._quote_sync_website_cart_session(order)
             return order
         if not order:
+            self._quote_sync_website_cart_session(order)
             return order
         if order.state != "draft" or (order.website_id and order.website_id != self):
             self._quote_reset_website_cart_session()
             if force_create:
-                return super().sale_get_order(
+                order = super().sale_get_order(
                     force_create=True, update_pricelist=update_pricelist
                 )
-            return self.env["sale.order"]
-        order.sudo()._quote_website_repair_cart()
+            else:
+                order = self.env["sale.order"]
+            self._quote_sync_website_cart_session(order)
+            return order
+        order = self.env["sale.order"].browse(order.id).sudo()
+        order._quote_website_repair_cart()
+        self._quote_sync_website_cart_session(order)
         return order
 
     def _reware_itemlist_json_str_for_products(self, products):

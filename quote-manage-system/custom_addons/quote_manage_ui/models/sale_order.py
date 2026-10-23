@@ -152,9 +152,25 @@ class SaleOrder(models.Model):
             return _("In-store pickup")
         return _("By post")
 
+    def _quote_db_order_lines(self):
+        """Fresh lines from DB (website carts: avoid stale deleted ids in cache)."""
+        self.ensure_one()
+        return self.env["sale.order.line"].sudo().search([("order_id", "=", self.id)])
+
+    def _quote_order_lines_for_ops(self):
+        self.ensure_one()
+        if self.website_id:
+            return self._quote_db_order_lines()
+        return self.order_line.exists()
+
+    def _compute_website_order_line(self):
+        for order in self:
+            lines = order._quote_order_lines_for_ops()
+            order.website_order_line = lines.filtered(lambda line: line._show_in_cart())
+
     def _rw_freight_product_lines(self):
         self.ensure_one()
-        return self.order_line.filtered(
+        return self._quote_order_lines_for_ops().filtered(
             lambda l: not l.display_type
             and not l.is_delivery
             and l.product_id
@@ -255,7 +271,9 @@ class SaleOrder(models.Model):
     def _remove_delivery_line(self):
         for order in self:
             order._quote_website_repair_cart()
-        delivery_lines = self.mapped("order_line").exists().filtered("is_delivery")
+        delivery_lines = self.env["sale.order.line"].sudo().search(
+            [("order_id", "in", self.ids), ("is_delivery", "=", True)]
+        )
         if not delivery_lines:
             return
         to_delete = delivery_lines.filtered(lambda line: line.qty_invoiced == 0)
@@ -305,10 +323,15 @@ class SaleOrder(models.Model):
                 **kwargs,
             )
         except MissingError:
-            if request and request.session:
-                request.session.pop("sale_order_id", None)
-                request.session.pop("website_sale_cart_quantity", None)
-            raise
+            self._quote_website_repair_cart()
+            line_id = None
+            return super()._cart_update(
+                product_id,
+                line_id=line_id,
+                add_qty=add_qty,
+                set_qty=set_qty,
+                **kwargs,
+            )
 
     def _send_website_sale_staff_notification(self):
         template = self.env.ref(
