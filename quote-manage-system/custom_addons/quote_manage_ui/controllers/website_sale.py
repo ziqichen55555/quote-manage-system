@@ -8,6 +8,15 @@ from odoo.tools import lazy
 
 
 class WebsiteSale(website_sale_controller.WebsiteSale):
+    def cart(self, access_token=None, revive="", **post):
+        try:
+            return super().cart(
+                access_token=access_token, revive=revive, **post
+            )
+        except MissingError:
+            request.website._quote_reset_website_cart_session()
+            return request.redirect("/shop/cart")
+
     def shop(self, page=0, category=None, search="", **post):
         try:
             return super().shop(

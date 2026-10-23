@@ -205,18 +205,11 @@
             <div class="row">
                 <div class="col-12 mb-4">
                     <div class="qm-comsol-shop-hero p-4 p-lg-5">
-                        <div class="row align-items-start g-4 mb-0 mb-lg-4">
+                        <div t-if="category" class="row align-items-start g-4 mb-0 mb-lg-4">
                             <div class="col-lg-7">
-                                <t t-if="category">
-                                    <p class="rw-eyebrow mb-2">Second-hand &amp; refurbished IT — Re-Ware shop</p>
-                                    <h1 class="fw-bold mb-3" t-field="category.name"/>
-                                    <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Ex-lease and second-hand computers and IT — graded, tested, warranty-backed. Shipped Australia-wide from Perth.</p>
-                                </t>
-                                <t t-else="">
-                                    <p class="rw-eyebrow mb-2">Second-hand &amp; refurbished computers — Perth</p>
-                                    <h1 class="fw-bold mb-3">Re-Ware shop — refurbished laptops, monitors &amp; IT</h1>
-                                    <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Buy second-hand and ex-lease computers online: laptops, desktops, monitors, docks and accessories. Graded, tested and warranty-backed.</p>
-                                </t>
+                                <p class="rw-eyebrow mb-2">Second-hand &amp; refurbished IT — Re-Ware shop</p>
+                                <h1 class="fw-bold mb-3" t-field="category.name"/>
+                                <p class="mb-0" style="max-width: 36rem; color: var(--rw-text-soft); line-height: 1.6;">Ex-lease and second-hand computers and IT — graded, tested, warranty-backed. Shipped Australia-wide from Perth.</p>
                             </div>
                             <div class="col-lg-5">
                                 <ul class="list-unstyled qm-comsol-value-list mb-0 small">
@@ -227,6 +220,7 @@
                                 </ul>
                             </div>
                         </div>
+                        <!-- Root /shop: no visible H1 or hero copy (title, meta, ItemList JSON-LD only). -->
                         <div class="row g-3 text-center justify-content-start border-top pt-4 mt-2">
                             <t t-set="top_categories" t-value="list(categories) if categories else []"/>
                             <t t-foreach="top_categories" t-as="t_cat">

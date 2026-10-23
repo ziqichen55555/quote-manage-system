@@ -2,7 +2,7 @@
 import math
 
 from odoo import _, api, fields, models
-from odoo.exceptions import MissingError, ValidationError
+from odoo.exceptions import MissingError, UserError, ValidationError
 from odoo.http import request
 
 
@@ -239,10 +239,48 @@ class SaleOrder(models.Model):
         return res
 
     def _quote_website_repair_cart(self):
-        """Invalidate stale one2many cache after lines removed in backend."""
+        """Drop deleted line ids from cache (backend edits / stale website session)."""
         self.ensure_one()
-        self.invalidate_recordset(["order_line"])
+        db_line_ids = set(
+            self.env["sale.order.line"]
+            .sudo()
+            .search([("order_id", "=", self.id)])
+            .ids
+        )
+        cached_ids = set(self.order_line.ids)
+        if cached_ids - db_line_ids:
+            self.invalidate_recordset(["order_line"])
         self.order_line.exists()
+
+    def _remove_delivery_line(self):
+        for order in self:
+            order._quote_website_repair_cart()
+        delivery_lines = self.mapped("order_line").exists().filtered("is_delivery")
+        if not delivery_lines:
+            return
+        to_delete = delivery_lines.filtered(lambda line: line.qty_invoiced == 0)
+        if not to_delete:
+            raise UserError(
+                _(
+                    "You can not update the shipping costs on an order where it was "
+                    "already invoiced!\n\nThe following delivery lines (product, "
+                    "invoiced quantity and price) have already been processed:\n\n"
+                )
+                + "\n".join(
+                    [
+                        "- %s: %s x %s"
+                        % (
+                            line.product_id.with_context(
+                                display_default_code=False
+                            ).display_name,
+                            line.qty_invoiced,
+                            line.price_unit,
+                        )
+                        for line in delivery_lines
+                    ]
+                )
+            )
+        to_delete.unlink()
 
     def _cart_find_product_line(self, product_id, line_id=None, **kwargs):
         if line_id:
@@ -302,6 +340,9 @@ class SaleOrderLine(models.Model):
         return res
 
     def unlink(self):
+        self = self.exists()
+        if not self:
+            return True
         orders = self.order_id
         res = super().unlink()
         orders._rw_ensure_default_freight()
