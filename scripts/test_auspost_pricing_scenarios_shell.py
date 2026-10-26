@@ -13,7 +13,10 @@ print("=" * 80)
 print(f"quote_manage_ui: {env['ir.module.module'].sudo().search([('name','=','quote_manage_ui')], limit=1).installed_version}")
 print(f"pipeline_enabled: {Integration.pipeline_enabled()}")
 print(f"from_postcode: {from_pc!r}")
-print(f"packaging: {Integration._packaging_params()}")
+if hasattr(Integration, "_packaging_params"):
+    print(f"packaging: {Integration._packaging_params()}")
+else:
+    print("packaging: (module < 1.0.213 — no foam padding in code yet)")
 print(f"cartonpilot key: {bool((icp.get_param('quote_manage_ui.cartonpilot_api_key') or '').strip())}")
 print(f"products with pack dims (sale_ok): {env['product.template'].sudo().search_count([('sale_ok','=',True),('rw_ship_length_cm','>',0),('rw_ship_width_cm','>',0),('rw_ship_height_cm','>',0)])}")
 print("-" * 80)
@@ -97,9 +100,10 @@ def quote_cart(label, template_ids, qty, to_postcode):
             items = Integration._build_items_from_order(order)
             boxes = Integration._active_auspost_boxes()
             parcels = Integration._cartonize_cartonpilot(items, boxes)
-            extra = Integration._packaging_params()["extra_kg_per_parcel"]
-            for p in parcels:
-                p["weight_kg"] = float(p.get("weight_kg") or 0.1) + extra
+            if hasattr(Integration, "_packaging_params"):
+                extra = Integration._packaging_params()["extra_kg_per_parcel"]
+                for p in parcels:
+                    p["weight_kg"] = float(p.get("weight_kg") or 0.1) + extra
             n_parcels = len(parcels)
             pipeline = Integration.quote_order_freight_ex_gst(order)
     except Exception as exc:
