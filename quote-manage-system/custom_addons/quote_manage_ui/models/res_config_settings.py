@@ -28,3 +28,22 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="quote_manage_ui.auspost_service_code",
         default="AUS_PARCEL_REGULAR",
     )
+    rw_shipping_pack_add_cm = fields.Float(
+        string="Pack padding (cm per dimension)",
+        config_parameter="quote_manage_ui.shipping_pack_add_cm",
+        default=2.0,
+        help="Added to each product pack length, width and height before "
+        "cartonization (room for foam/bubble wrap). Product master can stay at bare item size.",
+    )
+    rw_shipping_pack_extra_kg = fields.Float(
+        string="Extra weight per unit (kg)",
+        config_parameter="quote_manage_ui.shipping_pack_extra_kg",
+        default=0.15,
+        help="Added to each shippable unit weight (packaging material estimate).",
+    )
+    rw_shipping_pack_parcel_extra_kg = fields.Float(
+        string="Extra weight per parcel (kg)",
+        config_parameter="quote_manage_ui.shipping_pack_parcel_extra_kg",
+        default=0.2,
+        help="Added once per AusPost parcel after packing (empty box / void fill).",
+    )

@@ -35,6 +35,28 @@ class RwShippingIntegration(models.AbstractModel):
             return False
         return True
 
+    def _packaging_params(self):
+        icp = self._icp()
+
+        def _float_param(key, default):
+            raw = icp.get_param(key)
+            if raw is None or raw == "":
+                return default
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                return default
+
+        return {
+            "add_cm": max(0.0, _float_param("quote_manage_ui.shipping_pack_add_cm", 2.0)),
+            "extra_kg_per_unit": max(
+                0.0, _float_param("quote_manage_ui.shipping_pack_extra_kg", 0.15)
+            ),
+            "extra_kg_per_parcel": max(
+                0.0, _float_param("quote_manage_ui.shipping_pack_parcel_extra_kg", 0.2)
+            ),
+        }
+
     def _sorted_dims(self, length, width, height):
         return sorted([float(length), float(width), float(height)])
 
@@ -52,6 +74,9 @@ class RwShippingIntegration(models.AbstractModel):
 
     def _build_items_from_order(self, order):
         """Expand order lines to CartonPilot items (cm, kg)."""
+        pack = self._packaging_params()
+        pad = pack["add_cm"]
+        extra_kg = pack["extra_kg_per_unit"]
         items = []
         missing = []
         for line in order._rw_freight_product_lines():
@@ -63,9 +88,13 @@ class RwShippingIntegration(models.AbstractModel):
             if l_cm <= 0 or w_cm <= 0 or h_cm <= 0:
                 missing.append(product.display_name)
                 continue
+            l_cm = l_cm + pad
+            w_cm = w_cm + pad
+            h_cm = h_cm + pad
             weight = product.weight or 0.0
             if weight <= 0:
                 weight = 1.0
+            weight = weight + extra_kg
             qty = int(math.ceil(line.product_uom_qty))
             items.append(
                 {
@@ -304,6 +333,10 @@ class RwShippingIntegration(models.AbstractModel):
         boxes = self._active_auspost_boxes()
         items = self._build_items_from_order(order)
         parcels = self._cartonize_cartonpilot(items, boxes)
+        parcel_extra = self._packaging_params()["extra_kg_per_parcel"]
+        if parcel_extra:
+            for parcel in parcels:
+                parcel["weight_kg"] = float(parcel.get("weight_kg") or 0.1) + parcel_extra
 
         total_inc_gst = 0.0
         for parcel in parcels:

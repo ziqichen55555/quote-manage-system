@@ -26,6 +26,11 @@
                     <group string="CartonPilot (optional)" invisible="not rw_shipping_pipeline_enabled">
                         <field name="rw_cartonpilot_api_key" password="True"/>
                     </group>
+                    <group string="Packaging allowance (foam / box)" invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_shipping_pack_add_cm"/>
+                        <field name="rw_shipping_pack_extra_kg"/>
+                        <field name="rw_shipping_pack_parcel_extra_kg"/>
+                    </group>
                 </sheet>
                 <footer>
                     <button string="Save" name="execute" type="object" class="btn-primary" data-hotkey="s"/>

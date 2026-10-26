@@ -59,11 +59,23 @@
                             <label for="rw_auspost_auth_key" class="col-lg-3 o_light_label" string="PAC AUTH-KEY"/>
                             <field name="rw_auspost_auth_key" password="True"/>
                         </div>
-                        <div class="row">
-                            <label for="rw_cartonpilot_api_key" class="col-lg-3 o_light_label" string="CartonPilot key"/>
-                            <field name="rw_cartonpilot_api_key" password="True"/>
-                        </div>
-                        <div class="row mt8">
+                            <div class="row">
+                                <label for="rw_cartonpilot_api_key" class="col-lg-3 o_light_label" string="CartonPilot key"/>
+                                <field name="rw_cartonpilot_api_key" password="True"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_add_cm" class="col-lg-3 o_light_label" string="Foam padding (cm)"/>
+                                <field name="rw_shipping_pack_add_cm"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / unit"/>
+                                <field name="rw_shipping_pack_extra_kg"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_parcel_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / parcel"/>
+                                <field name="rw_shipping_pack_parcel_extra_kg"/>
+                            </div>
+                            <div class="row mt8">
                             <div class="col-lg-3"/>
                             <div class="col-lg-9">
                                 <button type="action"

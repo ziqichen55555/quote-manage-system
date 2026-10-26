@@ -145,9 +145,9 @@ def main():
     readme["A1"] = "Re-Ware pack dimensions (cm) for AusPost / CartonPilot"
     readme["A1"].font = Font(bold=True)
     readme["A3"] = "Columns on sheet 'products': product_id must match Odoo product.template id."
-    readme["A4"] = "Edit length_cm, width_cm, height_cm (shipping outer size). weight_kg is reference only."
-    readme["A5"] = "After edits: save as CSV (product_id,length_cm,width_cm,height_cm) and apply on prod,"
-    readme["A6"] = "or ask to re-run apply_product_pack_dims_csv_shell.py with file on server /tmp/"
+    readme["A4"] = "Edit length_cm, width_cm, height_cm (bare product size is OK)."
+    readme["A5"] = "Odoo adds foam allowance at quote time: Settings → Pack padding (cm) + extra kg."
+    readme["A6"] = "After edits: save as CSV (product_id,length_cm,width_cm,height_cm) and apply on prod /tmp/"
 
     ws = wb.create_sheet("products")
     ws.append(fieldnames)
