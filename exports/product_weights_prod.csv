@@ -24,13 +24,13 @@ product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 921,,Display Port To DVI-D Female Adaptor,Chargers / Power Adapters,Cables & Adapters,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 920,,Display Port To DVI-I Female Adaptor,Chargers / Power Adapters,Cables & Adapters,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 923,,Display Port To VGA Adapter,Chargers / Power Adapters,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-710,S22A450BW,"Dual 22"" Samsung S22C450 monitor bundle + HP G4 Dock",Monitors & Displays,Monitors & Displays,7,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-850,,"dual 22"" screen bundle",All,,7,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-851,,"dual 22"" screen bundle",All,,7,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-849,,"dual 22"" screen bundle",All,,7,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-901,,"dual 24"" F24T450FQ Screen Bundle with HP G3 Dock",All,,8,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-719,BUNDLEDELL24,"Dual 24 Monitor Bundle 2 x Dell 24"" (P2422HE) monitors + Dell K20A dock and AC adapter",Monitors & Displays,Monitors & Displays,8,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-904,,"Dual 24"" Screen Bundle 2 x Samsung S24a450 and HP G3 Dock",Monitors & Displays,,8,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+710,S22A450BW,"Dual 22"" Samsung S22C450 monitor bundle + HP G4 Dock",Monitors & Displays,Monitors & Displays,12,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+850,,"dual 22"" screen bundle",All,,12,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+851,,"dual 22"" screen bundle",All,,12,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+849,,"dual 22"" screen bundle",All,,12,55,38,22,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+901,,"dual 24"" F24T450FQ Screen Bundle with HP G3 Dock",All,,12,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+719,BUNDLEDELL24,"Dual 24 Monitor Bundle 2 x Dell 24"" (P2422HE) monitors + Dell K20A dock and AC adapter",Monitors & Displays,Monitors & Displays,13,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+904,,"Dual 24"" Screen Bundle 2 x Samsung S24a450 and HP G3 Dock",Monitors & Displays,,13,60,40,25,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 890,EPEB1723,Epson EB-1723 Portable Projector,All,Projectors & AV,3,38,30,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 907,,Evoluent Vertical Mouse 4,PC Accessories,Accessories,0.5,35,15,5,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 906,,hdmi,All,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
@@ -47,7 +47,7 @@ product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 717,AG066A,HP TFT7600 KVM,PC Accessories,Accessories,1.5,30,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 928,,HP USB-A To USB-C Adapter 1WC36AA,Chargers / Power Adapters,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 896,,HP Wired Keyboard TPA-D002K Brand New,All,Accessories,0.5,35,15,5,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-903,,Jabra Lifechat LX-6000 brand new in box,headphones,Accessories,0.5,22,18,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+903,,Jabra Lifechat LX-6000 brand new in box,headphones,Accessories,1,22,18,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 913,,Lenovo 12V 65W Travel Adaptor Charger,All,Cables & Adapters,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 946,,Lenovo M910 Tiny No SSD,All,,2,35,30,15,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 715,40AF0135AU,Lenovo THINKPAD HYBRID USB-C Dock new in box,Docks & Port Replicators,Docks,1.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
@@ -58,9 +58,9 @@ product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 911,,Logitech BCC950 Conference Cam,PC Accessories,Accessories,1.5,30,25,20,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 912,,Logitech Wireless Mouse M185,All,Accessories,0.5,35,15,5,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 735,MR18-HW,Meraki MR18-HW,PC Accessories,Accessories,1.5,35,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-736,MR42-HW,Meraki MR42-HW,PC Accessories,Accessories,1.5,35,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-737,MS220-24P,Meraki MS220-24P,PC Accessories,Accessories,1.5,35,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-738,MS220-48P,Meraki MS220-48P Switch,PC Accessories,Accessories,4,55,40,15,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+736,MR42-HW,Meraki MR42-HW,PC Accessories,Accessories,2,35,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+737,MS220-24P,Meraki MS220-24P,PC Accessories,Accessories,5,35,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+738,MS220-48P,Meraki MS220-48P Switch,PC Accessories,Accessories,5,55,40,15,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 922,,Mini Display Port To DVI-I Adapter,Chargers / Power Adapters,Cables & Adapters,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 927,,Mini Display Port To HDMI Adapter,Chargers / Power Adapters,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 891,NECM322WG,NEC NP-M322WG WXGA Projector,All,Projectors & AV,3,38,30,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
@@ -71,10 +71,10 @@ product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 875,,Panasonic DFT 30,All,,1.5,30,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 876,,Panasonic DFT 30 Camera,All,,1.5,30,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 880,,Panasonic Lumix DMC-TZ20 Digital Camera,All,Digital Camera,1,15,12,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-878,CF-54J1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-902,CF-54H1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-886,CF-54J1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,All,Laptops,3,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-885,CF-54H1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,,3,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+878,CF-54J1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3.5,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+902,CF-54H1436VA-BT70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,Laptops,3.5,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+886,CF-54J1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,All,Laptops,3.5,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+885,CF-54H1436VA-BTU70-CMOSP,Panasonic Toughbook CF-54 Mk3,Computer Systems,,3.5,42,32,8,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 884,RE65WAC,Re-Ware 65W USB-C AC Adapter,PC Accessories,Cables & Adapters,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 722,CCITREWAREBAG,Re-Ware Lenovo backpack,PC Accessories,Accessories,1.5,45,35,15,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 726,F24T450FQEXXY,"Samsung 24"" F24T450FQ USB hub 1080P WIFI",Monitors & Displays,Monitors & Displays,5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
@@ -107,8 +107,8 @@ product_id,default_code,product_name,internal_category,shop_categories,weight_kg
 835,20NYS4CP00-8G-512G-T-BT70-CMOSP,ThinkPad T490s,Computer Systems,Laptops,2.5,38,28,5,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 831,20NYS4CP00-8G-256G-T-BT70-CMOSP,ThinkPad T490s,Computer Systems,Laptops,2.5,38,28,5,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 908,,TOA P-2852 100V OR 8 Ohm Ceiling Mount Speaker,PC Accessories,Accessories,1.5,30,25,20,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-856,,"Two Samsung 24"" monitors with HP G4 dock",Monitors & Displays,Monitors & Displays,5,55,35,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
-720,BUNDLESA1450,"Two Samsung S22C450 22""Monitors",Monitors & Displays,Monitors & Displays,5,55,35,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+856,,"Two Samsung 24"" monitors with HP G4 dock",Monitors & Displays,Monitors & Displays,12,55,35,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
+720,BUNDLESA1450,"Two Samsung S22C450 22""Monitors",Monitors & Displays,Monitors & Displays,12,55,35,12,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 899,,usb_c,All,,1.5,30,25,10,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 924,,USB-C Male To VGA Female Adapter,Chargers / Power Adapters,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
 926,,USB-C To DVI-I Adapter,Chargers / Power Adapters,,0.5,18,12,4,Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts
