@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.210',
+    'version': '1.0.212',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -54,6 +54,7 @@
         'views/rw_auspost_parcel_box_views.xml',
         'views/res_config_settings_views.xml',
         'views/rw_shipping_settings_action.xml',
+        'views/delivery_carrier_auspost_views.xml',
         'views/product_import_wizard_views.xml',
         'views/crm_lead_views.xml',
         'views/website_appointment_views.xml',

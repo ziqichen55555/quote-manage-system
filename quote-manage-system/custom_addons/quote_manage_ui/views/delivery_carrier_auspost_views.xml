@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- User is often on this list (Shipping Methods) — put API config one click away. -->
+    <record id="view_delivery_carrier_tree_rw_auspost" model="ir.ui.view">
+        <field name="name">delivery.carrier.tree.rw.auspost</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(quote_manage_ui.action_rw_shipping_api_settings)d"
+                            type="action"
+                            string="AusPost PAC API keys"
+                            display="always"
+                            groups="base.group_user"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_delivery_carrier_form_rw_auspost" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.rw.auspost</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-secondary mb-0" role="status" groups="base.group_user">
+                    <strong>Re-Ware checkout freight:</strong>
+                    Australia Post PAC (+ optional CartonPilot) is configured separately from UPS/DHL connectors.
+                    <button name="action_rw_open_auspost_api_settings"
+                            type="object"
+                            string="Open AusPost API settings"
+                            class="btn btn-link p-0 align-baseline"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

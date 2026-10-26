@@ -7,27 +7,99 @@
         <field name="arch" type="xml">
             <xpath expr="//app[@name='sale_management']" position="inside">
                 <block title="Re-Ware shipping (AusPost)" name="rw_auspost_shipping">
-                    <setting string="Live AusPost freight at checkout"
+                    <setting id="rw_auspost_shipping_sale_block"
+                             string="Live AusPost freight at checkout"
                              help="Uses product pack dimensions, AusPost box catalog, CartonPilot packing, and Australia Post PAC rates. Falls back to $/kg when disabled or on error.">
                         <field name="rw_shipping_pipeline_enabled"/>
-                    </setting>
-                    <setting string="Ship-from postcode"
-                             invisible="not rw_shipping_pipeline_enabled">
-                        <field name="rw_auspost_from_postcode" placeholder="e.g. 2000"/>
-                    </setting>
-                    <setting string="AusPost service code"
-                             invisible="not rw_shipping_pipeline_enabled">
-                        <field name="rw_auspost_service_code" placeholder="AUS_PARCEL_REGULAR"/>
-                    </setting>
-                    <setting string="Australia Post PAC AUTH-KEY"
-                             invisible="not rw_shipping_pipeline_enabled">
-                        <field name="rw_auspost_auth_key" password="True"/>
-                    </setting>
-                    <setting string="CartonPilot API key"
-                             invisible="not rw_shipping_pipeline_enabled">
-                        <field name="rw_cartonpilot_api_key" password="True"/>
+                        <div class="content-group mt16" invisible="not rw_shipping_pipeline_enabled">
+                            <div class="row">
+                                <label for="rw_auspost_from_postcode" class="col-lg-3 o_light_label"/>
+                                <field name="rw_auspost_from_postcode" placeholder="e.g. 2000"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_auspost_service_code" class="col-lg-3 o_light_label"/>
+                                <field name="rw_auspost_service_code" placeholder="AUS_PARCEL_REGULAR"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_auspost_auth_key" class="col-lg-3 o_light_label"/>
+                                <field name="rw_auspost_auth_key" password="True"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_cartonpilot_api_key" class="col-lg-3 o_light_label"/>
+                                <field name="rw_cartonpilot_api_key" password="True"/>
+                            </div>
+                        </div>
                     </setting>
                 </block>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Same fields under Website → Settings → Shipping (where UPS/DHL promos appear). -->
+    <record id="res_config_settings_view_form_rw_shipping_website" model="ir.ui.view">
+        <field name="name">res.config.settings.form.rw.shipping.website</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='sale_shipping_settings']/setting[@id='delivery_method_setting']" position="after">
+                <setting id="rw_auspost_shipping_website"
+                         string="Australia Post PAC (Re-Ware)"
+                         help="Custom Re-Ware integration: CartonPilot packing + Australia Post Postage Assessment Calculator. Not an Odoo UPS-style connector app.">
+                    <field name="rw_shipping_pipeline_enabled"/>
+                    <div class="content-group mt16" invisible="not rw_shipping_pipeline_enabled">
+                        <div class="row">
+                            <label for="rw_auspost_from_postcode" class="col-lg-3 o_light_label" string="Ship-from postcode"/>
+                            <field name="rw_auspost_from_postcode" placeholder="e.g. 2000"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_auspost_service_code" class="col-lg-3 o_light_label" string="Service code"/>
+                            <field name="rw_auspost_service_code" placeholder="AUS_PARCEL_REGULAR"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_auspost_auth_key" class="col-lg-3 o_light_label" string="PAC AUTH-KEY"/>
+                            <field name="rw_auspost_auth_key" password="True"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_cartonpilot_api_key" class="col-lg-3 o_light_label" string="CartonPilot key"/>
+                            <field name="rw_cartonpilot_api_key" password="True"/>
+                        </div>
+                        <div class="row mt8">
+                            <div class="col-lg-3"/>
+                            <div class="col-lg-9">
+                                <button type="action"
+                                        name="%(quote_manage_ui.action_rw_auspost_parcel_box)d"
+                                        string="AusPost parcel box sizes"
+                                        class="btn-link"
+                                        icon="oi-arrow-right"/>
+                            </div>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_rw_shipping_stock" model="ir.ui.view">
+        <field name="name">res.config.settings.form.rw.shipping.stock</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='shipping_setting_container']/setting[@id='delivery']" position="after">
+                <setting id="rw_auspost_shipping_stock"
+                         string="Australia Post PAC (Re-Ware)"
+                         help="CartonPilot + Australia Post PAC for website checkout freight.">
+                    <field name="rw_shipping_pipeline_enabled"/>
+                    <div class="content-group mt16" invisible="not rw_shipping_pipeline_enabled">
+                        <div class="row">
+                            <label for="rw_auspost_from_postcode" class="col-lg-3 o_light_label" string="Ship-from postcode"/>
+                            <field name="rw_auspost_from_postcode"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_auspost_auth_key" class="col-lg-3 o_light_label" string="PAC AUTH-KEY"/>
+                            <field name="rw_auspost_auth_key" password="True"/>
+                        </div>
+                    </div>
+                </setting>
             </xpath>
         </field>
     </record>

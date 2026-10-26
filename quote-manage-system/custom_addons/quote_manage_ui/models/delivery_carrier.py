@@ -81,3 +81,8 @@ class DeliveryCarrier(models.Model):
         if self.rw_rural_mode == "rural_only" and not is_rural:
             return False
         return True
+
+    def action_rw_open_auspost_api_settings(self):
+        return self.env.ref(
+            "quote_manage_ui.action_rw_shipping_api_settings"
+        ).read()[0]
