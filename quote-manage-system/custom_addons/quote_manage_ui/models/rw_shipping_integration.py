@@ -69,6 +69,46 @@ class RwShippingIntegration(models.AbstractModel):
             and item_dims[2] <= box_dims[2]
         )
 
+    def _auspost_own_packaging_ok(self, length_cm, width_cm, height_cm, weight_kg):
+        """Domestic Parcel Post limits (own packaging): 105 cm longest side, 0.25 m³, 22 kg."""
+        l, w, h = float(length_cm), float(width_cm), float(height_cm)
+        if max(l, w, h) > 105:
+            return False
+        if (l * w * h) / 1_000_000.0 > 0.25:
+            return False
+        if float(weight_kg) > 22:
+            return False
+        return True
+
+    def _cartonize_own_packaging(self, items):
+        """One PAC parcel per item unit using actual pack dimensions (not retail Bx boxes)."""
+        parcels = []
+        for item in items:
+            dims = item["dimensions"]
+            l, w, h = dims["length"], dims["width"], dims["height"]
+            unit_weight = float(item.get("weight") or 1.0)
+            qty = int(item.get("quantity") or 1)
+            for _index in range(max(1, qty)):
+                if not self._auspost_own_packaging_ok(l, w, h, unit_weight):
+                    raise UserError(
+                        _(
+                            "Item %(item)s exceeds Australia Post parcel limits "
+                            "(max 105 cm longest side, 0.25 m³, 22 kg). "
+                            "Please contact us for a shipping quote.",
+                            item=item.get("id"),
+                        )
+                    )
+                parcels.append(
+                    {
+                        "length_cm": float(l),
+                        "width_cm": float(w),
+                        "height_cm": float(h),
+                        "weight_kg": unit_weight,
+                        "box_id": "OWN_PACKAGING",
+                    }
+                )
+        return parcels
+
     def _active_auspost_boxes(self):
         return self.env["rw.auspost.parcel.box"].search([("active", "=", True)])
 
@@ -155,12 +195,12 @@ class RwShippingIntegration(models.AbstractModel):
         data = body.get("data") or {}
         unpacked = data.get("unpackedItems") or []
         if unpacked:
-            raise UserError(
-                _(
-                    "Some items do not fit available Australia Post box sizes. "
-                    "Please contact us for a shipping quote."
-                )
+            _logger.info(
+                "CartonPilot could not pack %s item(s) into retail AusPost boxes; "
+                "using own-packaging dimensions where allowed.",
+                len(unpacked),
             )
+            return self._cartonize_own_packaging(items)
         shipments = data.get("shipments") or []
         if not shipments:
             raise UserError(_("CartonPilot returned no shipments."))
@@ -213,9 +253,23 @@ class RwShippingIntegration(models.AbstractModel):
                         fitted = box
                         break
                 if not fitted:
+                    if self._auspost_own_packaging_ok(
+                        dims["length"], dims["width"], dims["height"], unit_weight
+                    ):
+                        parcels.append(
+                            {
+                                "length_cm": float(dims["length"]),
+                                "width_cm": float(dims["width"]),
+                                "height_cm": float(dims["height"]),
+                                "weight_kg": unit_weight,
+                                "box_id": "OWN_PACKAGING",
+                            }
+                        )
+                        continue
                     raise UserError(
                         _(
-                            "Item %(item)s does not fit any configured Australia Post box.",
+                            "Item %(item)s does not fit Australia Post retail boxes or "
+                            "own-packaging size/weight limits.",
                             item=item.get("id"),
                         )
                     )
