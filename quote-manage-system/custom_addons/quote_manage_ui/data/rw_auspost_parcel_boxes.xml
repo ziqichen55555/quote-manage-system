@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Dimensions from Australia Post PAC domestic/parcel/size (retail box outer sizes). -->
+        <record id="auspost_box_bx7" model="rw.auspost.parcel.box">
+            <field name="name">Bx7 (14.5 × 12.7 × 1.0 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_CD</field>
+            <field name="length_cm">14.5</field>
+            <field name="width_cm">12.7</field>
+            <field name="height_cm">1.0</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="auspost_box_bx6" model="rw.auspost.parcel.box">
+            <field name="name">Bx6 (22.0 × 14.5 × 3.5 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_VCB</field>
+            <field name="length_cm">22.0</field>
+            <field name="width_cm">14.5</field>
+            <field name="height_cm">3.5</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="auspost_box_bx1" model="rw.auspost.parcel.box">
+            <field name="name">Bx1 (22.0 × 16.0 × 7.7 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_BC</field>
+            <field name="length_cm">22.0</field>
+            <field name="width_cm">16.0</field>
+            <field name="height_cm">7.7</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="auspost_box_bx8" model="rw.auspost.parcel.box">
+            <field name="name">Bx8 Tough Pak (36.3 × 21.2 × 6.5 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_TOUGHPAK</field>
+            <field name="length_cm">36.3</field>
+            <field name="width_cm">21.2</field>
+            <field name="height_cm">6.5</field>
+            <field name="sequence">25</field>
+        </record>
+        <record id="auspost_box_bx2" model="rw.auspost.parcel.box">
+            <field name="name">Bx2 (31.0 × 22.5 × 10.2 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_BM</field>
+            <field name="length_cm">31.0</field>
+            <field name="width_cm">22.5</field>
+            <field name="height_cm">10.2</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="auspost_box_bx3" model="rw.auspost.parcel.box">
+            <field name="name">Bx3 (40.0 × 20.0 × 18.0 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_BP</field>
+            <field name="length_cm">40.0</field>
+            <field name="width_cm">20.0</field>
+            <field name="height_cm">18.0</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="auspost_box_bx4" model="rw.auspost.parcel.box">
+            <field name="name">Bx4 (43.0 × 30.5 × 14.0 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_BT</field>
+            <field name="length_cm">43.0</field>
+            <field name="width_cm">30.5</field>
+            <field name="height_cm">14.0</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="auspost_box_bx5" model="rw.auspost.parcel.box">
+            <field name="name">Bx5 (40.5 × 30.0 × 25.5 cm)</field>
+            <field name="auspost_code">AUS_PARCEL_TYPE_BOXED_BW</field>
+            <field name="length_cm">40.5</field>
+            <field name="width_cm">30.0</field>
+            <field name="height_cm">25.5</field>
+            <field name="sequence">60</field>
+        </record>
+    </data>
+</odoo>

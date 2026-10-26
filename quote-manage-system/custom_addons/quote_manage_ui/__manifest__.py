@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.208',
+    'version': '1.0.210',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -28,6 +28,7 @@
         'data/quote_refurb_product_tags.xml',
         'data/quote_refurb_product_attributes.xml',
         'data/delivery_shipping_rules.xml',
+        'data/rw_auspost_parcel_boxes.xml',
         'data/stock_serial_tracking_enable.xml',
         # Product rows are imported via scripts/import_products_to_odoo.sh;
         # loading them on every -u hits duplicate barcode errors.
@@ -49,6 +50,10 @@
         'views/website_sale_checkout.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
+        'views/product_template_shipping_views.xml',
+        'views/rw_auspost_parcel_box_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/rw_shipping_settings_action.xml',
         'views/product_import_wizard_views.xml',
         'views/crm_lead_views.xml',
         'views/website_appointment_views.xml',

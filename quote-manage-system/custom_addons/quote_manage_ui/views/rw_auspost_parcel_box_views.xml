@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rw_auspost_parcel_box_tree" model="ir.ui.view">
+        <field name="name">rw.auspost.parcel.box.tree</field>
+        <field name="model">rw.auspost.parcel.box</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="auspost_code"/>
+                <field name="length_cm"/>
+                <field name="width_cm"/>
+                <field name="height_cm"/>
+                <field name="max_weight_kg"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_rw_auspost_parcel_box_form" model="ir.ui.view">
+        <field name="name">rw.auspost.parcel.box.form</field>
+        <field name="model">rw.auspost.parcel.box</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="auspost_code"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="Outer dimensions (cm)">
+                        <field name="length_cm"/>
+                        <field name="width_cm"/>
+                        <field name="height_cm"/>
+                        <field name="max_weight_kg"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rw_auspost_parcel_box" model="ir.actions.act_window">
+        <field name="name">Australia Post box sizes</field>
+        <field name="res_model">rw.auspost.parcel.box</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_rw_auspost_parcel_box"
+              name="AusPost parcel boxes"
+              parent="sale.menu_sales_config"
+              action="action_rw_auspost_parcel_box"
+              sequence="30"/>
+</odoo>

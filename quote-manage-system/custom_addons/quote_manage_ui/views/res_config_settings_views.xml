@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_rw_shipping" model="ir.ui.view">
+        <field name="name">res.config.settings.form.rw.shipping</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='sale_management']" position="inside">
+                <block title="Re-Ware shipping (AusPost)" name="rw_auspost_shipping">
+                    <setting string="Live AusPost freight at checkout"
+                             help="Uses product pack dimensions, AusPost box catalog, CartonPilot packing, and Australia Post PAC rates. Falls back to $/kg when disabled or on error.">
+                        <field name="rw_shipping_pipeline_enabled"/>
+                    </setting>
+                    <setting string="Ship-from postcode"
+                             invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_auspost_from_postcode" placeholder="e.g. 2000"/>
+                    </setting>
+                    <setting string="AusPost service code"
+                             invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_auspost_service_code" placeholder="AUS_PARCEL_REGULAR"/>
+                    </setting>
+                    <setting string="Australia Post PAC AUTH-KEY"
+                             invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_auspost_auth_key" password="True"/>
+                    </setting>
+                    <setting string="CartonPilot API key"
+                             invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_cartonpilot_api_key" password="True"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

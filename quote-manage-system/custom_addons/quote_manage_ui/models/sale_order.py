@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import math
 
 from odoo import _, api, fields, models
@@ -6,6 +7,8 @@ from odoo.exceptions import MissingError, UserError, ValidationError
 from odoo.http import request
 
 from odoo.addons.quote_manage_ui.website_cart_debug import cart_debug_log
+
+_logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
@@ -128,10 +131,30 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return max(1, math.ceil(self._rw_shipping_weight_kg()))
 
-    def _rw_freight_price_ex_gst(self):
-        """By post: ceil(kg)×rate ex GST, min 1 kg. Pickup callers use 0 separately."""
+    def _rw_freight_price_legacy_ex_gst(self):
+        """By post: ceil(kg)×rate ex GST, min 1 kg."""
         self.ensure_one()
         return self._rw_freight_billable_kg() * self._rw_default_freight_price()
+
+    def _rw_freight_price_ex_gst(self):
+        """AusPost PAC pipeline when enabled; else legacy $/kg. Pickup uses 0 separately."""
+        self.ensure_one()
+        integration = self.env["rw.shipping.integration"]
+        if integration.pipeline_enabled():
+            try:
+                return integration.quote_order_freight_ex_gst(self)
+            except UserError as exc:
+                _logger.warning(
+                    "AusPost shipping pipeline fallback for %s: %s",
+                    self.name,
+                    exc,
+                )
+            except Exception:
+                _logger.exception(
+                    "AusPost shipping pipeline error for %s; using legacy $/kg",
+                    self.name,
+                )
+        return self._rw_freight_price_legacy_ex_gst()
 
     def _rw_get_post_carrier(self):
         return self.env.ref(

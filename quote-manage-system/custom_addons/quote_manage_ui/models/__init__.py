@@ -7,6 +7,10 @@ from . import product_template_attribute_value
 from . import product_public_category
 from . import product_csv_importer
 from . import delivery_carrier
+from . import rw_auspost_parcel_box
+from . import rw_shipping_integration
+from . import product_template_shipping
+from . import res_config_settings
 from . import quote_manage_ui_setup
 from . import sale_order
 from . import account_payment
