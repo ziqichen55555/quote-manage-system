@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Apply user weight_kg list (same order as exports/product_weights_prod.csv)."""
-DRY_RUN = True
+DRY_RUN = False
 
 PAIRS = [
     (750, 5),
