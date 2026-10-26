@@ -92,11 +92,16 @@ def quote_cart(label, template_ids, qty, to_postcode):
             )
         )
     legacy = order._rw_freight_price_legacy_ex_gst()
-    pipeline = None
+    checkout = order._rw_freight_price_ex_gst()
     err = None
     n_parcels = None
+    weight_kg = order._rw_shipping_weight_kg()
     try:
-        if Integration.pipeline_enabled() and order._rw_freight_product_lines():
+        if (
+            weight_kg >= order._rw_freight_pac_min_kg()
+            and Integration.pipeline_enabled()
+            and order._rw_freight_product_lines()
+        ):
             items = Integration._build_items_from_order(order)
             boxes = Integration._active_auspost_boxes()
             parcels = Integration._cartonize_cartonpilot(items, boxes)
@@ -105,7 +110,6 @@ def quote_cart(label, template_ids, qty, to_postcode):
                 for p in parcels:
                     p["weight_kg"] = float(p.get("weight_kg") or 0.1) + extra
             n_parcels = len(parcels)
-            pipeline = Integration.quote_order_freight_ex_gst(order)
     except Exception as exc:
         err = "%s: %s" % (type(exc).__name__, exc)
     order.unlink()
@@ -115,7 +119,8 @@ def quote_cart(label, template_ids, qty, to_postcode):
         "items": "; ".join(names) or "(empty)",
         "qty": qty,
         "legacy_ex": legacy,
-        "pipeline_ex": pipeline,
+        "pipeline_ex": checkout,
+        "weight_kg": weight_kg,
         "parcels": n_parcels,
         "error": err,
     }
@@ -145,22 +150,23 @@ scenarios = [
     ("48-port switch (heavy)", [T["switch48"]], 1, "3000"),
 ]
 
-print("Cart scenarios (checkout logic: legacy $/kg vs AusPost pipeline ex GST):")
+print("Cart scenarios (legacy $/kg vs website checkout _rw_freight_price_ex_gst):")
 print(
-    f"{'Scenario':<32} {'To':>5} {'Parcels':>7} {'Legacy':>8} {'Pipeline':>9}  Notes"
+    f"{'Scenario':<32} {'To':>5} {'kg':>5} {'Parcels':>7} {'Legacy':>8} {'Checkout':>9}  Notes"
 )
 print("-" * 80)
 for label, tids, qty, to_pc in scenarios:
     r = quote_cart(label, tids, qty, to_pc)
     pipe = f"{r['pipeline_ex']:.2f}" if r["pipeline_ex"] is not None else "—"
     par = str(r["parcels"]) if r["parcels"] is not None else "—"
+    w = f"{r.get('weight_kg', 0):.1f}"
     note = r["error"] or r["items"][:40]
     print(
-        f"{r['label']:<32} {r['to']:>5} {par:>7} {r['legacy_ex']:>8.2f} {pipe:>9}  {note}"
+        f"{r['label']:<32} {r['to']:>5} {w:>5} {par:>7} {r['legacy_ex']:>8.2f} {pipe:>9}  {note}"
     )
 
 print("-" * 80)
-print("Legacy = ceil(total kg) x $25 ex GST (fallback when pipeline fails/disabled).")
-print("Pipeline = CartonPilot/builtin pack -> sum PAC per parcel / 1.1.")
+print("Legacy = ceil(total kg) x $25 ex GST (fallback when PAC fails/disabled).")
+print("Checkout = flat $25 ex if total kg < 1; else AusPost PAC (same as website).")
 print("=" * 80)
 print("Done.")

@@ -136,9 +136,26 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self._rw_freight_billable_kg() * self._rw_default_freight_price()
 
-    def _rw_freight_price_ex_gst(self):
-        """AusPost PAC pipeline when enabled; else legacy $/kg. Pickup uses 0 separately."""
+    def _rw_freight_pac_min_kg(self):
+        """Orders below this total shippable weight use flat minimum freight (ex GST)."""
+        icp = self.env["ir.config_parameter"].sudo()
+        raw = icp.get_param("quote_manage_ui.shipping_pac_min_kg", "1.0")
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            return 1.0
+
+    def _rw_freight_flat_minimum_ex_gst(self):
+        """Single light-parcel rate (default $25 ex GST), not per kg."""
         self.ensure_one()
+        return self._rw_default_freight_price()
+
+    def _rw_freight_price_ex_gst(self):
+        """Under PAC min kg: flat minimum. At/above: AusPost PAC when enabled; else legacy $/kg."""
+        self.ensure_one()
+        if self._rw_shipping_weight_kg() < self._rw_freight_pac_min_kg():
+            return self._rw_freight_flat_minimum_ex_gst()
+
         integration = self.env["rw.shipping.integration"]
         if integration.pipeline_enabled():
             try:
