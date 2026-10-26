@@ -150,16 +150,46 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self._rw_default_freight_price()
 
+    def _rw_freight_markup_params(self):
+        icp = self.env["ir.config_parameter"].sudo()
+
+        def _float(key, default):
+            raw = icp.get_param(key)
+            if raw is None or raw == "":
+                return default
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                return default
+
+        return {
+            "percent": max(0.0, _float("quote_manage_ui.shipping_markup_percent", 0.0)),
+            "fixed_ex_gst": max(
+                0.0, _float("quote_manage_ui.shipping_markup_fixed_ex_gst", 0.0)
+            ),
+        }
+
+    def _rw_freight_apply_markup(self, base_ex_gst):
+        """Apply optional Re-Ware markup on AusPost/flat/legacy base (ex GST)."""
+        base = float(base_ex_gst or 0.0)
+        params = self._rw_freight_markup_params()
+        if params["percent"]:
+            base *= 1.0 + params["percent"] / 100.0
+        base += params["fixed_ex_gst"]
+        return round(max(0.0, base), 2)
+
     def _rw_freight_price_ex_gst(self):
         """Under PAC min kg: flat minimum. At/above: AusPost PAC when enabled; else legacy $/kg."""
         self.ensure_one()
         if self._rw_shipping_weight_kg() < self._rw_freight_pac_min_kg():
-            return self._rw_freight_flat_minimum_ex_gst()
+            return self._rw_freight_apply_markup(self._rw_freight_flat_minimum_ex_gst())
 
         integration = self.env["rw.shipping.integration"]
         if integration.pipeline_enabled():
             try:
-                return integration.quote_order_freight_ex_gst(self)
+                return self._rw_freight_apply_markup(
+                    integration.quote_order_freight_ex_gst(self)
+                )
             except UserError as exc:
                 _logger.warning(
                     "AusPost shipping pipeline fallback for %s: %s",
@@ -171,7 +201,7 @@ class SaleOrder(models.Model):
                     "AusPost shipping pipeline error for %s; using legacy $/kg",
                     self.name,
                 )
-        return self._rw_freight_price_legacy_ex_gst()
+        return self._rw_freight_apply_markup(self._rw_freight_price_legacy_ex_gst())
 
     def _rw_get_post_carrier(self):
         return self.env.ref(

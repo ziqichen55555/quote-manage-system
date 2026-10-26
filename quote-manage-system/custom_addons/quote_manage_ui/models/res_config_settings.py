@@ -47,3 +47,15 @@ class ResConfigSettings(models.TransientModel):
         default=0.2,
         help="Added once per AusPost parcel after packing (empty box / void fill).",
     )
+    rw_shipping_markup_percent = fields.Float(
+        string="Freight markup (%)",
+        config_parameter="quote_manage_ui.shipping_markup_percent",
+        default=0.0,
+        help="Percentage added to calculated website delivery fee (ex GST), after AusPost/flat/legacy base.",
+    )
+    rw_shipping_markup_fixed_ex_gst = fields.Float(
+        string="Freight markup fixed (AUD ex GST)",
+        config_parameter="quote_manage_ui.shipping_markup_fixed_ex_gst",
+        default=0.0,
+        help="Flat amount added to each delivery quote (ex GST), after percent markup.",
+    )

@@ -11,6 +11,7 @@ from . import rw_auspost_parcel_box
 from . import rw_shipping_integration
 from . import product_template_shipping
 from . import res_config_settings
+from . import res_partner
 from . import quote_manage_ui_setup
 from . import sale_order
 from . import account_payment

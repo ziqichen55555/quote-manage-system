@@ -31,6 +31,10 @@
                         <field name="rw_shipping_pack_extra_kg"/>
                         <field name="rw_shipping_pack_parcel_extra_kg"/>
                     </group>
+                    <group string="Checkout markup (ex GST base)" invisible="not rw_shipping_pipeline_enabled">
+                        <field name="rw_shipping_markup_percent"/>
+                        <field name="rw_shipping_markup_fixed_ex_gst"/>
+                    </group>
                 </sheet>
                 <footer>
                     <button string="Save" name="execute" type="object" class="btn-primary" data-hotkey="s"/>

@@ -75,6 +75,14 @@
                                 <label for="rw_shipping_pack_parcel_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / parcel"/>
                                 <field name="rw_shipping_pack_parcel_extra_kg"/>
                             </div>
+                            <div class="row">
+                                <label for="rw_shipping_markup_percent" class="col-lg-3 o_light_label" string="Freight markup (%)"/>
+                                <field name="rw_shipping_markup_percent"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_markup_fixed_ex_gst" class="col-lg-3 o_light_label" string="Freight markup +$ (ex GST)"/>
+                                <field name="rw_shipping_markup_fixed_ex_gst"/>
+                            </div>
                             <div class="row mt8">
                             <div class="col-lg-3"/>
                             <div class="col-lg-9">
