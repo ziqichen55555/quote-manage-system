@@ -5,12 +5,13 @@ CSV columns (header required):
   product_id,length_cm,width_cm,height_cm
 Optional: default_code (for validation only)
 
-Path on server: /mnt/custom-addons/../ or upload to /tmp/product_pack_dims.csv
+Master file: exports/product_weights_prod.csv (weight + L/W/H). Upload to
+/tmp/product_weights_prod.csv on server.
 
 DRY_RUN=True by default.
 """
 DRY_RUN = True
-CSV_PATH = "/tmp/product_pack_dims.csv"
+CSV_PATH = "/tmp/product_weights_prod.csv"
 
 import csv
 

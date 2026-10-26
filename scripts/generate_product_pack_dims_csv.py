@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Generate suggested pack dimensions CSV from exports/product_weights_prod.csv.
+"""Regenerate exports/product_weights_prod.csv + .xlsx (weight + pack L×W×H).
 
-Run locally (no Odoo):
+Single master file for OneDrive / colleague review. Run locally:
+
   python scripts/generate_product_pack_dims_csv.py
 
-Output: exports/product_pack_dims_suggested.csv
-Edit columns length_cm,width_cm,height_cm then apply on prod via
-apply_product_pack_dims_csv_shell.py
+Existing length_cm/width_cm/height_cm in CSV are kept; empty cells get suggestions.
 """
 from __future__ import annotations
 
@@ -15,9 +14,21 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WEIGHTS = ROOT / "exports" / "product_weights_prod.csv"
-OUT_CSV = ROOT / "exports" / "product_pack_dims_suggested.csv"
-OUT_XLSX = ROOT / "exports" / "product_pack_dims_suggested.xlsx"
+MASTER_CSV = ROOT / "exports" / "product_weights_prod.csv"
+MASTER_XLSX = ROOT / "exports" / "product_weights_prod.xlsx"
+
+FIELDNAMES = [
+    "product_id",
+    "default_code",
+    "product_name",
+    "internal_category",
+    "shop_categories",
+    "weight_kg",
+    "length_cm",
+    "width_cm",
+    "height_cm",
+    "notes",
+]
 
 
 def text_blob(row):
@@ -92,45 +103,54 @@ def suggest_pack_dims_cm(row):
     return dims(30, 25, 10)
 
 
-def main():
-    if not WEIGHTS.is_file():
-        raise SystemExit(f"Missing {WEIGHTS}")
+def _float_cell(row, key):
+    raw = (row.get(key) or "").strip()
+    if not raw:
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        return None
 
-    with WEIGHTS.open(newline="", encoding="utf-8-sig") as f:
+
+def main():
+    if not MASTER_CSV.is_file():
+        raise SystemExit(f"Missing {MASTER_CSV}")
+
+    with MASTER_CSV.open(newline="", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
 
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = [
-        "product_id",
-        "default_code",
-        "product_name",
-        "weight_kg",
-        "length_cm",
-        "width_cm",
-        "height_cm",
-        "notes",
-    ]
     out_rows = []
     for row in rows:
-        l, wd, h = suggest_pack_dims_cm(row)
+        l = _float_cell(row, "length_cm")
+        w = _float_cell(row, "width_cm")
+        h = _float_cell(row, "height_cm")
+        if l is None or w is None or h is None:
+            sl, sw, sh = suggest_pack_dims_cm(row)
+            l = l if l is not None else sl
+            w = w if w is not None else sw
+            h = h if h is not None else sh
         out_rows.append(
             {
                 "product_id": row["product_id"],
                 "default_code": row.get("default_code") or "",
                 "product_name": row.get("product_name") or "",
+                "internal_category": row.get("internal_category") or "",
+                "shop_categories": row.get("shop_categories") or "",
                 "weight_kg": row.get("weight_kg") or "",
                 "length_cm": l,
-                "width_cm": wd,
+                "width_cm": w,
                 "height_cm": h,
-                "notes": "Edit L/W/H then re-import via apply_product_pack_dims_csv_shell.py",
+                "notes": row.get("notes")
+                or "Share via OneDrive; edit weight_kg + L/W/H; Odoo import via shell scripts",
             }
         )
 
-    with OUT_CSV.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
+    with MASTER_CSV.open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
         w.writeheader()
         w.writerows(out_rows)
-    print(f"Wrote {len(out_rows)} rows -> {OUT_CSV}")
+    print(f"Wrote {len(out_rows)} rows -> {MASTER_CSV}")
 
     try:
         from openpyxl import Workbook
@@ -142,22 +162,21 @@ def main():
     wb = Workbook()
     readme = wb.active
     readme.title = "README"
-    readme["A1"] = "Re-Ware pack dimensions (cm) for AusPost / CartonPilot"
+    readme["A1"] = "Re-Ware product shipping master (OneDrive)"
     readme["A1"].font = Font(bold=True)
-    readme["A3"] = "Columns on sheet 'products': product_id must match Odoo product.template id."
-    readme["A4"] = "Edit length_cm, width_cm, height_cm (bare product size is OK)."
-    readme["A5"] = "Odoo adds foam allowance at quote time: Settings → Pack padding (cm) + extra kg."
-    readme["A6"] = "After edits: save as CSV (product_id,length_cm,width_cm,height_cm) and apply on prod /tmp/"
+    readme["A3"] = "Sheet 'products': one row per Odoo product.template (product_id)."
+    readme["A4"] = "weight_kg + length_cm, width_cm, height_cm (bare size; foam added in Odoo Settings)."
+    readme["A5"] = "Edit here with colleagues, then sync CSV back to repo or import on prod."
 
     ws = wb.create_sheet("products")
-    ws.append(fieldnames)
+    ws.append(FIELDNAMES)
     for cell in ws[1]:
         cell.font = Font(bold=True)
     for rec in out_rows:
-        ws.append([rec[k] for k in fieldnames])
+        ws.append([rec[k] for k in FIELDNAMES])
     ws.freeze_panes = "A2"
-    wb.save(OUT_XLSX)
-    print(f"Wrote Excel -> {OUT_XLSX}")
+    wb.save(MASTER_XLSX)
+    print(f"Wrote Excel -> {MASTER_XLSX}")
 
 
 if __name__ == "__main__":
