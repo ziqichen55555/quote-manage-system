@@ -182,7 +182,7 @@ class SaleOrder(models.Model):
         """Under PAC min kg: flat minimum. At/above: AusPost PAC when enabled; else legacy $/kg."""
         self.ensure_one()
         if self._rw_shipping_weight_kg() < self._rw_freight_pac_min_kg():
-            return self._rw_freight_apply_markup(self._rw_freight_flat_minimum_ex_gst())
+            return self._rw_freight_flat_minimum_ex_gst()
 
         integration = self.env["rw.shipping.integration"]
         if integration.pipeline_enabled():

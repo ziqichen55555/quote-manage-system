@@ -51,7 +51,8 @@ class ResConfigSettings(models.TransientModel):
         string="Freight markup (%)",
         config_parameter="quote_manage_ui.shipping_markup_percent",
         default=0.0,
-        help="Percentage added to calculated website delivery fee (ex GST), after AusPost/flat/legacy base.",
+        help="Percentage added to website delivery (ex GST) for orders at/above PAC min kg only. "
+        "Under 1 kg uses flat minimum freight with no markup.",
     )
     rw_shipping_markup_fixed_ex_gst = fields.Float(
         string="Freight markup fixed (AUD ex GST)",
