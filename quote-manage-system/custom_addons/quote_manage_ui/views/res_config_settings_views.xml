@@ -28,6 +28,28 @@
                                 <label for="rw_cartonpilot_api_key" class="col-lg-3 o_light_label"/>
                                 <field name="rw_cartonpilot_api_key" password="True"/>
                             </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_add_cm" class="col-lg-3 o_light_label" string="Foam padding (cm)"/>
+                                <field name="rw_shipping_pack_add_cm"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / unit"/>
+                                <field name="rw_shipping_pack_extra_kg"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_pack_parcel_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / parcel"/>
+                                <field name="rw_shipping_pack_parcel_extra_kg"/>
+                            </div>
+                        </div>
+                        <div class="content-group mt16">
+                            <div class="row">
+                                <label for="rw_shipping_markup_percent" class="col-lg-3 o_light_label" string="Freight markup (%)"/>
+                                <field name="rw_shipping_markup_percent"/>
+                            </div>
+                            <div class="row">
+                                <label for="rw_shipping_markup_fixed_ex_gst" class="col-lg-3 o_light_label" string="Freight markup +$ (ex GST)"/>
+                                <field name="rw_shipping_markup_fixed_ex_gst"/>
+                            </div>
                         </div>
                     </setting>
                 </block>
@@ -75,14 +97,6 @@
                                 <label for="rw_shipping_pack_parcel_extra_kg" class="col-lg-3 o_light_label" string="Extra kg / parcel"/>
                                 <field name="rw_shipping_pack_parcel_extra_kg"/>
                             </div>
-                            <div class="row">
-                                <label for="rw_shipping_markup_percent" class="col-lg-3 o_light_label" string="Freight markup (%)"/>
-                                <field name="rw_shipping_markup_percent"/>
-                            </div>
-                            <div class="row">
-                                <label for="rw_shipping_markup_fixed_ex_gst" class="col-lg-3 o_light_label" string="Freight markup +$ (ex GST)"/>
-                                <field name="rw_shipping_markup_fixed_ex_gst"/>
-                            </div>
                             <div class="row mt8">
                             <div class="col-lg-3"/>
                             <div class="col-lg-9">
@@ -92,6 +106,16 @@
                                         class="btn-link"
                                         icon="oi-arrow-right"/>
                             </div>
+                        </div>
+                    </div>
+                    <div class="content-group mt16">
+                        <div class="row">
+                            <label for="rw_shipping_markup_percent" class="col-lg-3 o_light_label" string="Freight markup (%)"/>
+                            <field name="rw_shipping_markup_percent"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_shipping_markup_fixed_ex_gst" class="col-lg-3 o_light_label" string="Freight markup +$ (ex GST)"/>
+                            <field name="rw_shipping_markup_fixed_ex_gst"/>
                         </div>
                     </div>
                 </setting>
@@ -117,6 +141,16 @@
                         <div class="row">
                             <label for="rw_auspost_auth_key" class="col-lg-3 o_light_label" string="PAC AUTH-KEY"/>
                             <field name="rw_auspost_auth_key" password="True"/>
+                        </div>
+                    </div>
+                    <div class="content-group mt16">
+                        <div class="row">
+                            <label for="rw_shipping_markup_percent" class="col-lg-3 o_light_label" string="Freight markup (%)"/>
+                            <field name="rw_shipping_markup_percent"/>
+                        </div>
+                        <div class="row">
+                            <label for="rw_shipping_markup_fixed_ex_gst" class="col-lg-3 o_light_label" string="Freight markup +$ (ex GST)"/>
+                            <field name="rw_shipping_markup_fixed_ex_gst"/>
                         </div>
                     </div>
                 </setting>
