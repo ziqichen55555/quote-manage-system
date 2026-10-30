@@ -112,7 +112,7 @@
                 1 if website.has_google_places_api_key() else 0
             </attribute>
         </xpath>
-        <xpath expr="//div[contains(@class,'div_street')]" position="inside">
+        <xpath expr="//input[@name='street']" position="before">
             <p t-if="website.has_google_places_api_key()"
                class="form-text text-muted small mb-1">
                 Address autocomplete — start typing your street (e.g. 102 Edward St, Perth) and pick a suggestion.
