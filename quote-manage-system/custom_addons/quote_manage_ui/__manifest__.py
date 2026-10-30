@@ -1,6 +1,6 @@
 {
     'name': '报价管理系统 后台 UI 改善',
-    'version': '1.0.218',
+    'version': '1.0.226',
     'category': 'Hidden',
     'summary': 'Improve the Backend UI of the quote management system',
     'depends': [
@@ -15,6 +15,7 @@
         'stock_account',
         'website',
         'website_sale',
+        'website_sale_autocomplete',
         'website_sale_stock',
         'website_blog',
         'website_crm',
@@ -47,6 +48,7 @@
         'views/report_payment_receipt_templates.xml',
         'views/website_templates.xml',
         'views/auth_signup_templates.xml',
+        'views/web_auth_seo.xml',
         'views/website_sale_checkout.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
@@ -78,6 +80,11 @@
             'quote_manage_ui/static/src/js/hero_carousel.js',
             'quote_manage_ui/static/src/js/website_stock_qty.js',
             'quote_manage_ui/static/src/js/appointment.js',
+            (
+                'after',
+                'website_sale_autocomplete/static/src/js/address_form.js',
+                'quote_manage_ui/static/src/js/rw_address_autocomplete_debug.js',
+            ),
         ],
     },
     'installable': True,

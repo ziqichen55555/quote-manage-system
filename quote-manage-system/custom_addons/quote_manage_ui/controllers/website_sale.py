@@ -288,12 +288,12 @@ class WebsiteSale(website_sale_controller.WebsiteSale):
         if not cat_record:
             res.update({
                 "title": (
-                    "Second-Hand & Refurbished Computers | Re-Ware Shop Australia"
+                    "Refurbished & Second-Hand Computers Perth | Re-Ware Shop"
                 ),
                 "website_meta_description": (
-                    "Shop second-hand and refurbished computers at Re-Ware "
-                    "(reware-project.com): ex-lease laptops, desktops, monitors "
-                    "and IT in Perth. Graded, tested, warranty — Australia-wide."
+                    "Shop refurbished and second-hand computers in Perth at Re-Ware "
+                    "(reware-project.com): ex-lease laptops, desktops, monitors and "
+                    "accessories. Graded, tested, warranty — delivery Australia-wide."
                 ),
             })
             in_stock = self._quote_seo_in_stock_products(limit=8)

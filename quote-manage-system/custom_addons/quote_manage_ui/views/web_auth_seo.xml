@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="reware_web_login_shop_hint" inherit_id="web.login" name="Re-Ware login shop guest hint" priority="50">
+        <xpath expr="//form[hasclass('oe_login_form')]" position="after">
+            <p class="text-center small text-muted mt-3 mb-0">
+                Shopping on Re-Ware?
+                <a href="/shop">Browse the shop</a>
+                — checkout works
+                <a href="/shop/cart">without an account</a>.
+            </p>
+        </xpath>
+    </template>
+</odoo>

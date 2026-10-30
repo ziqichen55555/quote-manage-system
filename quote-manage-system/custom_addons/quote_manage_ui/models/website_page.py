@@ -570,11 +570,13 @@ class WebsitePage(models.Model):
                 ),
             },
             "/our-why": {
-                "website_meta_title": "Why Re-Ware | Digital Inclusion & Less E-Waste",
+                "website_meta_title": (
+                    "Why Re-Ware | Refurbished IT, Perth WA & Digital Inclusion"
+                ),
                 "website_meta_description": (
-                    "Refurbished IT reduces e-waste and helps close the digital divide "
-                    "in WA. Learn how Re-Ware partners with organisations to reuse "
-                    "enterprise devices responsibly."
+                    "See how Re-Ware in Perth refurbishes ex-lease IT to cut e-waste "
+                    "and support digital inclusion in Western Australia — repair, "
+                    "repurpose, reuse with Co-Creative IT."
                 ),
             },
             "/partners": {

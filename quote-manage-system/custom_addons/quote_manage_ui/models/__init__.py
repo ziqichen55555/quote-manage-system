@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import ir_http
 from . import website
 from . import website_page
 from . import product_template

@@ -7,24 +7,24 @@
                 <div class="d-flex flex-column gap-3 w-100 order-lg-3 ms-lg-auto">
                     <div>
                         <a role="button"
-                           class="btn btn-primary w-100"
-                           href="/web/signup?redirect=/shop/checkout%3Fexpress%3D1">
-                            Create account
-                            <i class="fa fa-angle-right ms-2 fw-light"/>
-                        </a>
-                        <p class="small text-muted mb-0 mt-2">
-                            Save your details and sign in anytime to view orders, quotes and payment history.
-                        </p>
-                    </div>
-                    <div>
-                        <a role="button"
-                           t-attf-class="btn btn-outline-primary w-100 #{not website_sale_order._is_cart_ready() and 'disabled' or ''}"
+                           t-attf-class="btn btn-primary w-100 #{not website_sale_order._is_cart_ready() and 'disabled' or ''}"
                            href="/shop/checkout?express=1">
                             Checkout without account
                             <i class="fa fa-angle-right ms-2 fw-light"/>
                         </a>
                         <p class="small text-muted mb-0 mt-2">
-                            Enter your name, email, phone and address once. We will email your quote or payment link (no password).
+                            Recommended — enter your name, email, phone and address once. We email your quote or payment link (no password).
+                        </p>
+                    </div>
+                    <div>
+                        <a role="button"
+                           class="btn btn-outline-secondary w-100"
+                           href="/web/signup?redirect=/shop/checkout%3Fexpress%3D1">
+                            Create account (optional)
+                            <i class="fa fa-angle-right ms-2 fw-light"/>
+                        </a>
+                        <p class="small text-muted mb-0 mt-2">
+                            Optional — sign in later to view orders, quotes and payment history.
                         </p>
                     </div>
                 </div>
@@ -56,8 +56,8 @@
                  class="alert alert-light border mb-4 rw-cart-checkout-choice" role="status">
                 <p class="mb-1 fw-semibold">How would you like to continue?</p>
                 <p class="mb-0 small text-muted">
-                    <strong>Create account</strong> if you want a login for future orders.
-                    <strong>Checkout without account</strong> if you prefer a one-time quote or payment — we still need your contact and delivery details at the next step.
+                    <strong>Checkout without account</strong> is the usual path — no login required.
+                    <strong>Create account</strong> is optional if you want a password for future orders.
                 </p>
             </div>
         </xpath>
@@ -107,6 +107,16 @@
         </xpath>
         <xpath expr="//input[@name='street']" position="attributes">
             <attribute name="required">required</attribute>
+            <attribute name="autocomplete">off</attribute>
+            <attribute name="t-att-data-autocomplete-enabled">
+                1 if website.has_google_places_api_key() else 0
+            </attribute>
+        </xpath>
+        <xpath expr="//div[contains(@class,'div_street')]" position="inside">
+            <p t-if="website.has_google_places_api_key()"
+               class="form-text text-muted small mb-1">
+                Address autocomplete — start typing your street (e.g. 102 Edward St, Perth) and pick a suggestion.
+            </p>
         </xpath>
         <xpath expr="//label[@for='street2']" position="replace">
             <label class="col-form-label label-optional" for="street2">
