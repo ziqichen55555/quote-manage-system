@@ -553,12 +553,54 @@ class WebsitePage(models.Model):
         page_seo = {
             "/": {
                 "website_meta_title": (
-                    "Re-Ware Project | Official reware-project.com — Perth WA"
+                    "IT Asset Disposal & Secure Data Destruction Perth | Re-Ware"
                 ),
                 "website_meta_description": (
-                    "Official Re-Ware Project site (reware-project.com) by "
-                    "Co-Creative IT, Perth — shop refurbished and second-hand "
-                    "laptops, monitors, cables and IT. Corporate recycling WA."
+                    "Re-Ware in Perth — IT asset disposal, certified Blancco "
+                    "data erasure, corporate IT equipment recycling and "
+                    "refurbished computers. Co-Creative IT — shop online "
+                    "Australia-wide."
+                ),
+            },
+            "/it-asset-disposal-perth": {
+                "website_meta_title": (
+                    "IT Asset Disposal Perth | Secure Collection & Reporting | Re-Ware"
+                ),
+                "website_meta_description": (
+                    "Corporate IT asset disposal in Perth, WA — secure "
+                    "collection, certified data erasure, refurbishment or "
+                    "responsible recycling. Chain-of-custody and audit-ready "
+                    "reports from Re-Ware."
+                ),
+            },
+            "/secure-data-destruction": {
+                "website_meta_title": (
+                    "Certified Data Erasure Perth | Blancco NIST 800-88 | Re-Ware"
+                ),
+                "website_meta_description": (
+                    "Secure data destruction and certified erasure in Perth — "
+                    "Blancco wiping (NIST 800-88), certificates for SOCI, "
+                    "Privacy Act and audit requirements. Re-Ware / Co-Creative IT."
+                ),
+            },
+            "/refurbished-computers-perth": {
+                "website_meta_title": (
+                    "Refurbished Computers Perth | Ex-Lease Laptops & PCs | Re-Ware"
+                ),
+                "website_meta_description": (
+                    "Shop refurbished and second-hand computers in Perth — "
+                    "graded ex-lease laptops, desktops and monitors with "
+                    "warranty. Re-Ware delivers Australia-wide."
+                ),
+            },
+            "/corporate-it-equipment-recycling": {
+                "website_meta_title": (
+                    "Corporate IT Equipment Recycling Perth | Re-Ware Programs"
+                ),
+                "website_meta_description": (
+                    "Corporate IT equipment recycling in Western Australia — "
+                    "bulk donations, secure wipe, refurbishment and community "
+                    "redistribution. Partner with Re-Ware in Perth."
                 ),
             },
             "/aboutus": {
@@ -697,6 +739,10 @@ class WebsitePage(models.Model):
             ("quote_manage_ui.partners_page", page_seo["/partners"]),
             ("quote_manage_ui.book_appointment_page", page_seo["/book-appointment"]),
             ("quote_manage_ui.returns_policy_page", page_seo["/returns"]),
+            ("quote_manage_ui.it_asset_disposal_page", page_seo["/it-asset-disposal-perth"]),
+            ("quote_manage_ui.secure_data_destruction_page", page_seo["/secure-data-destruction"]),
+            ("quote_manage_ui.refurbished_computers_perth_page", page_seo["/refurbished-computers-perth"]),
+            ("quote_manage_ui.corporate_it_recycling_page", page_seo["/corporate-it-equipment-recycling"]),
         )
         for xmlid, vals in xmlid_pages:
             page = self.env.ref(xmlid, raise_if_not_found=False)

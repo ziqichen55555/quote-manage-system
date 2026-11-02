@@ -16,8 +16,8 @@
             <div class="container">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-6">
-                        <h1 class="rw-hero-title">Turning old tech into opportunity.</h1>
-                        <p class="rw-hero-sub">Your secure, compliant way to clear out old devices and help close the digital divide.</p>
+                        <h1 class="rw-hero-title">Secure IT asset disposal, data destruction &amp; refurbishment in Perth.</h1>
+                        <p class="rw-hero-sub">Certified data erasure, corporate IT recycling and quality refurbished computers — Perth-based, serving Australia.</p>
                         <div class="d-flex flex-wrap gap-3 rw-hero-ctas">
                             <a href="#rw-services" class="rw-btn-coral">Learn more</a>
                             <a href="/contactus" class="rw-btn-outline-light">Donate</a>
@@ -106,6 +106,7 @@
                         <div class="rw-card">
                             <h3>Refurb &amp; Repurpose</h3>
                             <p>We collect end-of-life devices and securely refurbish them, ready for a new home.</p>
+                            <p class="mb-3"><a href="/refurbished-computers-perth" class="fw-semibold">Refurbished computers in Perth →</a></p>
                             <div class="rw-card-image">
                                 <img src="/quote_manage_ui/static/src/img/services/refurb-repurpose.jpg" alt="Stack of devices ready for refurbishment" data-name="Image"/>
                             </div>
@@ -115,6 +116,7 @@
                         <div class="rw-card">
                             <h3>Data Sanitisation</h3>
                             <p>Certified Blancco erasure (NIST 800-88). Full reports for SOCI, Privacy Act reforms and audits.</p>
+                            <p class="mb-3"><a href="/secure-data-destruction" class="fw-semibold">Secure data destruction →</a></p>
                             <div class="rw-card-image">
                                 <img src="/quote_manage_ui/static/src/img/services/data-sanitisation.png" alt="Secure IT disposal and certified data wipe" data-name="Image"/>
                             </div>
@@ -124,12 +126,14 @@
                         <div class="rw-card">
                             <h3>Impactful Distribution</h3>
                             <p>Through partnerships with charities and programs, we donate refurbished devices to those in need.</p>
+                            <p class="mb-3"><a href="/corporate-it-equipment-recycling" class="fw-semibold">Corporate IT recycling →</a></p>
                             <div class="rw-card-image">
                                 <img src="/quote_manage_ui/static/src/img/services/impactful-distribution.png" alt="Refurbished devices powering education and opportunity" data-name="Image"/>
                             </div>
                         </div>
                     </div>
                 </div>
+                <p class="text-center mt-4 mb-0"><a href="/it-asset-disposal-perth" class="fw-semibold">IT asset disposal Perth — how we handle end-of-life equipment →</a></p>
             </div>
         </section>
     </template>

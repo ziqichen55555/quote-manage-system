@@ -73,9 +73,9 @@ class Website(models.Model):
                     "url": base,
                     "logo": f"{base}/web/image/website/{self.id}/logo",
                     "description": (
-                        "Re-Ware Project by Co-Creative IT — refurbished and "
-                        "second-hand computers, laptops, monitors, cables and "
-                        "IT equipment in Perth, Western Australia."
+                        "Re-Ware Project by Co-Creative IT — IT asset disposal, "
+                        "certified data erasure, corporate IT recycling and "
+                        "refurbished computers in Perth, Western Australia."
                     ),
                     "parentOrganization": {
                         "@type": "Organization",

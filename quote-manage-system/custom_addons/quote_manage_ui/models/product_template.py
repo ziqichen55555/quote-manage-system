@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import json
 import logging
 import re
 
@@ -612,3 +613,62 @@ class ProductTemplate(models.Model):
         meta["opengraph_meta"] = opengraph
         meta["twitter_meta"] = twitter
         return meta
+
+    def _rw_product_structured_data_dict(self, combination_info=None):
+        """Schema.org Product JSON-LD for published shop pages (head/body script)."""
+        self.ensure_one()
+        combination_info = combination_info or {}
+        website = self.env["website"].get_current_website()
+        base = (website.domain if website else "https://www.reware-project.com").rstrip("/")
+        if not base.startswith("http"):
+            base = "https://" + base.lstrip("/")
+        variant_id = combination_info.get("product_id")
+        variant = (
+            self.env["product.product"].browse(variant_id)
+            if variant_id
+            else self.product_variant_ids[:1]
+        )
+        sku = (
+            (variant.default_code or self.default_code or str(self.id)).strip()
+        )
+        price = combination_info.get("price")
+        if price is None:
+            price = self.list_price
+        currency = (
+            website.currency_id.name
+            if website and website.currency_id
+            else "AUD"
+        )
+        desc = (self.website_meta_description or "").strip()
+        if not desc:
+            desc = self._rw_seo_default_description()
+        in_stock = self._rw_website_available_qty() > 0
+        return {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": (self.name or "").strip(),
+            "description": desc,
+            "sku": sku,
+            "image": f"{base}/web/image/product.template/{self.id}/image_1920",
+            "brand": {"@type": "Brand", "name": "Re-Ware"},
+            "offers": {
+                "@type": "Offer",
+                "url": f"{base}{self.website_url}",
+                "priceCurrency": currency,
+                "price": round(float(price), 2),
+                "availability": (
+                    "https://schema.org/InStock"
+                    if in_stock
+                    else "https://schema.org/OutOfStock"
+                ),
+                "itemCondition": "https://schema.org/RefurbishedCondition",
+                "seller": {"@type": "Organization", "name": "Re-Ware"},
+            },
+        }
+
+    def _rw_product_structured_data_json_str(self, combination_info=None):
+        self.ensure_one()
+        return json.dumps(
+            self._rw_product_structured_data_dict(combination_info),
+            ensure_ascii=False,
+        )

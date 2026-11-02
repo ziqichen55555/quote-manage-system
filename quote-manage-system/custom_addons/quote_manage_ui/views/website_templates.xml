@@ -58,9 +58,6 @@
                                     </t>
                                 </t>
                             </t>
-                            <li class="nav-item">
-                                <a href="/shop" class="nav-link">Refurbished computers</a>
-                            </li>
                             <li class="nav-item ms-lg-2">
                                 <a href="/contactus" class="rw-btn-coral-red">Donate</a>
                             </li>
@@ -113,9 +110,6 @@
         </xpath>
         <xpath expr="//t[@t-call='website.header_call_to_action_large']" position="replace">
             <li class="nav-item w-100">
-                <a href="/shop" class="nav-link">Refurbished computers</a>
-            </li>
-            <li class="nav-item w-100">
                 <a href="/contactus" class="rw-btn-coral-red w-100 text-center d-block">Donate</a>
             </li>
             <li class="nav-item w-100">
@@ -157,7 +151,15 @@
                     </div>
                 </div>
                 <div class="rw-footer-bottom text-center">
-                    <a href="/shop">Refurbished &amp; second-hand computers</a>
+                    <a href="/it-asset-disposal-perth">IT asset disposal</a>
+                    <span class="mx-2">·</span>
+                    <a href="/secure-data-destruction">Data destruction</a>
+                    <span class="mx-2">·</span>
+                    <a href="/refurbished-computers-perth">Refurbished computers</a>
+                    <span class="mx-2">·</span>
+                    <a href="/corporate-it-equipment-recycling">Corporate recycling</a>
+                    <span class="mx-2">·</span>
+                    <a href="/shop">Shop</a>
                     <span class="mx-2">·</span>
                     <a href="/terms-of-service">Terms</a>
                     <span class="mx-2">·</span>
@@ -351,6 +353,15 @@
         </xpath>
         <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
             <attribute name="class" replace="d-inline-flex align-items-center mb-2 me-auto"/>
+        </xpath>
+        <xpath expr="//div[@itemprop='description']" position="before">
+            <div class="mt-3 mb-2 o_not_editable small text-muted rw-product-delivery-note" t-if="product.type == 'product'">
+                <span class="fw-semibold" style="color: var(--rw-text);">Delivery: </span>
+                Australia-wide shipping from Perth, WA. See checkout for AusPost options.
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='wrap'][@itemtype='http://schema.org/Product']" position="inside">
+            <script type="application/ld+json" t-out="product.sudo()._rw_product_structured_data_json_str(combination_info)"/>
         </xpath>
     </template>
 
@@ -711,6 +722,169 @@
                                 <a href="/contactus" class="rw-btn-coral">Become a partner</a>
                             </div>
                         </section>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <!-- 7e. SEO service landing pages (one URL = one search intent). -->
+    <record id="it_asset_disposal_page" model="website.page" forcecreate="True">
+        <field name="name">IT Asset Disposal Perth</field>
+        <field name="url">/it-asset-disposal-perth</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="website_indexed">True</field>
+        <field name="key">quote_manage_ui.it_asset_disposal_page</field>
+        <field name="arch" type="xml">
+            <t name="IT Asset Disposal Perth" t-name="quote_manage_ui.it_asset_disposal_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                            <div class="container">
+                                <p class="rw-eyebrow mb-3">Corporate IT</p>
+                                <h1 class="mb-3">IT asset disposal in Perth.</h1>
+                                <p class="lead">Secure collection, certified data erasure and responsible next life for laptops, desktops, phones and data-centre gear across Western Australia.</p>
+                            </div>
+                        </section>
+                        <section class="rw-section rw-bg-cream">
+                            <div class="container rw-container-narrow">
+                                <h2 class="mb-3">What we handle</h2>
+                                <p class="rw-about-body mb-4">Re-Ware, by Co-Creative IT, helps organisations retire IT assets without risking data leaks or landfill. We assess each device for secure wipe, refurbishment, donation or recycling — with documentation your compliance team can use.</p>
+                                <ul class="rw-about-body mb-4">
+                                    <li>Laptops, desktops, tablets and mobile devices</li>
+                                    <li>Monitors, docks, networking and storage</li>
+                                    <li>On-site or depot collection in Perth metro (by arrangement)</li>
+                                    <li><a href="/secure-data-destruction">Certified data destruction</a> before resale or donation</li>
+                                </ul>
+                                <h2 class="mb-3">Why Re-Ware</h2>
+                                <p class="rw-about-body mb-4">We combine enterprise-grade <strong>Blancco erasure</strong> (NIST 800-88), professional grading and community programs documented on our <a href="/partners">Partners</a> page. Devices suitable for reuse are refurbished and listed on our <a href="/shop">shop</a> or donated through WA charities.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="/contactus" class="rw-btn-coral">Talk to us</a>
+                                    <a href="/book-appointment" class="rw-btn-outline-dark">Book a consultation</a>
+                                </div>
+                            </div>
+                        </section>
+                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="secure_data_destruction_page" model="website.page" forcecreate="True">
+        <field name="name">Secure Data Destruction</field>
+        <field name="url">/secure-data-destruction</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="website_indexed">True</field>
+        <field name="key">quote_manage_ui.secure_data_destruction_page</field>
+        <field name="arch" type="xml">
+            <t name="Secure Data Destruction" t-name="quote_manage_ui.secure_data_destruction_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                            <div class="container">
+                                <p class="rw-eyebrow mb-3">Data security</p>
+                                <h1 class="mb-3">Certified data erasure &amp; secure data destruction.</h1>
+                                <p class="lead">Blancco-certified wiping aligned with NIST 800-88 — certificates and reports for audits, SOCI and Privacy Act obligations.</p>
+                            </div>
+                        </section>
+                        <section class="rw-section rw-bg-cream">
+                            <div class="container rw-container-narrow">
+                                <h2 class="mb-3">Our process</h2>
+                                <ol class="rw-about-body mb-4">
+                                    <li class="mb-2"><strong>Intake &amp; chain of custody</strong> — serial capture and secure storage at our Perth facility (102 Edward St).</li>
+                                    <li class="mb-2"><strong>Certified erasure</strong> — software wipe with verifiable pass/fail and erasure certificates.</li>
+                                    <li class="mb-2"><strong>Next step</strong> — refurbishment, <a href="/corporate-it-equipment-recycling">community redistribution</a> or responsible recycling.</li>
+                                </ol>
+                                <p class="rw-about-body mb-4">Need bulk corporate disposal? See <a href="/it-asset-disposal-perth">IT asset disposal Perth</a> for the full program.</p>
+                                <a href="/contactus" class="rw-btn-coral">Request data destruction</a>
+                            </div>
+                        </section>
+                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="refurbished_computers_perth_page" model="website.page" forcecreate="True">
+        <field name="name">Refurbished Computers Perth</field>
+        <field name="url">/refurbished-computers-perth</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="website_indexed">True</field>
+        <field name="key">quote_manage_ui.refurbished_computers_perth_page</field>
+        <field name="arch" type="xml">
+            <t name="Refurbished Computers Perth" t-name="quote_manage_ui.refurbished_computers_perth_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                            <div class="container">
+                                <p class="rw-eyebrow mb-3">Shop Re-Ware</p>
+                                <h1 class="mb-3">Refurbished computers in Perth.</h1>
+                                <p class="lead">Ex-lease laptops, desktops, monitors and accessories — tested, graded and backed by a 3-month warranty. Shipped Australia-wide from WA.</p>
+                            </div>
+                        </section>
+                        <section class="rw-section rw-bg-cream">
+                            <div class="container rw-container-narrow">
+                                <h2 class="mb-3">What you get</h2>
+                                <ul class="rw-about-body mb-4">
+                                    <li>Professional refurbishment and clear condition grading</li>
+                                    <li>ThinkPad, HP, Lenovo and other enterprise-grade models</li>
+                                    <li>3-month limited warranty and <a href="/returns">returns policy</a></li>
+                                    <li>Lower e-waste impact than buying new</li>
+                                </ul>
+                                <p class="rw-about-body mb-4">Browse in-stock devices in our online shop — categories include laptops, desktops, monitors, docks and more.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="/shop" class="rw-btn-coral-red">Shop now</a>
+                                    <a href="/contactus" class="rw-btn-outline-dark">Ask a question</a>
+                                </div>
+                            </div>
+                        </section>
+                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="corporate_it_recycling_page" model="website.page" forcecreate="True">
+        <field name="name">Corporate IT Equipment Recycling</field>
+        <field name="url">/corporate-it-equipment-recycling</field>
+        <field name="type">qweb</field>
+        <field name="is_published">True</field>
+        <field name="website_indexed">True</field>
+        <field name="key">quote_manage_ui.corporate_it_recycling_page</field>
+        <field name="arch" type="xml">
+            <t name="Corporate IT Equipment Recycling" t-name="quote_manage_ui.corporate_it_recycling_page">
+                <t t-call="website.layout">
+                    <div id="wrap" class="oe_structure oe_empty rw-site">
+                        <section class="s_rw_page_hero rw-page-hero" data-name="Re-Ware Page Hero" data-snippet="s_rw_page_hero">
+                            <div class="container">
+                                <p class="rw-eyebrow mb-3">Programs</p>
+                                <h1 class="mb-3">Corporate IT equipment recycling.</h1>
+                                <p class="lead">Turn surplus hardware into measurable community impact — secure processing, refurbishment and donation across Western Australia.</p>
+                            </div>
+                        </section>
+                        <section class="rw-section rw-bg-cream">
+                            <div class="container rw-container-narrow">
+                                <h2 class="mb-3">How partnerships work</h2>
+                                <p class="rw-about-body mb-4">We work with councils, corporates and NFPs to collect end-of-life fleets, wipe data to standard, refurbish suitable devices and route them to digital-inclusion programs. See real stories on <a href="/partners">Our Partners</a> and <a href="/our-why">Our Why</a>.</p>
+                                <ul class="rw-about-body mb-4">
+                                    <li>Bulk donations and scheduled refresh projects</li>
+                                    <li>Reporting for ESG and internal audit</li>
+                                    <li>Optional procurement of refurbished replacements via <a href="/shop">Re-Ware Shop</a></li>
+                                </ul>
+                                <p class="rw-about-body mb-4">Every device starts with <a href="/secure-data-destruction">secure data destruction</a> under our <a href="/it-asset-disposal-perth">IT asset disposal</a> process.</p>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <a href="mailto:partnerships@reware-project.com?subject=Corporate%20IT%20recycling" class="rw-btn-coral">Email partnerships</a>
+                                    <a href="/book-appointment" class="rw-btn-outline-dark">Book a consultation</a>
+                                </div>
+                            </div>
+                        </section>
+                        <t t-call="quote_manage_ui.s_rw_newsletter"/>
                     </div>
                 </t>
             </t>
