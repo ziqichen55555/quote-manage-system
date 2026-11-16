@@ -50,6 +50,7 @@
         'views/auth_signup_templates.xml',
         'views/web_auth_seo.xml',
         'views/website_sale_checkout.xml',
+        'views/website_sale_templates.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/product_template_shipping_views.xml',

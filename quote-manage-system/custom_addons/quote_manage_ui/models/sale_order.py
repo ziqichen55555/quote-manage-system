@@ -357,7 +357,8 @@ class SaleOrder(models.Model):
         return bool(self.carrier_id)
 
     def _rw_ensure_default_freight(self):
-        """By post: weight-based freight. In-store pickup: $0."""
+        """By post: weight-based freight. In-store pickup: $0.
+        If no postcode is provided and not pickup, remove delivery line."""
         if self.env.context.get("rw_skip_default_freight"):
             return
         post = self._rw_get_post_carrier()
@@ -367,12 +368,22 @@ class SaleOrder(models.Model):
                 continue
             order_ctx = order.with_context(rw_skip_default_freight=True)
             carrier = order_ctx.carrier_id
-            if order_ctx._rw_is_pickup_carrier(carrier):
+
+            has_postcode = bool((order.partner_shipping_id.zip or "").strip())
+            is_pickup = order_ctx._rw_is_pickup_carrier(carrier)
+
+            if is_pickup:
                 target = pickup
                 price = 0.0
-            else:
+            elif has_postcode:
                 target = post
                 price = order_ctx._rw_freight_price_ex_gst()
+            else:
+                # No postcode and not pickup: remove any existing delivery line
+                # so we don't show a high fallback price to guest users.
+                order_ctx.with_context(rw_force_delivery_remove=True)._remove_delivery_line()
+                continue
+
             if not target:
                 continue
             order_ctx.carrier_id = target
