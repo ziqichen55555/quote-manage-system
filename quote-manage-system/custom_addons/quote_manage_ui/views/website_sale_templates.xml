@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="cart_delivery_rw" inherit_id="website_sale_delivery.cart_delivery" name="Re-Ware Delivery Costs Display">
+    <template id="cart_delivery_rw" inherit_id="website_sale.cart_delivery" name="Re-Ware Delivery Costs Display">
         <xpath expr="//tr[@id='order_delivery']" position="replace">
             <tr id="order_delivery">
                 <td colspan="2" class="ps-0 pt-0 pb-2 border-0 text-muted">
