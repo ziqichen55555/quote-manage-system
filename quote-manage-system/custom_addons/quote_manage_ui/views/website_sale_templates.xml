@@ -2,8 +2,9 @@
 <odoo>
     <!-- Always show a shipping row in the cart total table.
          If no postcode is provided, show 'Calculated at checkout'.
-         We inherit website_sale.total directly and insert before untaxed total. -->
-    <template id="cart_delivery_rw" inherit_id="website_sale.total" name="Re-Ware Delivery Costs Display">
+         We inherit website_sale.total directly and insert before untaxed total.
+         Priority is set high to ensure we override other extensions if needed. -->
+    <template id="cart_delivery_rw" inherit_id="website_sale.total" name="Re-Ware Delivery Costs Display" priority="100">
         <xpath expr="//tr[@id='order_total_untaxed']" position="before">
             <tr id="order_delivery_rw" t-if="website_sale_order and not website_sale_order.only_services">
                 <td colspan="2" class="ps-0 pt-0 pb-2 border-0 text-muted">
@@ -26,13 +27,6 @@
                     </t>
                 </td>
             </tr>
-        </xpath>
-    </template>
-
-    <!-- Hide the original Odoo delivery row to avoid duplicates. -->
-    <template id="hide_default_cart_delivery" inherit_id="website_sale.cart_delivery" name="Hide Default Cart Delivery">
-        <xpath expr="//tr[@id='order_delivery']" position="attributes">
-            <attribute name="t-if">False</attribute>
         </xpath>
     </template>
 </odoo>
