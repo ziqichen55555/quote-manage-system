@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="cart_delivery_rw" inherit_id="website_sale.total" name="Re-Ware Delivery Costs Display">
-        <xpath expr="//tr[@id='order_total_untaxed']" position="before">
+    <template id="cart_delivery_rw" inherit_id="website_sale_delivery.cart_delivery" name="Re-Ware Delivery Costs Display">
+        <xpath expr="//tr[@id='order_delivery']" position="replace">
             <tr id="order_delivery">
                 <td colspan="2" class="ps-0 pt-0 pb-2 border-0 text-muted">
                     <t t-if="website_sale_order and website_sale_order.carrier_id and website_sale_order._rw_is_pickup_carrier(website_sale_order.carrier_id)">
